@@ -1,0 +1,558 @@
+[
+  {
+    "app_name":"OsmAnd \u2014 Maps & GPS Offline",
+    "description":"OsmAnd is an offline world map application based on OpenStreetMap (OSM), which allows you to navigate taking into account the preferred roads and vehicle dimensions. Plan routes based on inclines and record GPX tracks without an internet connection.\r\nOsmAnd is an open source app. We do not collect user data and you decide what data the app will have access to.\r\n\r\nMain features:\r\n\r\nMap view\r\n\u2022 Choice of places to be displayed on the map: attractions, food, health and more;\r\n\u2022 Search for places by address, name, coordinates, or category;\r\n\u2022 Map styles for the convenience of different activities: touring view, nautical map, winter and ski, topographic, desert, off-road, and others;\r\n\u2022 Shading relief and plug-in contour lines;\r\n\u2022 Ability to overlay different sources of maps on top of each other;\r\n\r\nGPS Navigation\r\n\u2022 Plotting a route to a place without an Internet connection;\r\n\u2022 Customizable navigation profiles for different vehicles: cars, motorcycles, bicycles, 4x4, pedestrians, boats, public transport, and more;\r\n\u2022 Change the constructed route, taking into account the exclusion of certain roads or road surfaces;\r\n\u2022 Customizable information widgets about the route: distance, speed, remaining travel time, distance to turn, and more;\r\n\r\nRoute Planning and Recording\r\n\u2022 Plotting a route point by point using one or multiple navigation profiles;\r\n\u2022 Route recording using GPX tracks;\r\n\u2022 Manage GPX tracks: displaying your own or imported GPX tracks on the map, navigating through them;\r\n\u2022 Visual data about the route - descents/ascents, distances;\r\n\u2022 Ability to share GPX track in OpenStreetMap;\r\n\r\nCreation of points with different functionality\r\n\u2022 Favourites;\r\n\u2022 Markers;\r\n\u2022 Audio/video notes;\r\n\r\nOpenStreetMap\r\n\u2022 Making edits to OSM;\r\n\u2022 Updating maps with a frequency of up to one hour;\r\n\r\nAdditional features\r\n\u2022 Android Auto support;\r\n\u2022 Compass and radius ruler;\r\n\u2022 Mapillary interface;\r\n\u2022 Night theme;\r\n\u2022 Wikipedia;\r\n\u2022 Large community of users around the world, documentation, and support;\r\n\r\nPaid features:\r\n\r\nMaps+ (in-app or subscription)\r\n\u2022 Unlimited map downloads;\r\n\u2022 Topo data (Contour lines and Terrain);\r\n\u2022 Nautical depths;\r\n\u2022 Offline Wikipedia;\r\n\u2022 Offline Wikivoyage - Travel guides;\r\n\r\nOsmAnd Pro (subscription)\r\n\u2022 All Maps+ features;\r\n\u2022 OsmAnd Cloud (backup and restore);\r\n\u2022 Pro features;\r\n\u2022 Hourly map updates.",
+    "summary":"Navigation on hikes is no longer a problem. Download the map, put notes and go!",
+    "category":"Travel & Local",
+    "categoryId":"TRAVEL_AND_LOCAL",
+    "in_app_purchases":[
+      "Offers in-app purchases"
+    ],
+    "android_version":"6.0",
+    "developer":"OsmAnd",
+    "developer_site":"https://osmand.net",
+    "release_date":"Aug 16, 2010",
+    "current_version_release_date":[
+      {
+        "snippet":"December 15, 2021"
+      }
+    ],
+    "version":"4.1.11",
+    "changelog":"\u2022 Added initial support for Android Auto\r\n\u2022 User interface update for UTM coordinate search\r\n\u2022 GPS Filter for GPX Tracks\r\n\u2022 Elevation Widget (Pro)\r\n\u2022 Favorites: added ability to view recently used icons\r\n\u2022 Route planning: will use the selected profile after launch\r\n\u2022 Fixed Mapillary layer, the plugin is now disabled by default\r\n\u2022 Added screen to manage all history in the app\r\n\u2022 Map orientation is not reset after restarting the app\r\n\u2022 Improved SRTM height marker rendering\r\n\u2022 Fixed Arabic map captions",
+    "reviews":[
+      {
+        "review":"Great app. But reversing routes from a preset gpx file is harder than it should be. I did it once, now for the life of me, I can't do it again. Uninstalled to see I I'm missing something.",
+        "reply":null
+      },
+      {
+        "review":"Traffic Traffic jams and speed cams missing",
+        "reply":null
+      },
+      {
+        "review":"Good",
+        "reply":null
+      },
+      {
+        "review":"Hi, Im unable to import a gpx file that I found on the internet. I do import track and nothing happens. Im sure its not the gpx file that is bad because it works in other apps. Does this only work in paid version? This is supposed to be very easy. Cant find any help files. thank Hans",
+        "reply":"Hello! Thank you for the feedback.\nImport of files should work the same. Please send to support@osmand.net file so we can check it. Also, you can try to re-convert the file using https://www.gpsvisualizer.com/convert_input."
+      },
+      {
+        "review":"5 stars if you would make pausing the track for like one minute instead of six minutes. If you don't wait the six minutes it creates a track to connect to the last point that it pause.",
+        "reply":null
+      },
+      {
+        "review":"great just great!",
+        "reply":null
+      },
+      {
+        "review":"got for newbie hiker",
+        "reply":null
+      },
+      {
+        "review":"great",
+        "reply":null
+      },
+      {
+        "review":"Too many comercials make the menus confusing.",
+        "reply":null
+      },
+      {
+        "review":"nice map",
+        "reply":null
+      },
+      {
+        "review":"Payware. OSM maps are user-contributed but they want you to pay for them. Sucks.",
+        "reply":"Hello, Hugh! Thank you for the feedback.\nYou can use OSM maps for free in OsmAnd, we have an online layer. We charge for offline maps, that we prepare and store on our servers, so you can use search and navigation offline.\nAlso if you an active contributor you can get map updates and downloads for free, check OSM plugin for details."
+      },
+      {
+        "review":"Ok,",
+        "reply":null
+      },
+      {
+        "review":"It's good software. Offers unparalleled online facilities! As a last point, use biometric authentication to increase security.",
+        "reply":null
+      },
+      {
+        "review":"Very useful app for my mountain biking adventure \ud83d\udc4d",
+        "reply":null
+      },
+      {
+        "review":"Better ofline maps",
+        "reply":null
+      },
+      {
+        "review":"Loved osmand! I have recommended it to so many of my friends and students. Now I'm unable to download a 3rd map... Useless.",
+        "reply":null
+      },
+      {
+        "review":"Nice work, good maps, good offline, a lot of settings, but this app and screen, they together (like a friends) eat of lot power.",
+        "reply":null
+      },
+      {
+        "review":"Generally good, but why does \"speed\" tab for routes display \"slowness\" instead? Speed is, by definition, distance divided by time, not vice versa. I never use the displayed thing anywhere and can't easily relate to particular values. Besides, make just one stop and the graph becomes useless: peaks to maximum and actually meaningful values at the bottom, so that you can hardly distinguish between 4, 5 and 6 km/h when hiking. EDIT: I don't want to filter anything, I want to see speed in km/h.",
+        "reply":"Hello, Anton! Thank you for the feedback.\nThe latest updates have a new option \"GPS filter\" you can find it in Options for each track, it allows you to filter GPS data to gain better geometry and graphs for your tracks."
+      },
+      {
+        "review":"The best offline map you can hope to get, but the GPS either has to have no voice prompts or LITERALLY informs you of the new calculated route time every 15 seconds with no way to turn that off. GPS would be absolutely perfect if I could just turn every voice prompt off except where to turn.",
+        "reply":null
+      },
+      {
+        "review":"Je suis tr\u00e8s heureux d'avoir cette application. Elle est tr\u00e8s bonne \u00e0 utiliser ,au cours des voyages. Vraiment c'est une belle application que je recommande vivement \u00e0 mes parents et amis \u00e0 t\u00e9l\u00e9charger, merci beaucoup pour ce beau travail.",
+        "reply":null
+      },
+      {
+        "review":"My god it brings you the longest way,i used in my area,and it brought me all around the houses.rubbish",
+        "reply":"Hello, Victorija! Thank you for the feedback.\nPlease contact us at support@osmand.net and provide coordinates of the start and destination points of the route so we could test it."
+      },
+      {
+        "review":"Excellent",
+        "reply":null
+      },
+      {
+        "review":"best app",
+        "reply":null
+      },
+      {
+        "review":"Fantastic application",
+        "reply":"Hello, Emmanuel! Thank you for the feedback.\nIf you have any questions please contact us at support@osmand.net"
+      },
+      {
+        "review":"I download the mod \ud83d\ude42 free of cost \ud83d\ude42",
+        "reply":null
+      },
+      {
+        "review":"Great offline map",
+        "reply":null
+      },
+      {
+        "review":"is a very good and useful application. the only downside is importing and using gpx maps. which is not exactly user-friendly. Unfortunately, the aid for importing maps is out of date the menu no longer looks like that in the description. would not spoil an update on this topic.",
+        "reply":"Hello! Thank you for the feedback.\nCould you please provide more details about the issue?\nYou can contact us at support@osmand.net."
+      },
+      {
+        "review":"Very nice and useable app \ud83d\udc4d\ud83d\udc4d\ud83d\udc4d",
+        "reply":null
+      },
+      {
+        "review":"Navigation instructions on small roads are only just usable. Lots of turns are not there IRL (road simply goes on) and other turns are not given. Requires lots of attention and checking the actual map.",
+        "reply":null
+      },
+      {
+        "review":"A bloody great app!!",
+        "reply":null
+      },
+      {
+        "review":"I really would like to like this, but it is just terrible. I like the idea of a gps app that does not store location data and that works fully offline, but when i look up a city thats only a half hour away and it has no idea what im talking about (this happens all the time) then its useless to me! the only way i've been able to get this to work right is to use specific cross streets. Cities, towns, and direct addresses do not work.",
+        "reply":"Hello! Thank you for the feedback.\nWe use OpenStreetMap as a source of data. This map is built by a community of volunteers, availability of data in some areas depends on the number of volunteers."
+      },
+      {
+        "review":"Fantastic app for hiking",
+        "reply":null
+      },
+      {
+        "review":"Awesome app, but search needs to be a bit smarter. When I type the name of my city in \"search by city\", tens of the first results are streets that contains the name of the city and in the middle of those there is the actual city. Organic Maps seems to be better, you could learn from them :) But for anything else, this is a great use of osm data and philosophy.",
+        "reply":null
+      },
+      {
+        "review":"great help",
+        "reply":null
+      },
+      {
+        "review":"Good \ud83d\udc4d",
+        "reply":"Hello! Thank you for the feedback."
+      },
+      {
+        "review":"The map is exceptional",
+        "reply":null
+      },
+      {
+        "review":"Useless for those hoping to use residential addresses",
+        "reply":"Hello! Thank you for the feedback.\nYou can try to use step-by-step \"Address search\" in Menu \u2013 Search \u2013 Address search \u2013 Select city.\nIf you have any other questions please contact us at support@osmand.net"
+      },
+      {
+        "review":"Thank you for this app! It's really helped me",
+        "reply":null
+      },
+      {
+        "review":"Please help. Trying to take advantage of the Sale for OsmAnd+ that is ending in 3 days, but keeps giving me an error. I am running out of time. Love this map app!",
+        "reply":null
+      },
+      {
+        "review":"So far the best navigation system I have met and I have had many. Fast, beatifull and easy to use. The only thing so far is with the house numbers. I have seen better systems. The arrows showing where some restorant is are poor. A \"V\" would be easier to read.",
+        "reply":null
+      },
+      {
+        "review":"Why don't the maps tilt during navigation? I mean in isometric or 3d view",
+        "reply":null
+      },
+      {
+        "review":"Very helpful and precise app. I already use it multiple years for all my hikings",
+        "reply":null
+      },
+      {
+        "review":"The very serious issue with this app is the difficulty in exiting it. Once it's navigating it stays running on your phone and exiting it is criminally difficult. Just google how do I exit osmand and you will find teams of discussion about this issue and it seems the developer is unresponsive about it. They once had an exit button and then removed it because they thought of something \"better' but on many phones it doesn't work. Install this app at your peril. For nav? Who knows it may be OK...",
+        "reply":"Hello, Gordon! Thank you for the feedback.\nYou need to stop navigation or track recording to exit OsmAnd. You can do it thru the notification center, because both these services show notifications, and both have a 'Stop' button, or you can stop in the app, where you previously start it.\n"
+      },
+      {
+        "review":"Useless for route planing with stopovers (POIs and map points mixed). Awfull user interface.",
+        "reply":"Hello, Michael! Thank you for the feedback.\nCould you please provide more details about the issue?\nYou can contact us at support@osmand.net."
+      },
+      {
+        "review":"Love the wealthy feature sets, but the rendering speed is a pain sometimes, if the Dev can solve the rendering speed issue then this app will be a 5/5 stars for sure. P.S. I think the rendering speed is more to to with database performance than the actual rasterization, so optimising the underlying database could do more help than reinvent the graphics engine which IMHO is very good already",
+        "reply":null
+      },
+      {
+        "review":"I downloaded this today for my biking trip in Kashmir. Disappointed to see part of Kashmir shown in Pakistan. Hence I am uninstalling",
+        "reply":null
+      },
+      {
+        "review":"add Urdu (Pakistan) voice",
+        "reply":"Hello! Thank you for the feedback.\nLanguage availability depends on the system's TTS engine, if it supports the needed language, you can use voice announcements.\nIf you have any other questions please contact us at support@osmand.net"
+      },
+      {
+        "review":"Nice app it's very helpful \ud83d\udc4d\ud83d\udc4c",
+        "reply":null
+      },
+      {
+        "review":"Offers privacy in todays world. If your done with creepy corporations taking notes on how you spend your day then selling your routine to other companys to \"target\" Ads to you who just charged you more; for the products you would have bought anyway and since they had to pay another company money to find out your personal information then this IS the map solution for you. Simple no creep privacy maps solution.",
+        "reply":null
+      },
+      {
+        "review":"great app",
+        "reply":null
+      },
+      {
+        "review":"nice",
+        "reply":null
+      },
+      {
+        "review":"greatest ever",
+        "reply":null
+      },
+      {
+        "review":"Best Offline app bar none",
+        "reply":null
+      },
+      {
+        "review":"great app",
+        "reply":null
+      },
+      {
+        "review":"good app",
+        "reply":null
+      },
+      {
+        "review":"Thank you.....",
+        "reply":null
+      },
+      {
+        "review":"good",
+        "reply":null
+      },
+      {
+        "review":"Good but not in the level of competition!",
+        "reply":"Hello! Thank you for the feedback.\nCould you please provide more details about the issue?\nYou can contact us at support@osmand.net."
+      },
+      {
+        "review":"when we type in business name we should see address instantly like Google Maps but don't",
+        "reply":"Hello, Mac! Thank you for the feedback.\nWe use OpenStreetMap as a source of data. This map is built by a community of volunteers, availability of data in some areas depends on the number of volunteers. Search is working offline, sometimes it takes some time to show needed results."
+      },
+      {
+        "review":"Very nice application which I use it free service.",
+        "reply":null
+      },
+      {
+        "review":"great",
+        "reply":null
+      },
+      {
+        "review":"hard 42",
+        "reply":null
+      },
+      {
+        "review":"This is a great app for travel so you don't need data.",
+        "reply":null
+      },
+      {
+        "review":"I'm very angry beacouse is too much time to calculating for longer routes. Why? I bay this product for bether traveling. I tray other navigations and calculate very fast. No need closer distance. Thanks.",
+        "reply":"Hello! Thank you for the feedback.\nPlease contact us at support@osmand.net and provide coordinates of the start and destination points of the route so we could test it."
+      },
+      {
+        "review":"\u0644\u0627\u0628\u0623\u0633 \u0628\u0647",
+        "reply":null
+      },
+      {
+        "review":"good luck",
+        "reply":null
+      },
+      {
+        "review":"Nice offline map",
+        "reply":null
+      },
+      {
+        "review":"I installed the app today. For now, I like how it works. I would like the application to have the option to import addresses from contacts in the phone and save them as favorite locations. I would ask the development team to consider this suggestion for one of the following versions. Thanks.",
+        "reply":null
+      },
+      {
+        "review":"Very detailed and accurate.",
+        "reply":null
+      },
+      {
+        "review":"Absolutely terrible navigation for cycling. It literally makes you cross a street leaving a cycle path for a narrow sidewalk instead. Even when adding a way point it still goes to a sidewalk. And adding a way point makes no sense, it doesn't work at all. The most un-intuitive app I've ever used. Looks like something from 2008. And still no traffic data!",
+        "reply":"Hello! Thank you for the feedback.\nYou can try to change the \"Driving style\" option to \"Prefer byways\" in Menu \u2013 Navigation \u2013 Options.\nIf it doesn't help, please contact us at support@osmand.net with the coordinates of the route."
+      },
+      {
+        "review":"I use OSMAnd for navigating since 2021 and I find most of Manila's landmarks built before the year 2020.",
+        "reply":null
+      },
+      {
+        "review":"Customer service is nonexistent. Purchased the full app, but it wouldn't transfer to a new device. Somehow when it did connect on the new device it charged me again for the full app. Contacted customer service four times since then, and I've heard nothing. It's been six months. I don't care what any of the features of this map are, the developers are trash.",
+        "reply":null
+      },
+      {
+        "review":"Es excelente, se puede agregar track y puntos de referencia para estar con mapas offline, para ser mas completa seria bueno agregar gestion de pilogonos y mas tipos de archivos",
+        "reply":null
+      },
+      {
+        "review":"Lots of adaptability and works well for following GPX tracks",
+        "reply":null
+      },
+      {
+        "review":"Kelwin29gailcom",
+        "reply":null
+      },
+      {
+        "review":"Well, seems I could not update my earlier comment. OsmAnd uses OpenStreetMap which for the area I checked is fully up to date. G. is clearly not. I wanted to check in OsmAnd, which showed way out of date. I tried to update NL, but only got part of the parts. So, OsmAnd was clearly out of date, and not manually updating. So, useless! And yes I paid for an other one to not have adds. Getting the adds again. Would you be more reliable? Your map isn't even at least up to date to two months ago!",
+        "reply":"Hello, Angela! Thank you for the feedback.\nYou can contact us at support@osmand.net with coordinates of the places that have not been updated for two months."
+      },
+      {
+        "review":"Pros: great community, lot of options, lot of infos and always updated Cons: can be dangerous cause map is not always updated but depends on users. Can't edit in app for road block or traffic problem. Navigator is great but can be dangerous, last time it tracked a bike road in a big forest but was not meant for cars. Hopefully we made it and I updated the track.",
+        "reply":null
+      },
+      {
+        "review":"La uso durante il trekking con gli amici per pianoficare il percorso, e non ho trovato un app migliore. Davvero ben fatta",
+        "reply":null
+      },
+      {
+        "review":"Why no 3D navigation view in driving mode (Android)? Significant deficit.",
+        "reply":"Hello, Chris! Thank you for the feedback.\nWe are working on adding a 3D view for the Android version, it is on the feature list for 2022.\nIf you have any other questions please contact us at support@osmand.net"
+      },
+      {
+        "review":"I love the program. but anything that begs for reviews or worse stops me from using it when I need to, to pop a review box up automatically gets zero stars. developers: bulk low quality reviews probably don't get you anything. do not do this.",
+        "reply":"Hello, Trel! Thank you for the feedback.\nThe latest version of OsmAnd use Google Play dialog for review, you can ignore it. if it appears to often, please let us know."
+      },
+      {
+        "review":"Besser geht es nicht 7 star",
+        "reply":null
+      },
+      {
+        "review":"Default map language is local despite I set another language for the application. So I decided that there is no English language for the map and I used Google maps in my trip. Only at home I realized that there is separated language configuration for the map that I used. So 2 stars because in my trip I had lack of the internet and suffered much.",
+        "reply":"Hello, Ivan! Thank you for the feedback.\nYou can change \"Map language\" in Menu \u2013 Configure Map.\nIf you have any other questions please contact us at support@osmand.net"
+      },
+      {
+        "review":"very practical tool for offline trekking. the elevation profiles allow us to avoid the steepest stretches. paths can be prepared in advance and stored and shared with friends.",
+        "reply":null
+      },
+      {
+        "review":"The perfect offline map!! Thanks!",
+        "reply":null
+      },
+      {
+        "review":"Trash map data. Can't search via house number for GPS. In the country bfe I would understand, but in the cities its just disapointing...",
+        "reply":"Hello, John! Thank you for the feedback.\nCould you please provide more details about the issue?\nYou can contact us at support@osmand.net."
+      },
+      {
+        "review":"Great resource",
+        "reply":null
+      },
+      {
+        "review":"maybe OK, continue test, thanks",
+        "reply":null
+      },
+      {
+        "review":"Absolutely loving this app, you've all done an amazing job \u2764\ufe0f",
+        "reply":null
+      },
+      {
+        "review":"One of the best offline maps! very nice user interface and layout.",
+        "reply":null
+      },
+      {
+        "review":"Don't even bother installing. Trust me!",
+        "reply":"Hello! Thank you for the feedback.\nCould you please provide more details about the issue?\nYou can contact us at support@osmand.net."
+      },
+      {
+        "review":"once you get the maps downloaded it's great",
+        "reply":null
+      },
+      {
+        "review":"This is not a food app",
+        "reply":"Hello! Thank you for the feedback.\nYes, but you can find cafes, restaurants, or shops using OsmAnd.\nIf you have any questions please contact us at support@osmand.net"
+      },
+      {
+        "review":"Very good for countryside walks",
+        "reply":null
+      },
+      {
+        "review":"Horrible app I just really wanted a Google map alternative with privacy-focused features and no recommendations and other bloat when on my maps. I just wanted a normal map and it doesn't even do that, there's no functionality no ease of use and was really hoping for a lot being open source. Alas these apps are extremely behind and maybe in a few years I can use this as a Google maps alternative, also with so few features and you practically download the maps...why is it so slow?",
+        "reply":"Hello! Thank you for the feedback.\nCould you please provide more details about the issue?\nYou can contact us at support@osmand.net."
+      },
+      {
+        "review":"excellent",
+        "reply":null
+      },
+      {
+        "review":"Users please understand that if you need data to access maps of any kind the free word is not the real word.",
+        "reply":null
+      },
+      {
+        "review":"App is great.",
+        "reply":null
+      },
+      {
+        "review":"good free maps. worth every cent.",
+        "reply":null
+      },
+      {
+        "review":"i am in Silang but i want to plan a route from Batangas City to Kamay Ni Hesus, Quezon City. I set the start and destination addresses but the program always starts in Silang where i am now. What am i doing wrong?",
+        "reply":"Hello, Brian!\nTaping the \"Start\" button will launch navigation, which always starts from your current location, route calculation starts right after two points are added to navigation. You can try to use \"Plan a route\" to plan routes without location.\nIf you have any other questions please contact us at support@osmand.net"
+      },
+      {
+        "review":"One of the Best app",
+        "reply":null
+      }
+    ],
+    "similar_apps":[
+      {
+        "title":"OsmAnd+ \u2014 Maps & GPS Offline",
+        "link":"https://play.google.com/store/apps/details?id=net.osmand.plus",
+        "product_id":"net.osmand.plus",
+        "serpapi_link":"https://serpapi.com/search.json?engine=google_play_product&gl=us&hl=en&product_id=net.osmand.plus&store=apps",
+        "description":"Navigation on hikes is no longer a problem. Download the map, put notes and go!",
+        "rating":4.7,
+        "extansion":{
+          "name":"OsmAnd",
+          "link":"https://play.google.com/store/apps/dev?id=8483587772816822023"
+        },
+        "price":"$24.99",
+        "extracted_price":24.99,
+        "thumbnail":"https://play-lh.googleusercontent.com/wKzYJuXfE2XEu1U7s2I7-UMcRCCDv2HxFIp6LavToVMkPH7BaZItRWU5oUKGufhVHfQ=s128-rw"
+      },
+      {
+        "title":"MAPS.ME: Offline maps GPS Nav",
+        "link":"https://play.google.com/store/apps/details?id=com.mapswithme.maps.pro",
+        "product_id":"com.mapswithme.maps.pro",
+        "serpapi_link":"https://serpapi.com/search.json?engine=google_play_product&gl=us&hl=en&product_id=com.mapswithme.maps.pro&store=apps",
+        "description":"Worldwide offline navigation with maps and driving directions\ud83d\uddfa",
+        "rating":4.3,
+        "extansion":{
+          "name":"MAPS.ME (CYPRUS) LTD",
+          "link":"https://play.google.com/store/apps/developer?id=MAPS.ME+%28CYPRUS%29+LTD"
+        },
+        "thumbnail":"https://play-lh.googleusercontent.com/Ec9fzB4pWGEvKnJHXAyrikd38aEY0PPKmhZ9S2c-lmwRc70yCUUsfeuNqAZexuNtwRw=s128-rw"
+      },
+      {
+        "title":"Guru Maps - Offline Navigation",
+        "link":"https://play.google.com/store/apps/details?id=com.bodunov.galileo",
+        "product_id":"com.bodunov.galileo",
+        "serpapi_link":"https://serpapi.com/search.json?engine=google_play_product&gl=us&hl=en&product_id=com.bodunov.galileo&store=apps",
+        "description":"Detailed and easy to use offline maps with turn-by-turn voice-guided navigation",
+        "rating":3.9,
+        "extansion":{
+          "name":"Evgen Bodunov",
+          "link":"https://play.google.com/store/apps/developer?id=Evgen+Bodunov"
+        },
+        "thumbnail":"https://play-lh.googleusercontent.com/aHjKbaJ_AT2fgG2zs5dtqgOZ-7bUNGDmphwg3N4Qdvn5E8z7HR5035cShRJocWJE1EI=s128-rw"
+      },
+      {
+        "title":"MapFactor Navigator - GPS Navigation Maps",
+        "link":"https://play.google.com/store/apps/details?id=com.mapfactor.navigator",
+        "product_id":"com.mapfactor.navigator",
+        "serpapi_link":"https://serpapi.com/search.json?engine=google_play_product&gl=us&hl=en&product_id=com.mapfactor.navigator&store=apps",
+        "description":"GPS Navigation - offline maps from OSM & TomTom. Right way everytime.",
+        "rating":4.4,
+        "extansion":{
+          "name":"MapFactor",
+          "link":"https://play.google.com/store/apps/dev?id=6526807138754435823"
+        },
+        "thumbnail":"https://play-lh.googleusercontent.com/WdwGZHXxxNaN_Ars_5xlCWp4wq_DpuxSKIV6qA2vK2iXFpiBo-pJZXCt91p_tD8J-IJU=s128-rw"
+      },
+      {
+        "title":"Wikiloc Outdoor Navigation GPS",
+        "link":"https://play.google.com/store/apps/details?id=com.wikiloc.wikilocandroid",
+        "product_id":"com.wikiloc.wikilocandroid",
+        "serpapi_link":"https://serpapi.com/search.json?engine=google_play_product&gl=us&hl=en&product_id=com.wikiloc.wikilocandroid&store=apps",
+        "description":"Track your outdoor activities and explore millions of trails worldwide",
+        "rating":4.4,
+        "extansion":{
+          "name":"Wikiloc Outdoor",
+          "link":"https://play.google.com/store/apps/developer?id=Wikiloc+Outdoor"
+        },
+        "thumbnail":"https://play-lh.googleusercontent.com/uAL8cfVSubXM-QTv5F0_8D-yJaA09bXlGwUrRXVxOeEqfWl8xAUfWhJSjQlXU9SOIPU=s128-rw"
+      }
+    ],
+    "package_name":"net.osmand",
+    "other_apps":[
+      {
+        "title":"Nautical Charts \u2014 OsmAnd",
+        "link":"https://play.google.com/store/apps/details?id=net.osmand.nauticalPlugin",
+        "product_id":"net.osmand.nauticalPlugin",
+        "serpapi_link":"https://serpapi.com/search.json?engine=google_play_product&gl=us&hl=en&product_id=net.osmand.nauticalPlugin&store=apps",
+        "description":"OsmAnd Nautical Charts is a plugin that provides Nautical Maps",
+        "rating":3.7,
+        "extansion":{
+          "name":"OsmAnd",
+          "link":"https://play.google.com/store/apps/dev?id=8483587772816822023"
+        },
+        "thumbnail":"https://play-lh.googleusercontent.com/-TO8t53lo_7rgEKsl8ewQSBStKLAA2d44JRkgLTTRInGyZ_ljFtjTwyRHshtcAZ9wkY=s128-rw"
+      },
+      {
+        "title":"OsmAnd Online GPS Tracker",
+        "link":"https://play.google.com/store/apps/details?id=net.osmand.telegram",
+        "product_id":"net.osmand.telegram",
+        "serpapi_link":"https://serpapi.com/search.json?engine=google_play_product&gl=us&hl=en&product_id=net.osmand.telegram&store=apps",
+        "description":"Share your location with contacts and groups from Telegram.",
+        "rating":3.7,
+        "extansion":{
+          "name":"OsmAnd",
+          "link":"https://play.google.com/store/apps/dev?id=8483587772816822023"
+        },
+        "thumbnail":"https://play-lh.googleusercontent.com/jizATOxi4ir4MNQCWB9lxyQAsSI6KTdcTmpZ8ODU0HGt5jOeXqDP-MBYg4Ctl3mHaTQ=s128-rw"
+      }
+    ],
+    "play_store_link":"https://play.google.com/store/apps/details?id=net.osmand&hl=en&gl=us",
+    "features":[
+      "Works Offline",
+      "Apps with Offline Map Support",
+      "Based on OpenStreetMap",
+      "Customizable",
+      "Route optimization",
+      "GPS Navigation",
+      "Points of interest (POI)",
+      "GPS Location Tracking",
+      "Exclude paths/places from route",
+      "Cycling",
+      "Wikipedia integration",
+      "Track gps location",
+      "Natural, landscape and forest pathways",
+      "Night mode/Dark Theme",
+      "User generated",
+      "OSM-based",
+      "Text to Speech",
+      "Real-time traffic",
+      "Driving directions",
+      "Record Tracks"
+    ],
+    "tags":[
+      "offline-navigation",
+      "Maps",
+      "biking-maps",
+      "share-location",
+      "voice-navigation",
+      "find-parking",
+      "maps-navigation-trips",
+      "navigation",
+      "map-viewer",
+      "cycling"
+    ]
+  }
+]
