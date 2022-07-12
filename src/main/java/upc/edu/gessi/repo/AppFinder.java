@@ -7,9 +7,10 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
-import upc.edu.gessi.repo.App;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AppFinder {
 
@@ -20,7 +21,7 @@ public class AppFinder {
         this.rd4jEndpoint = repoURL;
         repository = new HTTPRepository(this.rd4jEndpoint);
     }
-    public App retrieveInfo(String appName) throws ClassNotFoundException, IllegalAccessException {
+    public App retrieveAppByName(String appName) throws ClassNotFoundException, IllegalAccessException {
         RepositoryConnection repoConnection = repository.getConnection();
         String query = "PREFIX gessi: <http://gessi.upc.edu/app/> SELECT ?x ?y ?z WHERE {gessi:"+appName+" ?y ?z}" ;
         TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
@@ -45,6 +46,22 @@ public class AppFinder {
         return res;
     }
 
+    public List<String> getResultsContaining(String text) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        String query = "PREFIX gessi: <http://gessi.upc.edu/app/> SELECT ?x ?y ?z " +
+                                                                    "WHERE {?x ?y ?z .FILTER regex(str(?z), \""+text+"\")}" ;
+        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
+        List<String> resultList = new ArrayList<>();
+        TupleQueryResult result = tupleQuery.evaluate();
+        while (result.hasNext()) {  // iterate over the result
+            BindingSet bindingSet = result.next();
+            Value valueOfX = bindingSet.getValue("x");
+            Value valueOfY = bindingSet.getValue("y");
+            Value valueOfZ = bindingSet.getValue("z");
+            resultList.add(valueOfZ.stringValue());
+        }
+        return resultList;
+    }
     public String getRd4jEndpoint() {
         return rd4jEndpoint;
     }

@@ -20,7 +20,7 @@ public class AppGraphRepoApplication {
 	public App getData(@RequestParam(value = "app_name", defaultValue = "OsmAnd") String name) {
 		App app = null;
 		try {
-			app =  appFinder.retrieveInfo(name.toLowerCase());
+			app =  appFinder.retrieveAppByName(name.toLowerCase());
 			return app;
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);

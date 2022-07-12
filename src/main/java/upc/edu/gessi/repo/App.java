@@ -2,6 +2,8 @@ package upc.edu.gessi.repo;
 
 import com.google.gson.Gson;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 public class App implements Serializable {
     private String name;
@@ -9,6 +11,16 @@ public class App implements Serializable {
     private String softwareVersion;
     private String genre;
     private String releaseNotes;
+
+    public List<Map<String, String>> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Map<String, String>> reviews) {
+        this.reviews = reviews;
+    }
+
+    private List<Map<String,String>> reviews;
 
 
     public String getName() {

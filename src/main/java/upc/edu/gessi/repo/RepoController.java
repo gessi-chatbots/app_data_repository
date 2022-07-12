@@ -14,7 +14,7 @@ public class RepoController {
     }
 
     public String getAppInfo(String app) throws ClassNotFoundException, IllegalAccessException {
-        App result = appFinder.retrieveInfo(app);
+        App result = appFinder.retrieveAppByName(app);
         Gson g = new Gson();
         return g.toJson(result);
     }

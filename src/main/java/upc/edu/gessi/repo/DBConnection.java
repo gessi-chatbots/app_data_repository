@@ -3,15 +3,16 @@ package upc.edu.gessi.repo;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModelFactory;
-import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 public class DBConnection {
@@ -38,6 +39,10 @@ public class DBConnection {
         repoConnection.close();
     }
 
+    private String extractValue(Map<String,String> map, String key) {
+        return map.get(key);
+    }
+
     public void insertApp(App app, String name) throws ClassNotFoundException {
         IRI sub = factory.createIRI("http://gessi.upc.edu/app/" + name);
         Class<?> c = Class.forName("upc.edu.gessi.repo.App");
@@ -47,19 +52,31 @@ public class DBConnection {
         Model model = modelFactory.createEmptyModel();
         for (Field f : fieldList) {
             IRI pred = factory.createIRI("https://schema.org/" + f.getName());
-            String obj = "";
+            Object obj = "";
             for (Method m : methodList) {
                 if (m.getName().length() == (f.getName().length() + 3) && m.getName().toLowerCase().equals("get"+f.getName().toLowerCase())) {
                     try {
-                        obj = (String) m.invoke(app);
+                        obj = m.invoke(app);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
-            Literal object = factory.createLiteral(obj);
-            Statement statement = factory.createStatement(sub, pred, object);
-            model.add(statement);
+            if (obj instanceof List<?>) {
+                for (Object s : Collections.unmodifiableList((List) obj)) {
+                    Map<String,String> map = (Map<String,String>) s;
+                    String aux = map.get("review");
+                    Literal object = factory.createLiteral(aux);
+                    Statement statement = factory.createStatement(sub, pred, object);
+                    model.add(statement);
+                }
+            }
+            else {
+                Literal object = factory.createLiteral((String) obj);
+                Statement statement = factory.createStatement(sub, pred, object);
+                model.add(statement);
+            }
+
         }
         RepositoryConnection repoConnection = repository.getConnection();
         repoConnection.add(model);
