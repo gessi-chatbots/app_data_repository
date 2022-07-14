@@ -33,7 +33,6 @@ public class AppGraphRepoApplication {
 	@PostMapping("/insert")
 	public int insertData(@RequestBody String text) throws ClassNotFoundException {
 		App app = new Gson().fromJson(text, App.class);
-		//dbConnection.insertData("http://gessi.upc.edu/app/OsmAnd","http://schema.org/name", app.getName());
 		dbConnection.insertApp(app,app.getName());
 		return 1;
 	}
