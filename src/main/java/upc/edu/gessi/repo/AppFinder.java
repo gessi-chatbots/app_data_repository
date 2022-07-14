@@ -10,7 +10,9 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AppFinder {
 
@@ -29,6 +31,8 @@ public class AppFinder {
         App res = new App();
         Class<?> c = Class.forName("upc.edu.gessi.repo.App");
         Field[] fieldList = c.getDeclaredFields();
+        List<Map<String,String>> reviews = new ArrayList<>();
+        Field rev = null;
         while (result.hasNext()) {
             BindingSet bindings = result.next();
             Value pred = bindings.getValue("y");
@@ -37,10 +41,22 @@ public class AppFinder {
             String predicate = pred.stringValue();
             for (Field f : fieldList) {
                 if (predicate.toLowerCase().endsWith(f.getName().toLowerCase())) {
-                    f.setAccessible(true);
-                    f.set(res,object);
+                    if (predicate.toLowerCase().endsWith("reviews")) {
+                        Map<String,String> aux = new HashMap<>();
+                        aux.put("review",object);
+                        aux.put("reply",null);
+                        reviews.add(aux);
+                        rev = f;
+                    } else {
+                        f.setAccessible(true);
+                        f.set(res, object);
+                    }
                 }
             }
+        }
+        if (rev != null) {
+            rev.setAccessible(true);
+            rev.set(res, reviews);
         }
         repoConnection.close();
         return res;

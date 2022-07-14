@@ -5,14 +5,28 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 @SpringBootApplication
 @RestController
 public class AppGraphRepoApplication {
 
-	private final AppFinder appFinder = new AppFinder("http://agustiubu:7200/repositories/app-data-repo");
-	private final DBConnection dbConnection = new DBConnection("http://agustiubu:7200/repositories/app-data-repo");
+	private static AppFinder appFinder;
+	private static DBConnection dbConnection;
+
+
 
 	public static void main(String[] args) {
+		try {
+			String url = new InitConfig().getServerURL();
+			appFinder = new AppFinder(url);
+			dbConnection = new DBConnection(url);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
 		SpringApplication.run(AppGraphRepoApplication.class, args);
 	}
 
