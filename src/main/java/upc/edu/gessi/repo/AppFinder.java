@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import upc.edu.gessi.repo.domain.App;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.Map;
 public class AppFinder {
 
     private String rd4jEndpoint;
-    private Repository repository = null;
+    private final Repository repository;
 
     public AppFinder(String repoURL) {
         this.rd4jEndpoint = repoURL;
@@ -29,7 +30,7 @@ public class AppFinder {
         TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
         TupleQueryResult result = tupleQuery.evaluate();
         App res = new App();
-        Class<?> c = Class.forName("upc.edu.gessi.repo.App");
+        Class<?> c = Class.forName("upc.edu.gessi.repo.domain.App");
         Field[] fieldList = c.getDeclaredFields();
         List<Map<String,String>> reviews = new ArrayList<>();
         Field rev = null;

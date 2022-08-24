@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo;
 
 import com.google.gson.Gson;
+import upc.edu.gessi.repo.domain.App;
 
 public class RepoController {
 

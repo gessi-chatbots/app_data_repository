@@ -1,13 +1,12 @@
 package upc.edu.gessi.repo;
 
-import com.google.gson.Gson;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
+import upc.edu.gessi.repo.domain.App;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.util.List;
 
 @SpringBootApplication
 @RestController
@@ -32,7 +31,7 @@ public class AppGraphRepoApplication {
 
 	@GetMapping("/data")
 	public App getData(@RequestParam(value = "app_name", defaultValue = "OsmAnd") String name) {
-		App app = null;
+		App app;
 		try {
 			app =  appFinder.retrieveAppByName(name.toLowerCase());
 			return app;
@@ -45,9 +44,10 @@ public class AppGraphRepoApplication {
 		}
 	}
 	@PostMapping("/insert")
-	public int insertData(@RequestBody String text) throws ClassNotFoundException {
-		App app = new Gson().fromJson(text, App.class);
-		dbConnection.insertApp(app,app.getName());
+	public int insertData(@RequestBody List<App> apps) {
+		for (App app : apps) {
+			dbConnection.insertApp(app);
+		}
 		return 1;
 	}
 
