@@ -2,12 +2,13 @@ package upc.edu.gessi.repo.domain;
 
 import com.google.gson.Gson;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class App implements Serializable {
 
     private String app_name;
-    private String app_package;
+    private String package_name;
     private String description;
     private String summary;
     private String category;
@@ -15,12 +16,15 @@ public class App implements Serializable {
     private String android_version;
     private String genre;
     private String changelog;
-    private String developer;
+    private Developer[] developer;
     private String developer_site;
     private List<Review> reviews;
 
     public List<String> getFeatures() {
-        return features;
+        //otherwise it leads to problems when inserting the app
+        if (features != null)
+            return features;
+        else return new ArrayList<>();
     }
 
     public void setFeatures(List<String> features) {
@@ -39,12 +43,12 @@ public class App implements Serializable {
     private List<String> tags;
 
 
-    public String getApp_package() {
-        return app_package;
+    public String getPackage_name() {
+        return package_name;
     }
 
-    public void setApp_package(String app_package) {
-        this.app_package = app_package;
+    public void setPackage_name(String package_name) {
+        this.package_name = package_name;
     }
 
     public List<Review> getReviews() {
@@ -123,11 +127,11 @@ public class App implements Serializable {
         this.android_version = android_version;
     }
 
-    public String getDeveloper() {
+    public Developer[] getDeveloper() {
         return developer;
     }
 
-    public void setDeveloper(String developer) {
+    public void setDeveloper(Developer[] developer) {
         this.developer = developer;
     }
 

@@ -11,6 +11,7 @@ import upc.edu.gessi.repo.domain.Review;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +40,7 @@ public class DBConnection {
 
     //Review objects
     IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
+
     IRI authorIRI = factory.createIRI("https://schema.org/author");
     IRI reviewRatingIRI = factory.createIRI("https://schema.org/reviewRating");
 
@@ -47,6 +49,8 @@ public class DBConnection {
 
     //Rating objects
     IRI valueIRI = factory.createIRI("https://schema.org/ratingValue");
+
+    IRI developerIRI = factory.createIRI("https://schema.org/Organization");
 
     public DBConnection(String rd4jEndpoint) {
         repository = new HTTPRepository(rd4jEndpoint);
@@ -91,7 +95,7 @@ public class DBConnection {
             if (obj instanceof List<?>) {
                 for (Object s : Collections.unmodifiableList((List) obj)) {
                     Review review = (Review) s;
-                    Literal object = factory.createLiteral(review.getReview());
+                    Literal object = factory.createLiteral(review.getSnippet());
                     Statement statement = factory.createStatement(sub, pred, object);
                     model.add(statement);
                 }
@@ -110,17 +114,34 @@ public class DBConnection {
 
 
     public void insertApp(App app) {
-        IRI sub = factory.createIRI(appIRI + "/" + app.getApp_name());
+        String sanitizedName = app.getApp_name().replace(" ","_");
+        //sanitizedName = sanitizedName.replace("&","and");
+        sanitizedName = sanitizedName.replace("|","");
+        IRI sub = factory.createIRI(appIRI + "/" + sanitizedName);
 
         ModelFactory modelFactory = new TreeModelFactory();
         Model model = modelFactory.createEmptyModel();
 
-        List<Statement> statements = new ArrayList<>();
+        String developerName = app.getDeveloper()[0].getName().replace(" ","_");
+        String developerLink = app.getDeveloper()[0].getLink();
 
-        statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(app.getApp_package())));
-        statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
-        statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
-        statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
+
+
+        List<Statement> statements = new ArrayList<>();
+        IRI dev = factory.createIRI(developerIRI+"/"+developerName);
+
+
+        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(developerName)));
+        statements.add(factory.createStatement(sub,authorIRI,dev));
+
+
+        //some fields are not populated, so we check them to avoid null pointers.
+        if (app.getPackage_name() != null) statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(app.getPackage_name())));
+        if (app.getDescription() != null) statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
+        if (app.getSummary() != null) statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
+        if (app.getChangelog() != null) statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
+
+        //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
 
         for (String feature : app.getFeatures()) {
             IRI featureIRI = factory.createIRI(definedTermIRI + "/" + feature.replaceAll(" ", ""));
@@ -131,19 +152,28 @@ public class DBConnection {
             statements.add(factory.createStatement(sub, tagsIRI, factory.createLiteral(tag)));
         }*/
 
-        for (Review r : app.getReviews()) {
+       for (Review r : app.getReviews()) {
             IRI review = factory.createIRI(reviewIRI + "/" + r.getReviewId());
-            statements.add(factory.createStatement(review, reviewBodyIRI, factory.createLiteral(r.getReview())));
-            IRI author = factory.createIRI(personIRI  + "/" +  r.getUserName().replaceAll("[^a-zA-Z0-9]",""));
-            statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(r.getUserName())));
+            //normalize the text to utf-8 encoding
+            String reviewBody = r.getSnippet();
+            byte[] reviewBytes = reviewBody.getBytes();
+            String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
+            statements.add(factory.createStatement(review, reviewBodyIRI, factory.createLiteral(encoded_string)));
+
+            //normalize the text to utf-8 encoding
+            String reviewAuthor = r.getTitle();
+            byte[] authorBytes = reviewAuthor.getBytes();
+            String  encoded_author = new String(authorBytes, StandardCharsets.UTF_8);
+            IRI author = factory.createIRI(personIRI  + "/" +  encoded_author.replaceAll("[^a-zA-Z0-9]",""));
+
+            statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(encoded_author)));
             statements.add(factory.createStatement(review, authorIRI, author));
             //IRI rating = factory.createIRI(reviewRatingIRI)
-            statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getScore())));
+            statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getRating())));
             statements.add(factory.createStatement(sub, reviewsIRI, review));
         }
 
         model.addAll(statements);
-
         RepositoryConnection repoConnection = repository.getConnection();
         repoConnection.add(model);
         repoConnection.close();

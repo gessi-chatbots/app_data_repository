@@ -4,28 +4,31 @@ import java.io.Serializable;
 
 public class Review implements Serializable {
 
+    private static int counter = 0;
     private String reviewId;
-    private String review;
+    private String snippet;
     private String reply;
-    private String userName;
-    private Integer score;
+    private String title;
+    private Integer rating;
     private String source;
 
 
     public String getReviewId() {
-        return reviewId;
+        if (reviewId != null)
+            return reviewId;
+        else return String.valueOf(++counter);
     }
 
     public void setReviewId(String reviewId) {
         this.reviewId = reviewId;
     }
 
-    public String getReview() {
-        return review;
+    public String getSnippet() {
+        return snippet;
     }
 
-    public void setReview(String review) {
-        this.review = review;
+    public void setSnippet(String snippet) {
+        this.snippet = snippet;
     }
 
     public String getReply() {
@@ -36,20 +39,20 @@ public class Review implements Serializable {
         this.reply = reply;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getTitle() {
+        return title;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public Integer getScore() {
-        return score;
+    public Integer getRating() {
+        return rating;
     }
 
-    public void setScore(Integer score) {
-        this.score = score;
+    public void setRating(Integer rating) {
+        this.rating = rating;
     }
 
     public String getSource() {
