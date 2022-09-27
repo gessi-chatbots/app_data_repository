@@ -16,7 +16,7 @@ public class App implements Serializable {
     private String android_version;
     private String genre;
     private String changelog;
-    private Developer[] developer;
+    private String developer;
     private String developer_site;
     private List<Review> reviews;
 
@@ -127,11 +127,11 @@ public class App implements Serializable {
         this.android_version = android_version;
     }
 
-    public Developer[] getDeveloper() {
+    public String getDeveloper() {
         return developer;
     }
 
-    public void setDeveloper(Developer[] developer) {
+    public void setDeveloper(String developer) {
         this.developer = developer;
     }
 

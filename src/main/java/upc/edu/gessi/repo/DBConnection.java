@@ -12,15 +12,13 @@ import upc.edu.gessi.repo.domain.Review;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class DBConnection {
     private final Repository repository;
 
+    private HashMap<String,String> user_map = new HashMap<>();
     private final ValueFactory factory = SimpleValueFactory.getInstance();
 
     //Data types
@@ -95,7 +93,7 @@ public class DBConnection {
             if (obj instanceof List<?>) {
                 for (Object s : Collections.unmodifiableList((List) obj)) {
                     Review review = (Review) s;
-                    Literal object = factory.createLiteral(review.getSnippet());
+                    Literal object = factory.createLiteral(review.getReview());
                     Statement statement = factory.createStatement(sub, pred, object);
                     model.add(statement);
                 }
@@ -117,13 +115,15 @@ public class DBConnection {
         String sanitizedName = app.getApp_name().replace(" ","_");
         //sanitizedName = sanitizedName.replace("&","and");
         sanitizedName = sanitizedName.replace("|","");
+        sanitizedName = sanitizedName.replace("[","");
+        sanitizedName = sanitizedName.replace("]","");
         IRI sub = factory.createIRI(appIRI + "/" + sanitizedName);
 
         ModelFactory modelFactory = new TreeModelFactory();
         Model model = modelFactory.createEmptyModel();
 
-        String developerName = app.getDeveloper()[0].getName().replace(" ","_");
-        String developerLink = app.getDeveloper()[0].getLink();
+        String developerName = app.getDeveloper().replace(" ","_");
+        //String developerLink = app.getDeveloper()[0].getLink();
 
 
 
@@ -155,21 +155,32 @@ public class DBConnection {
        for (Review r : app.getReviews()) {
             IRI review = factory.createIRI(reviewIRI + "/" + r.getReviewId());
             //normalize the text to utf-8 encoding
-            String reviewBody = r.getSnippet();
-            byte[] reviewBytes = reviewBody.getBytes();
-            String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
-            statements.add(factory.createStatement(review, reviewBodyIRI, factory.createLiteral(encoded_string)));
+            String reviewBody = r.getReview();
+            if (reviewBody != null) {
+                byte[] reviewBytes = reviewBody.getBytes();
+                String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
+                statements.add(factory.createStatement(review, reviewBodyIRI, factory.createLiteral(encoded_string)));
+            }
 
             //normalize the text to utf-8 encoding
-            String reviewAuthor = r.getTitle();
+            String reviewAuthor = r.getUserName();
             byte[] authorBytes = reviewAuthor.getBytes();
             String  encoded_author = new String(authorBytes, StandardCharsets.UTF_8);
-            IRI author = factory.createIRI(personIRI  + "/" +  encoded_author.replaceAll("[^a-zA-Z0-9]",""));
+            String  ascii_encoded_author = new String(authorBytes, StandardCharsets.US_ASCII);
+            String temp = ascii_encoded_author.replaceAll("[^a-zA-Z0-9]","");
+            IRI author;
+            if (temp.equals("")) {
+                String new_user_name = "User_"+user_map.size();
+                user_map.put(new_user_name,encoded_author);
+                author = factory.createIRI(personIRI  + "/" +  new_user_name);
+            } else {
+                author = factory.createIRI(personIRI + "/" + ascii_encoded_author.replaceAll("[^a-zA-Z0-9]", ""));
 
+            }
             statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(encoded_author)));
             statements.add(factory.createStatement(review, authorIRI, author));
             //IRI rating = factory.createIRI(reviewRatingIRI)
-            statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getRating())));
+            statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getScore())));
             statements.add(factory.createStatement(sub, reviewsIRI, review));
         }
 

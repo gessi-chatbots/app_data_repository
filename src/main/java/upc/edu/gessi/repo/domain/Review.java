@@ -6,10 +6,10 @@ public class Review implements Serializable {
 
     private static int counter = 0;
     private String reviewId;
-    private String snippet;
+    private String review;
     private String reply;
-    private String title;
-    private Integer rating;
+    private String userName;
+    private Integer score;
     private String source;
 
 
@@ -23,12 +23,12 @@ public class Review implements Serializable {
         this.reviewId = reviewId;
     }
 
-    public String getSnippet() {
-        return snippet;
+    public String getReview() {
+        return review;
     }
 
-    public void setSnippet(String snippet) {
-        this.snippet = snippet;
+    public void setReview(String review) {
+        this.review = review;
     }
 
     public String getReply() {
@@ -39,20 +39,20 @@ public class Review implements Serializable {
         this.reply = reply;
     }
 
-    public String getTitle() {
-        return title;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public Integer getRating() {
-        return rating;
+    public Integer getScore() {
+        return score;
     }
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
+    public void setScore(Integer score) {
+        this.score = score;
     }
 
     public String getSource() {
