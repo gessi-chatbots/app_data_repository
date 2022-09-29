@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class Review implements Serializable {
 
+    private static int counter = 0;
     private String reviewId;
     private String review;
     private String reply;
@@ -13,7 +14,9 @@ public class Review implements Serializable {
 
 
     public String getReviewId() {
-        return reviewId;
+        if (reviewId != null)
+            return reviewId;
+        else return String.valueOf(++counter);
     }
 
     public void setReviewId(String reviewId) {
