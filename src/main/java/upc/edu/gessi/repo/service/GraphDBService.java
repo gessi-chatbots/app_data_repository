@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.service;
 
+import org.apache.commons.text.WordUtils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModelFactory;
@@ -9,6 +10,8 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,8 @@ import java.util.*;
 
 @Service
 public class GraphDBService {
+
+    private Logger logger = LoggerFactory.getLogger(GraphDBService.class);
 
     @Autowired
     private NLFeatureService nlFeatureService;
@@ -157,15 +162,15 @@ public class GraphDBService {
         if (app.getPackage_name() != null) statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(app.getPackage_name())));
 
         if (app.getDescription() != null) {
-            addDescription(app, statements, sub, descriptionIRI, DocumentType.DESCRIPTION);
+            addDigitalDocument(app, statements, sub, descriptionIRI, DocumentType.DESCRIPTION);
             //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
         }
         if (app.getSummary() != null) {
-            addDescription(app, statements, sub, summaryIRI, DocumentType.SUMMARY);
+            addDigitalDocument(app, statements, sub, summaryIRI, DocumentType.SUMMARY);
             //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
         }
         if (app.getChangelog() != null) {
-            addDescription(app, statements, sub, changelogIRI, DocumentType.CHANGELOG);
+            addDigitalDocument(app, statements, sub, changelogIRI, DocumentType.CHANGELOG);
             //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
         }
 
@@ -177,7 +182,7 @@ public class GraphDBService {
         commitChanges(model, statements);
     }
 
-    private void addDescription(App app, List<Statement> statements, IRI sub, IRI pred, DocumentType documentType) {
+    private void addDigitalDocument(App app, List<Statement> statements, IRI sub, IRI pred, DocumentType documentType) {
         IRI appDescription = factory.createIRI(digitalDocumentIRI + "/" + app.getPackage_name() + "-" + documentType);
         statements.add(factory.createStatement(appDescription, textIRI, factory.createLiteral(app.getDescription())));
         statements.add(factory.createStatement(appDescription, disambiguatingDescriptionIRI, factory.createLiteral(documentType.getName())));
@@ -228,7 +233,7 @@ public class GraphDBService {
 
     private void addFeatures(App app, IRI sub, List<Statement> statements) {
         for (String feature : app.getFeatures()) {
-            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + feature.replaceAll(" ", ""));
+            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + WordUtils.capitalize(feature).replaceAll(" ", ""));
             statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature)));
             statements.add(factory.createStatement(sub, featuresIRI, featureIRI));
         }
@@ -259,8 +264,12 @@ public class GraphDBService {
             app.setFeatures(features);
             List<Statement> statements = new ArrayList<>();
             Model model = createEmptyModel();
-            addFeatures(app, documentIRI, statements);
-            commitChanges(model, statements);
+            try {
+                addFeatures(app, documentIRI, statements);
+                commitChanges(model, statements);
+            } catch (Exception e) {
+                logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
+            }
         }
     }
 

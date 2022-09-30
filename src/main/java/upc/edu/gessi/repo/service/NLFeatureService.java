@@ -22,6 +22,7 @@ public class NLFeatureService {
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(60);
 
     public List<String> getNLFeatures(String text) {
+        List<String> features = new ArrayList<>();
         //System.out.println(text);
         //TODO
         /** return nlFeatureService
@@ -31,7 +32,8 @@ public class NLFeatureService {
                 .retrieve()
                 .bodyToMono(String[].class)
                 .block(REQUEST_TIMEOUT); */
-        return new ArrayList<>();
+        features.add("test-feature");
+        return features;
     }
 
 
