@@ -1,18 +1,18 @@
-package upc.edu.gessi.repo;
+package upc.edu.gessi.repo.controller;
 
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
 import upc.edu.gessi.repo.domain.App;
+import upc.edu.gessi.repo.service.AppFinder;
+import upc.edu.gessi.repo.service.GraphDBService;
 
 public class RepoController {
 
-    private final AppFinder appFinder;
-    private final DBConnection dbConnection;
+    @Autowired
+    private AppFinder appFinder;
 
-    public RepoController(String url) {
-        this.appFinder = new AppFinder(url);
-        this.dbConnection = new DBConnection(url);
-
-    }
+    @Autowired
+    private GraphDBService dbConnection;
 
     public String getAppInfo(String app) throws ClassNotFoundException, IllegalAccessException {
         App result = appFinder.retrieveAppByName(app);
