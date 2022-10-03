@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.domain.App;
+import upc.edu.gessi.repo.domain.AppCategory;
 import upc.edu.gessi.repo.domain.DocumentType;
 import upc.edu.gessi.repo.domain.Review;
 
@@ -46,6 +47,7 @@ public class GraphDBService {
 
     //App objects
     IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
+    IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
     IRI descriptionIRI = factory.createIRI("https://schema.org/description");
     IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
     IRI textIRI = factory.createIRI("https://schema.org/text");
@@ -155,6 +157,9 @@ public class GraphDBService {
         statements.add(factory.createStatement(sub,authorIRI,dev));
 
         //some fields are not populated, so we check them to avoid null pointers.
+        for (AppCategory category : app.getCategories()) {
+            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(String.valueOf(category))));
+        }
         if (app.getApp_name() != null) {
             String sanitizedName = sanitizeString(app.getApp_name());
             statements.add(factory.createStatement(sub, nameIRI, factory.createLiteral(sanitizedName)));
@@ -233,7 +238,7 @@ public class GraphDBService {
 
     private void addFeatures(App app, IRI sub, List<Statement> statements) {
         for (String feature : app.getFeatures()) {
-            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + WordUtils.capitalize(feature).replaceAll(" ", ""));
+            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + WordUtils.capitalize(feature).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", ""));
             statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature)));
             statements.add(factory.createStatement(sub, featuresIRI, featureIRI));
         }

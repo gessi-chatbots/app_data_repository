@@ -1,13 +1,21 @@
 package upc.edu.gessi.repo.service;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.SerializableEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import upc.edu.gessi.repo.domain.App;
-import upc.edu.gessi.repo.domain.Document;
-import upc.edu.gessi.repo.domain.DocumentType;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -16,25 +24,51 @@ import java.util.List;
 @Service
 public class NLFeatureService {
 
+    private Logger logger = LoggerFactory.getLogger(NLFeatureService.class);
+
     @Value("${nl-feature-extraction.url}")
     private String nlFeatureExtractionEndpoint;
 
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(60);
-
     public List<String> getNLFeatures(String text) {
+        HttpClient httpClient = HttpClientBuilder.create().build();
         List<String> features = new ArrayList<>();
-        //System.out.println(text);
-        //TODO
-        /** return nlFeatureService
-                .post()
-                .uri("/extract-features")
-                .bodyValue(document)
-                .retrieve()
-                .bodyToMono(String[].class)
-                .block(REQUEST_TIMEOUT); */
-        features.add("test-feature");
-        return features;
+        try {
+            HttpPost request = new HttpPost(nlFeatureExtractionEndpoint);
+            request.addHeader("Content-Type", "application/json");
+
+            JSONArray array = new JSONArray();
+            array.put(escape(text));
+            request.setEntity(new StringEntity(array.toString()));
+            HttpResponse response = httpClient.execute(request);
+
+            JSONArray responseBody = new JSONArray(EntityUtils.toString(response.getEntity()));
+
+            for (int i = 0; i < responseBody.length(); ++i) {
+                features.add(responseBody.getString(i));
+            }
+
+        } catch (Exception ex) {
+            logger.error("There was some error with feature extraction");
+        } finally {
+            return features;
+        }
     }
 
+    /**
+     * https://stackoverflow.com/questions/18898773/java-escape-json-string
+     * @param raw
+     * @return
+     */
+    private String escape(String raw) {
+        String escaped = raw;
+        escaped = escaped.replace("\\\\", "");
+        escaped = escaped.replace("\"", "");
+        escaped = escaped.replace("\b", "");
+        escaped = escaped.replace("\f", "");
+        escaped = escaped.replace("\n", ". ");
+        escaped = escaped.replace("\r", ". ");
+        escaped = escaped.replace("\t", " ");
+        return escaped;
+    }
 
 }
