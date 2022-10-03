@@ -54,21 +54,8 @@ public class NLFeatureService {
         }
     }
 
-    /**
-     * https://stackoverflow.com/questions/18898773/java-escape-json-string
-     * @param raw
-     * @return
-     */
-    private String escape(String raw) {
-        String escaped = raw;
-        escaped = escaped.replace("\\\\", "");
-        escaped = escaped.replace("\"", "");
-        escaped = escaped.replace("\b", "");
-        escaped = escaped.replace("\f", "");
-        escaped = escaped.replace("\n", ". ");
-        escaped = escaped.replace("\r", ". ");
-        escaped = escaped.replace("\t", " ");
-        return escaped;
+    private String escape(String text) {
+        return text.replaceAll("[^ -~]+", "");
     }
 
 }
