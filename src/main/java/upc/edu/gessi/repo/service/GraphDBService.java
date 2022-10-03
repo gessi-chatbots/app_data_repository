@@ -162,15 +162,15 @@ public class GraphDBService {
         if (app.getPackage_name() != null) statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(app.getPackage_name())));
 
         if (app.getDescription() != null) {
-            addDigitalDocument(app, statements, sub, descriptionIRI, DocumentType.DESCRIPTION);
+            addDigitalDocument(app.getPackage_name(), app.getDescription(), statements, sub, descriptionIRI, DocumentType.DESCRIPTION);
             //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
         }
         if (app.getSummary() != null) {
-            addDigitalDocument(app, statements, sub, summaryIRI, DocumentType.SUMMARY);
+            addDigitalDocument(app.getPackage_name(), app.getSummary(), statements, sub, summaryIRI, DocumentType.SUMMARY);
             //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
         }
         if (app.getChangelog() != null) {
-            addDigitalDocument(app, statements, sub, changelogIRI, DocumentType.CHANGELOG);
+            addDigitalDocument(app.getPackage_name(), app.getChangelog(), statements, sub, changelogIRI, DocumentType.CHANGELOG);
             //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
         }
 
@@ -182,9 +182,9 @@ public class GraphDBService {
         commitChanges(model, statements);
     }
 
-    private void addDigitalDocument(App app, List<Statement> statements, IRI sub, IRI pred, DocumentType documentType) {
-        IRI appDescription = factory.createIRI(digitalDocumentIRI + "/" + app.getPackage_name() + "-" + documentType);
-        statements.add(factory.createStatement(appDescription, textIRI, factory.createLiteral(app.getDescription())));
+    private void addDigitalDocument(String packageName, String text, List<Statement> statements, IRI sub, IRI pred, DocumentType documentType) {
+        IRI appDescription = factory.createIRI(digitalDocumentIRI + "/" + packageName + "-" + documentType);
+        statements.add(factory.createStatement(appDescription, textIRI, factory.createLiteral(text)));
         statements.add(factory.createStatement(appDescription, disambiguatingDescriptionIRI, factory.createLiteral(documentType.getName())));
         statements.add(factory.createStatement(sub, pred, appDescription));
     }
