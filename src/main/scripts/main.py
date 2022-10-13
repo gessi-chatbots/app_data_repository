@@ -18,3 +18,18 @@ for i, app in enumerate(data):
         with open('error.json', 'w', encoding='utf-8') as f:
             print(data_to_send, file=f)
         print("Error")
+
+data = json.load(open('representative-apps.json', 'r', encoding='utf-8'))
+headers = {
+    'Content-type': 'application/json'
+}
+
+for i, app in enumerate(data):
+    data_to_send = json.dumps([app], indent=4)
+    req = requests.post(url, data_to_send, headers=headers)
+    if req.status_code == 200:
+        print("Done app #", i + 1)
+    else:
+        with open('error.json', 'w', encoding='utf-8') as f:
+            print(data_to_send, file=f)
+        print("Error")

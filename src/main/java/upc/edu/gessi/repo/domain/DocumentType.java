@@ -8,7 +8,8 @@ public enum DocumentType {
     DESCRIPTION("description"),
     CHANGELOG("changelog"),
     REVIEWS("reviews"),
-    USER_ANNOTATED("user-annotated");
+    USER_ANNOTATED("user-annotated"),
+    ALL("all");
 
     private final String name;
 

@@ -5,7 +5,6 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModelFactory;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -15,10 +14,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.domain.App;
-import upc.edu.gessi.repo.domain.AppCategory;
-import upc.edu.gessi.repo.domain.DocumentType;
-import upc.edu.gessi.repo.domain.Review;
+import upc.edu.gessi.repo.domain.*;
+import upc.edu.gessi.repo.domain.graph.*;
+import upc.edu.gessi.repo.utils.Utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -33,38 +31,47 @@ public class GraphDBService {
     @Autowired
     private NLFeatureService nlFeatureService;
 
+    @Autowired
+    private InductiveKnowledgeService inductiveKnowledgeService;
+
     private final Repository repository;
 
     private HashMap<String,String> user_map = new HashMap<>();
     private final ValueFactory factory = SimpleValueFactory.getInstance();
 
+    private final String prefix = "https://schema.org/";
+
     //Data types
-    IRI appIRI = factory.createIRI("https://schema.org/MobileApplication");
-    IRI reviewIRI = factory.createIRI("https://schema.org/Review");
-    IRI personIRI = factory.createIRI("https://schema.org/Person");
-    IRI definedTermIRI = factory.createIRI("https://schema.org/DefinedTerm");
-    IRI digitalDocumentIRI = factory.createIRI("https://schema.org/DigitalDocument");
+    private IRI appIRI = factory.createIRI("https://schema.org/MobileApplication");
+    private IRI reviewIRI = factory.createIRI("https://schema.org/Review");
+    private IRI personIRI = factory.createIRI("https://schema.org/Person");
+    private IRI definedTermIRI = factory.createIRI("https://schema.org/DefinedTerm");
+    private IRI digitalDocumentIRI = factory.createIRI("https://schema.org/DigitalDocument");
 
     //App objects
-    IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
-    IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
-    IRI descriptionIRI = factory.createIRI("https://schema.org/description");
-    IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
-    IRI textIRI = factory.createIRI("https://schema.org/text");
-    IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
-    IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
-    IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
-    IRI reviewsIRI = factory.createIRI("https://schema.org/review");
+    private IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
+    private IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
+    private IRI descriptionIRI = factory.createIRI("https://schema.org/description");
+    private  IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
+    private IRI textIRI = factory.createIRI("https://schema.org/text");
+    private IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
+    private  IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
+    private  IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
+    private  IRI reviewsIRI = factory.createIRI("https://schema.org/review");
+    private IRI reviewDocumentIRI = factory.createIRI("https://schema.org/featureList");
 
     //Review objects
-    IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
+    private  IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
 
-    IRI authorIRI = factory.createIRI("https://schema.org/author");
-    IRI reviewRatingIRI = factory.createIRI("https://schema.org/reviewRating");
+    private  IRI authorIRI = factory.createIRI("https://schema.org/author");
+    private  IRI reviewRatingIRI = factory.createIRI("https://schema.org/reviewRating");
 
     //Person objects
-    IRI nameIRI = factory.createIRI("https://schema.org/name");
-    IRI developerIRI = factory.createIRI("https://schema.org/Organization");
+    private  IRI nameIRI = factory.createIRI("https://schema.org/name");
+    private  IRI developerIRI = factory.createIRI("https://schema.org/Organization");
+
+    //Feature object
+    private IRI synonymIRI = factory.createIRI("https://schema.org/sameAs");
 
     public GraphDBService(@Value("${db.url}") String url) {
         repository = new HTTPRepository(url);
@@ -77,9 +84,9 @@ public class GraphDBService {
     }
 
     private void commitChanges(Model model, List<Statement> statements) {
-        model.addAll(statements);
+        //model.addAll(statements);
         RepositoryConnection repoConnection = repository.getConnection();
-        repoConnection.add(model);
+        repoConnection.add(statements);
         repoConnection.close();
     }
 
@@ -161,7 +168,7 @@ public class GraphDBService {
             statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(String.valueOf(category))));
         }
         if (app.getApp_name() != null) {
-            String sanitizedName = sanitizeString(app.getApp_name());
+            String sanitizedName = Utils.sanitizeString(app.getApp_name());
             statements.add(factory.createStatement(sub, nameIRI, factory.createLiteral(sanitizedName)));
         }
         if (app.getPackage_name() != null) statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(app.getPackage_name())));
@@ -178,6 +185,8 @@ public class GraphDBService {
             addDigitalDocument(app.getPackage_name(), app.getChangelog(), statements, sub, changelogIRI, DocumentType.CHANGELOG);
             //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
         }
+        //Adding reviewDocumentPlaceholder
+        addDigitalDocument(app.getPackage_name(), "Aggregated NL data for app " + app.getApp_name(), statements, sub, reviewDocumentIRI, DocumentType.REVIEWS);
 
         //Adding all features - given features are injected at creation time, they are user annotated
         addFeatures(app, sub, statements);
@@ -192,14 +201,6 @@ public class GraphDBService {
         statements.add(factory.createStatement(appDescription, textIRI, factory.createLiteral(text)));
         statements.add(factory.createStatement(appDescription, disambiguatingDescriptionIRI, factory.createLiteral(documentType.getName())));
         statements.add(factory.createStatement(sub, pred, appDescription));
-    }
-
-    private String sanitizeString(String name) {
-        String sanitizedName = name.replace(" ","_");
-        sanitizedName = sanitizedName.replace("|","");
-        sanitizedName = sanitizedName.replace("[","");
-        sanitizedName = sanitizedName.replace("]","");
-        return sanitizedName;
     }
 
     private void addReviews(App app, IRI sub, List<Statement> statements) {
@@ -249,38 +250,295 @@ public class GraphDBService {
      */
 
     public void extractFeaturesByDocument(DocumentType documentType) {
-        RepositoryConnection repoConnection = repository.getConnection();
-        String predicate1 = "https://schema.org/" + documentType.getName();
+        String predicateQueue = null;
+        switch(documentType) {
+            case SUMMARY -> predicateQueue = "abstract";
+            case CHANGELOG -> predicateQueue = "releaseNotes";
+            default -> predicateQueue = "description";
+        }
+        String predicate1 = "https://schema.org/" + predicateQueue;
         String predicate2 = "https://schema.org/text";
         String query = "SELECT ?subject ?object ?text WHERE { ?subject <" + predicate1 + "> ?object . ?object <"+ predicate2 +"> ?text}";
-        TupleQueryResult result = runSparqlQuery(repoConnection, query);
+        executeFeatureQuery(repository.getConnection(), query);
+    }
+
+    public void extractFeaturesFromReviews() {
+        String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
+                "?object <https://schema.org/reviewBody> ?text}";
+
+        executeFeatureQuery(repository.getConnection(), query);
+    }
+
+    private final int BATCH_SIZE = 2;
+
+    private void executeFeatureQuery(RepositoryConnection repoConnection, String query) {
+        TupleQueryResult result = Utils.runSparqlQuery(repoConnection, query);
+
+        List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
+        List<IRI> source = new ArrayList<>();
+
+        int count = 1;
 
         while (result.hasNext()) {
             BindingSet bindings = result.next();
 
             IRI appIRI = (IRI) bindings.getValue("subject");
             IRI documentIRI = (IRI) bindings.getValue("object");
-            String text = String.valueOf(bindings.getValue("text"));
+            String text = bindings.getValue("text").stringValue();
 
-            List<String> features = nlFeatureService.getNLFeatures(text);
+            analyzedDocuments.add(new AnalyzedDocument(documentIRI.toString(), text));
 
-            //TODO insert features as nodes
+            if (documentIRI.toString().contains(reviewIRI.toString())) {
+                String reviewSource = this.digitalDocumentIRI.toString()
+                        + appIRI.toString().replace(this.appIRI.toString(), "")
+                        + "-" + DocumentType.REVIEWS;
+                documentIRI = factory.createIRI(reviewSource);
+            }
+
+            source.add(documentIRI);
+
+            if (count % BATCH_SIZE == 0) {
+                runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
+
+                analyzedDocuments = new ArrayList<>();
+                source = new ArrayList<>();
+            }
+
+            ++count;
+        }
+
+        // Run last batch
+        if (count % BATCH_SIZE != 1)
+            runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
+
+    }
+
+    private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
+        List<AnalyzedDocument> features = nlFeatureService.getNLFeatures(analyzedDocuments);
+        Model model = createEmptyModel();
+        List<Statement> statements = new ArrayList<>();
+
+        for (int i = 0; i < features.size(); ++i) {
             App app = new App();
-            app.setFeatures(features);
-            List<Statement> statements = new ArrayList<>();
-            Model model = createEmptyModel();
+            app.setFeatures(features.get(i).getFeatures());
             try {
-                addFeatures(app, documentIRI, statements);
-                commitChanges(model, statements);
+                addFeatures(app, source.get(i), statements);
             } catch (Exception e) {
                 logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
             }
         }
+        commitChanges(model, statements);
+        logger.info(count + " documents already processed. Keep going...");
     }
 
-    private TupleQueryResult runSparqlQuery(RepositoryConnection repositoryConnection, String query) {
-        TupleQuery tupleQuery = repositoryConnection.prepareTupleQuery(query);
-        return tupleQuery.evaluate();
+    public List<GraphApp> getAllApps() {
+        List<GraphApp> apps = new ArrayList<>();
+
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "select ?app ?identifier ?name (GROUP_CONCAT(?applicationCategory;separator=\",\") As ?categories) where {\n" +
+                "    ?app schema:identifier ?identifier ;\n" +
+                "         schema:name ?name ;\n" +
+                "         schema:applicationCategory ?applicationCategory\n" +
+                "} group by ?app ?identifier ?name";
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+            IRI app = (IRI) bindings.getValue("app");
+            String identifier = bindings.getValue("identifier").stringValue();
+            String name = bindings.getValue("name").stringValue();
+            String[] categories = bindings.getValue("categories").stringValue().split(",");
+
+            GraphApp graphApp = new GraphApp(app.toString(), identifier, name, categories);
+            apps.add(graphApp);
+        }
+
+        return apps;
+    }
+
+    public List<GraphDocument> getDocumentsByApp(String app) {
+        List<GraphDocument> apps = new ArrayList<>();
+
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "select * where {\n" +
+                "    <" + app + "> (schema:description | schema:abstract | schema:releaseNotes) ?document .\n" +
+                "    ?document schema:text ?text ;\n" +
+                "              schema:disambiguatingDescription ?disDescription \n" +
+                "} ";
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+            IRI document = (IRI) bindings.getValue("document");
+            String text = bindings.getValue("text").stringValue();
+            String disDescription = bindings.getValue("disDescription").stringValue();
+
+
+            GraphDocument graphDocument = new GraphDocument(document.toString(), text, disDescription);
+            apps.add(graphDocument);
+        }
+
+        return apps;
+    }
+
+    private List<GraphFeature> getFeatures(String nodeId) {
+        List<GraphFeature> features = new ArrayList<>();
+
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "select ?feature ?name where {\n" +
+                "    <"+ nodeId +"> schema:feature ?keywords .\n" +
+                "    ?feature schema:name ?name\n" +
+                "} ";
+
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+            IRI feature = (IRI) bindings.getValue("feature");
+            String name = bindings.getValue("name").stringValue();
+
+            GraphFeature graphFeature = new GraphFeature(feature.toString(), name);
+            features.add(graphFeature);
+        }
+
+        return features;
+
+    }
+
+    private List<GraphReview> getReviews(String nodeId) {
+        List<GraphReview> graphReviews = new ArrayList<>();
+
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "select ?review ?rating ?reviewBody where {\n" +
+                "    <" + nodeId + "> schema:review ?review .\n" +
+                "    ?review schema:reviewRating ?rating ;\n" +
+                "            schema:reviewBody ?reviewBody\n" +
+                "} ";
+
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+            IRI review = (IRI) bindings.getValue("review");
+            Integer reviewRating = Integer.valueOf(bindings.getValue("rating").stringValue());
+            String reviewBody = bindings.getValue("reviewBody").stringValue();
+
+
+            GraphReview graphFeature = new GraphReview(review.toString(), reviewRating, reviewBody);
+            graphReviews.add(graphFeature);
+        }
+
+        return graphReviews;
+    }
+
+    public void getAppsWithFeatures() {
+
+        List<GraphApp> apps = getAllApps();
+
+        int count = 1;
+
+        for (GraphApp app : apps) {
+            List<GraphNode> nodes = new ArrayList<>();
+            List<GraphEdge> edges = new ArrayList<>();
+
+            nodes.add(app);
+
+            logger.info("Transforming app #" + count + ": " + app.getIdentifier());
+            ++count;
+            //Add documents
+            List<GraphDocument> graphDocuments = getDocumentsByApp(app.getNodeId());
+            nodes.addAll(graphDocuments);
+            for (GraphDocument document : graphDocuments) {
+                edges.add(new GraphEdge(app.getNodeId(), document.getNodeId()));
+
+                List<GraphFeature> documentFeatures = getFeatures(document.getNodeId());
+                nodes.addAll(documentFeatures);
+                for (GraphFeature feature : documentFeatures) {
+                    edges.add(new GraphEdge(document.getNodeId(), feature.getNodeId()));
+                }
+            }
+
+            //Add annotated features
+            List<GraphFeature> annotatedFeatures = getFeatures(app.getNodeId());
+            nodes.addAll(annotatedFeatures);
+            for (GraphFeature graphAnnotatedFeature : annotatedFeatures) {
+                edges.add(new GraphEdge(app.getNodeId(), graphAnnotatedFeature.getNodeId()));
+            }
+
+            //Add reviews
+            List<GraphReview> graphReviews = getReviews(app.getNodeId());
+            nodes.addAll(graphReviews);
+            for (GraphReview graphReview : graphReviews) {
+                edges.add(new GraphEdge(app.getNodeId(), graphReview.getNodeId()));
+
+                List<GraphFeature> documentFeatures = getFeatures(graphReview.getNodeId());
+                nodes.addAll(documentFeatures);
+                for (GraphFeature feature : documentFeatures) {
+                    edges.add(new GraphEdge(graphReview.getNodeId(), feature.getNodeId()));
+                }
+            }
+            inductiveKnowledgeService.addNodes(nodes);
+            inductiveKnowledgeService.addEdges(edges);
+        }
+        //return new Graph(nodes, edges);
+    }
+
+    public List<IRI> getAllFeatures() {
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "SELECT distinct ?documentText WHERE {\n" +
+                "    ?app (schema:description | schema:abstract | schema:releaseNotes | schema:featureList) ?documentID .\n" +
+                "    ?documentID schema:keywords ?documentText\n" +
+                "}";
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        List<IRI> features = new ArrayList<>();
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            features.add((IRI) bindings.getValue("documentText"));
+        }
+        return features;
+    }
+
+    private double synonymThreshold = 0.5;
+
+    public void connectFeatureWithSynonyms(IRI feature) {
+        String query = "PREFIX :<http://www.ontotext.com/graphdb/similarity/>\n" +
+                "PREFIX inst:<http://www.ontotext.com/graphdb/similarity/instance/>\n" +
+                "PREFIX pubo: <http://ontology.ontotext.com/publishing#>\n" +
+                "\n" +
+                "SELECT distinct ?documentID ?score {\n" +
+                "    ?search a inst:feature_index ;\n" +
+                "        :searchDocumentID \n" +
+                "        <"+ feature.toString() + ">;\n" +
+                "        :searchParameters \"\";\n" +
+                "        :documentResult ?result .\n" +
+                "    ?result :value ?documentID ;\n" +
+                "            :score ?score.\n" +
+                "}\n";
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+
+        List<IRI> connectedFeatures = new ArrayList<>();
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if (Double.parseDouble(bindings.getValue("score").stringValue()) >= synonymThreshold)
+                connectedFeatures.add((IRI) bindings.getValue("documentID"));
+        }
+
+        List<Statement> statements = new ArrayList<>();
+        //TODO use term-by-term query to check if terms are also synonyms
+        for (int i = 1; i < connectedFeatures.size(); ++i) {
+            statements.add(factory.createStatement(feature, synonymIRI, connectedFeatures.get(i)));
+        }
+        commitChanges(createEmptyModel(), statements);
     }
 
 }
