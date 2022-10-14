@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.domain.App;
 import upc.edu.gessi.repo.domain.DocumentType;
 import upc.edu.gessi.repo.domain.SimilarityAlgorithm;
+import upc.edu.gessi.repo.domain.SimilarityApp;
 import upc.edu.gessi.repo.service.AppFinder;
 import upc.edu.gessi.repo.service.GraphDBService;
 import upc.edu.gessi.repo.service.NLFeatureService;
@@ -16,6 +17,7 @@ import upc.edu.gessi.repo.service.SimilarityService;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootApplication
 @RestController
@@ -103,8 +105,10 @@ public class AppGraphRepoApplication {
 	}
 
 	@GetMapping("getTopKSimilarApps")
-	public void getTopKSimilarApps(@RequestParam String packageA, @RequestParam String packageB, @RequestParam SimilarityAlgorithm algorithm) {
-		similarityService.getTopKSimilarApps(packageA, packageB, algorithm);
+	public Map<String, List<SimilarityApp>> getTopKSimilarApps(@RequestBody List<String> apps,
+															   @RequestParam Integer k,
+															   @RequestParam DocumentType documentType) {
+		return similarityService.getTopKSimilarApps(apps, k, documentType);
 	}
 
 }

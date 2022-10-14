@@ -5,11 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import upc.edu.gessi.repo.domain.DocumentType;
 import upc.edu.gessi.repo.domain.SimilarityAlgorithm;
-import upc.edu.gessi.repo.domain.graph.Graph;
-import upc.edu.gessi.repo.utils.Utils;
+import upc.edu.gessi.repo.domain.SimilarityApp;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SimilarityService {
@@ -27,8 +29,13 @@ public class SimilarityService {
 
     }
 
-    public void getTopKSimilarApps(String packageA, String packageB, SimilarityAlgorithm algorithm) {
-
+    public Map<String, List<SimilarityApp>> getTopKSimilarApps(List<String> apps, int k, DocumentType documentType) {
+        Map<String, List<SimilarityApp>> res = new HashMap<>();
+        for (String app : apps) {
+            List<SimilarityApp> similarApps = graphDBService.getTopKSimilarApps(app, k, documentType);
+            res.put("https://schema.org/MobileApplication/" + app, similarApps);
+        }
+        return res;
     }
 
     public void computeFeatureSimilarity() {

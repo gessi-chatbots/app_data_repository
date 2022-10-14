@@ -541,4 +541,29 @@ public class GraphDBService {
         commitChanges(createEmptyModel(), statements);
     }
 
+    public List<SimilarityApp> getTopKSimilarApps(String app, int k, DocumentType documentType) {
+        String query = "PREFIX :<http://www.ontotext.com/graphdb/similarity/>\n" +
+                "PREFIX inst:<http://www.ontotext.com/graphdb/similarity/instance/>\n" +
+                "PREFIX pubo: <http://ontology.ontotext.com/publishing#>\n" +
+                "\n" +
+                "SELECT ?documentID (group_concat(distinct ?category;separator=\";\") as ?categories) ?score {\n" +
+                "    ?search a inst:apps_by_" + documentType.getName() + " ;\n" +
+                "        :searchDocumentID <https://schema.org/MobileApplication/" + app + ">;\n" +
+                "        :searchParameters \"-numsearchresults " + k +" \";\n" +
+                "        :documentResult ?result .\n" +
+                "    ?result :value ?documentID ;\n" +
+                "            :score ?score.\n" +
+                "    ?documentID <https://schema.org/applicationCategory> ?category\n" +
+                "} GROUP BY ?documentID ?score";
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+
+        List<SimilarityApp> similarApps = new ArrayList<>();
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            similarApps.add(new SimilarityApp(bindings.getValue("categories").stringValue().split(";"),
+                    bindings.getValue("documentID").stringValue(),
+                    Double.parseDouble(bindings.getValue("score").stringValue())));
+        }
+        return similarApps;
+    }
 }
