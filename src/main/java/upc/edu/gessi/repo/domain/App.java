@@ -19,6 +19,7 @@ public class App implements Serializable {
     private String developer;
     private String developer_site;
     private List<Review> reviews;
+    private List<AppCategory> categories;
 
     public List<String> getFeatures() {
         //otherwise it leads to problems when inserting the app
@@ -141,6 +142,14 @@ public class App implements Serializable {
 
     public void setDeveloper_site(String developer_site) {
         this.developer_site = developer_site;
+    }
+
+    public List<AppCategory> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<AppCategory> categories) {
+        this.categories = categories;
     }
 }
 

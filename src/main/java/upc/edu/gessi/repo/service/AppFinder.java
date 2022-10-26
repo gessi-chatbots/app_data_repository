@@ -1,4 +1,4 @@
-package upc.edu.gessi.repo;
+package upc.edu.gessi.repo.service;
 
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -7,7 +7,9 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.domain.App;
+import upc.edu.gessi.repo.domain.Review;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -15,15 +17,39 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Service
+@Deprecated
 public class AppFinder {
 
-    private String rd4jEndpoint;
     private final Repository repository;
 
-    public AppFinder(String repoURL) {
-        this.rd4jEndpoint = repoURL;
-        repository = new HTTPRepository(this.rd4jEndpoint);
+    public AppFinder(@org.springframework.beans.factory.annotation.Value("${db.url}") String url) {
+        repository = new HTTPRepository(url);
     }
+
+    public List<App> retrieveAllApps()  throws ClassNotFoundException, IllegalAccessException {
+        RepositoryConnection repoConnection = repository.getConnection();
+        String query = "PREFIX gessi: <https://schema.org/MobileApplication/> \n" +
+                "\n" +
+                "SELECT ?description\n" +
+                "WHERE\n" +
+                "{ gessi:Google_Maps gessi:description ?description . }\n" ;
+        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
+        TupleQueryResult result = tupleQuery.evaluate();
+
+        Class<?> c = Class.forName("upc.edu.gessi.repo.domain.App");
+        Field[] fieldList = c.getDeclaredFields();
+
+        List<App> apps = new ArrayList<>();
+        while (result.hasNext()) {
+           //TODO
+            BindingSet bindings = result.next();
+            App app = new App();
+        }
+        repoConnection.close();
+        return apps;
+    }
+
     public App retrieveAppByName(String appName) throws ClassNotFoundException, IllegalAccessException {
         RepositoryConnection repoConnection = repository.getConnection();
         String query = "PREFIX gessi: <http://gessi.upc.edu/app/> SELECT ?x ?y ?z WHERE {gessi:"+appName+" ?y ?z}" ;
@@ -78,12 +104,5 @@ public class AppFinder {
             resultList.add(valueOfZ.stringValue());
         }
         return resultList;
-    }
-    public String getRd4jEndpoint() {
-        return rd4jEndpoint;
-    }
-
-    public void setRd4jEndpoint(String rd4jEndpoint) {
-        this.rd4jEndpoint = rd4jEndpoint;
     }
 }
