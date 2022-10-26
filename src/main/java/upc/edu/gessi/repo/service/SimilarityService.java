@@ -69,11 +69,11 @@ public class SimilarityService {
         }
     }
 
-    public void computeFeatureSimilarity() {
+    public void computeFeatureSimilarity(double synonymThreshold) {
         List<IRI> features = graphDBService.getAllFeatures();
         int count = 0;
         for (IRI feature : features) {
-            graphDBService.connectFeatureWithSynonyms(feature);
+            graphDBService.connectFeatureWithSynonyms(feature, synonymThreshold);
             ++count;
             if (count % 100 == 0) logger.info(count + " apps out of " + features.size());
         }

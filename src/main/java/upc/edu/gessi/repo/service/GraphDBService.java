@@ -249,7 +249,7 @@ public class GraphDBService {
      * Deductive Methods
      */
 
-    public void extractFeaturesByDocument(DocumentType documentType) {
+    public void extractFeaturesByDocument(DocumentType documentType, int batchSize) {
         String predicateQueue = null;
         switch(documentType) {
             case SUMMARY -> predicateQueue = "abstract";
@@ -259,57 +259,67 @@ public class GraphDBService {
         String predicate1 = "https://schema.org/" + predicateQueue;
         String predicate2 = "https://schema.org/text";
         String query = "SELECT ?subject ?object ?text WHERE { ?subject <" + predicate1 + "> ?object . ?object <"+ predicate2 +"> ?text}";
-        executeFeatureQuery(repository.getConnection(), query);
+        executeFeatureQuery(repository.getConnection(), query, batchSize, 0);
     }
 
-    public void extractFeaturesFromReviews() {
+    public int extractFeaturesFromReviews(int batchSize, int from) {
         String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
                 "?object <https://schema.org/reviewBody> ?text}";
 
-        executeFeatureQuery(repository.getConnection(), query);
+        return executeFeatureQuery(repository.getConnection(), query, batchSize, from);
     }
 
-    private final int BATCH_SIZE = 2;
+    private int count;
 
-    private void executeFeatureQuery(RepositoryConnection repoConnection, String query) {
+    public int getCount() {return count;}
+
+    private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
         TupleQueryResult result = Utils.runSparqlQuery(repoConnection, query);
 
         List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
         List<IRI> source = new ArrayList<>();
 
-        int count = 1;
+        count = 1;
 
         while (result.hasNext()) {
             BindingSet bindings = result.next();
+            if (count >= from) {
+                try {
 
-            IRI appIRI = (IRI) bindings.getValue("subject");
-            IRI documentIRI = (IRI) bindings.getValue("object");
-            String text = bindings.getValue("text").stringValue();
+                    IRI appIRI = (IRI) bindings.getValue("subject");
+                    IRI documentIRI = (IRI) bindings.getValue("object");
+                    String text = bindings.getValue("text").stringValue();
 
-            analyzedDocuments.add(new AnalyzedDocument(documentIRI.toString(), text));
+                    analyzedDocuments.add(new AnalyzedDocument(documentIRI.toString(), text));
 
-            if (documentIRI.toString().contains(reviewIRI.toString())) {
-                String reviewSource = this.digitalDocumentIRI.toString()
-                        + appIRI.toString().replace(this.appIRI.toString(), "")
-                        + "-" + DocumentType.REVIEWS;
-                documentIRI = factory.createIRI(reviewSource);
+                    if (documentIRI.toString().contains(reviewIRI.toString())) {
+                        String reviewSource = this.digitalDocumentIRI.toString()
+                                + appIRI.toString().replace(this.appIRI.toString(), "")
+                                + "-" + DocumentType.REVIEWS;
+                        documentIRI = factory.createIRI(reviewSource);
+                    }
+
+                    source.add(documentIRI);
+
+                    if (count % batchSize == 0) {
+                        runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
+
+                        analyzedDocuments = new ArrayList<>();
+                        source = new ArrayList<>();
+                    }
+                } catch (Exception e) {
+                    return count;
+                }
+
             }
-
-            source.add(documentIRI);
-
-            if (count % BATCH_SIZE == 0) {
-                runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
-
-                analyzedDocuments = new ArrayList<>();
-                source = new ArrayList<>();
-            }
-
             ++count;
         }
 
         // Run last batch
-        if (count % BATCH_SIZE != 1)
+        if (count % batchSize != 1)
             runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
+
+        return -1;
 
     }
 
@@ -507,9 +517,7 @@ public class GraphDBService {
         return features;
     }
 
-    private double synonymThreshold = 0.5;
-
-    public void connectFeatureWithSynonyms(IRI feature) {
+    public void connectFeatureWithSynonyms(IRI feature, double synonymThreshold) {
         String query = "PREFIX :<http://www.ontotext.com/graphdb/similarity/>\n" +
                 "PREFIX inst:<http://www.ontotext.com/graphdb/similarity/instance/>\n" +
                 "PREFIX pubo: <http://ontology.ontotext.com/publishing#>\n" +

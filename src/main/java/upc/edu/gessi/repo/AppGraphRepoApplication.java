@@ -65,34 +65,46 @@ public class AppGraphRepoApplication {
 	 * @param documentType
 	 */
 
+	@GetMapping("/getLastReview")
+	public int getLastReview() {
+		return dbConnection.getCount();
+	}
+
 	@PostMapping("/derivedNLFeatures")
-	public void derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType) {
+	public int derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType,
+								  @RequestParam(value = "batch-size") Integer batchSize,
+								  @RequestParam(value = "from") Integer from) {
 		logger.info("Generating derived deductive knowledge from natural language documents");
 		logger.info("Document type: " + documentType);
 		if (documentType.equals(DocumentType.REVIEWS)) {
 			logger.info("Deducting features from reviews...");
-			dbConnection.extractFeaturesFromReviews();
+			try {
+				return dbConnection.extractFeaturesFromReviews(batchSize, from);
+			} catch (Exception e) {
+				return dbConnection.getCount();
+			}
 		} else if (!documentType.equals(DocumentType.ALL)) {
 			logger.info("Deducting features from " + documentType.getName());
-			dbConnection.extractFeaturesByDocument(documentType);
+			dbConnection.extractFeaturesByDocument(documentType,batchSize);
 		} else {
 			logger.info("Deducting features from descriptions...");
-			dbConnection.extractFeaturesByDocument(DocumentType.DESCRIPTION);
+			dbConnection.extractFeaturesByDocument(DocumentType.DESCRIPTION,batchSize);
 			logger.info("Deducting features from changelogs...");
-			dbConnection.extractFeaturesByDocument(DocumentType.CHANGELOG);
+			dbConnection.extractFeaturesByDocument(DocumentType.CHANGELOG,batchSize);
 			logger.info("Deducting features from summaries...");
-			dbConnection.extractFeaturesByDocument(DocumentType.SUMMARY);
+			dbConnection.extractFeaturesByDocument(DocumentType.SUMMARY,batchSize);
 			//logger.info("Deducting features from reviews...");
 			//dbConnection.extractFeaturesFromReviews();
 		}
+		return -1;
 	}
 
 	/**
 	 * DEDUCTIVE KNOWLEGDE - Similarity between features (materialized in graph)
 	 */
 	@PostMapping("computeFeatureSimilarity")
-	public void computeFeatureSimilarity() {
-		similarityService.computeFeatureSimilarity();
+	public void computeFeatureSimilarity(@RequestParam(defaultValue = "0.5", name = "threshold") double synonymThreshold) {
+		similarityService.computeFeatureSimilarity(synonymThreshold);
 	}
 
 	/**
