@@ -38,6 +38,9 @@ public class AppGraphRepoApplication {
 		SpringApplication.run(AppGraphRepoApplication.class, args);
 	}
 
+	/**
+	 * CRUD OPERATIONS
+	 */
 	@GetMapping("/data")
 	public App getData(@RequestParam(value = "app_name", defaultValue = "OsmAnd") String name) {
 		App app;
@@ -60,9 +63,15 @@ public class AppGraphRepoApplication {
 		return 1;
 	}
 
+	@GetMapping("/export")
+	public void export(@RequestParam(value = "fileName") String fileName) throws Exception{
+		logger.info("Initializing export...");
+		dbConnection.exportRepository(fileName);
+		logger.info("Repository successfully exported at " + fileName);
+	}
+
 	/**
 	 * DEDUCTIVE KNOWLEDGE - App Features from Natural Language documents
-	 * @param documentType
 	 */
 
 	@GetMapping("/getLastReview")
@@ -107,6 +116,11 @@ public class AppGraphRepoApplication {
 		similarityService.computeFeatureSimilarity(synonymThreshold);
 	}
 
+	@DeleteMapping("deleteFeatureSimilarities")
+	public void deleteFeatureSimilarities() {
+		similarityService.deleteFeatureSimilarities();
+	}
+
 	/**
 	 * INDUCTIVE KNOWLEDGE - Extract/report summary from inductive knowledge
 	 */
@@ -116,11 +130,18 @@ public class AppGraphRepoApplication {
 		similarityService.computeSimilarity(algorithm);
 	}
 
-	@GetMapping("getTopKSimilarApps")
+	@GetMapping("findSimilarApps")
 	public Map<String, List<SimilarityApp>> getTopKSimilarApps(@RequestBody List<String> apps,
 															   @RequestParam Integer k,
 															   @RequestParam DocumentType documentType) {
 		return similarityService.getTopKSimilarApps(apps, k, documentType);
+	}
+
+	@GetMapping("findAppsByFeature")
+	public Map<String, List<SimilarityApp>> findAppsByFeature(@RequestBody List<String> features,
+															   @RequestParam Integer k,
+															   @RequestParam DocumentType documentType) {
+		return similarityService.findAppsByFeature(features, k, documentType);
 	}
 
 }

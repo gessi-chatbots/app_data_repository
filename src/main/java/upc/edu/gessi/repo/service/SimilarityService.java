@@ -9,7 +9,6 @@ import upc.edu.gessi.repo.domain.DocumentType;
 import upc.edu.gessi.repo.domain.SimilarityAlgorithm;
 import upc.edu.gessi.repo.domain.SimilarityApp;
 
-import javax.print.Doc;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,15 +31,15 @@ public class SimilarityService {
     public Map<String, List<SimilarityApp>> getTopKSimilarApps(List<String> apps, int k, DocumentType documentType) {
         Map<String, List<SimilarityApp>> res = new HashMap<>();
         for (String app : apps) {
-            List<SimilarityApp> similarApps = new ArrayList<>();
+            List<SimilarityApp> similarApps;
             if (documentType.equals(DocumentType.ALL)) {
                 List<SimilarityApp> descriptionSimilarities = graphDBService.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
                 List<SimilarityApp> summarySimilarities = graphDBService.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
                 List<SimilarityApp> changelogSimilarities = graphDBService.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
 
                 similarApps = descriptionSimilarities;
-                mergeSimilarities(similarApps, summarySimilarities);
-                mergeSimilarities(similarApps, changelogSimilarities);
+                mergeSimilarities(similarApps, summarySimilarities, 2);
+                mergeSimilarities(similarApps, changelogSimilarities, 3);
                 similarApps = similarApps.stream().sorted(Comparator.comparingDouble(SimilarityApp::getScore).reversed())
                         .collect(Collectors.toList()).subList(0, k);
 
@@ -52,7 +51,30 @@ public class SimilarityService {
         return res;
     }
 
-    private void mergeSimilarities(List<SimilarityApp> similarApps, List<SimilarityApp> summarySimilarities) {
+    public Map<String, List<SimilarityApp>> findAppsByFeature(List<String> features, Integer k, DocumentType documentType) {
+        Map<String, List<SimilarityApp>> res = new HashMap<>();
+        for (String feature : features) {
+            List<SimilarityApp> similarFeatures;
+            if (documentType.equals(DocumentType.ALL)) {
+                List<SimilarityApp> descriptionSimilarities = graphDBService.getTopKAppsByFeature(feature, k, DocumentType.DESCRIPTION);
+                List<SimilarityApp> summarySimilarities = graphDBService.getTopKAppsByFeature(feature, k, DocumentType.SUMMARY);
+                List<SimilarityApp> changelogSimilarities = graphDBService.getTopKAppsByFeature(feature, k, DocumentType.CHANGELOG);
+
+                similarFeatures = descriptionSimilarities;
+                mergeSimilarities(similarFeatures, summarySimilarities, 2);
+                mergeSimilarities(similarFeatures, changelogSimilarities, 3);
+                similarFeatures = similarFeatures.stream().sorted(Comparator.comparingDouble(SimilarityApp::getScore).reversed())
+                        .collect(Collectors.toList()).subList(0, k);
+
+            } else {
+                similarFeatures = graphDBService.getTopKAppsByFeature(feature, k, documentType);
+            }
+            res.put("https://schema.org/DefinedTerm/" + feature, similarFeatures);
+        }
+        return res;
+    }
+
+    private void mergeSimilarities(List<SimilarityApp> similarApps, List<SimilarityApp> summarySimilarities, int i) {
         for (SimilarityApp app1 : summarySimilarities) {
             SimilarityApp foundApp = null;
             double score = 0.;
@@ -62,7 +84,14 @@ public class SimilarityService {
                     score = app1.getScore();
                 }
             }
-            if (foundApp != null) foundApp.setScore(foundApp.getScore() + score);
+            if (foundApp != null) {
+                //TODO fix workaround to deal with 3-d documents
+                if (i == 2)
+                    foundApp.setScore((foundApp.getScore() + score) / 2);
+                else if (i == 3) {
+                    foundApp.setScore(foundApp.getScore() * 2 / 3 + score / 3);
+                }
+            }
             else {
                 similarApps.add(app1);
             }
@@ -77,5 +106,9 @@ public class SimilarityService {
             ++count;
             if (count % 100 == 0) logger.info(count + " apps out of " + features.size());
         }
+    }
+
+    public void deleteFeatureSimilarities() {
+        graphDBService.deleteSameAsRelations();
     }
 }
