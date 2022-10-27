@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.service;
 
 import org.apache.commons.text.WordUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModelFactory;
@@ -9,6 +10,9 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFWriter;
+import org.eclipse.rdf4j.rio.Rio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,8 @@ import upc.edu.gessi.repo.domain.*;
 import upc.edu.gessi.repo.domain.graph.*;
 import upc.edu.gessi.repo.utils.Utils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -573,5 +579,51 @@ public class GraphDBService {
                     Double.parseDouble(bindings.getValue("score").stringValue())));
         }
         return similarApps;
+    }
+
+    public List<SimilarityApp> getTopKAppsByFeature(String feature, Integer k, DocumentType documentType) {
+        String query = "PREFIX :<http://www.ontotext.com/graphdb/similarity/>\n" +
+                "PREFIX inst:<http://www.ontotext.com/graphdb/similarity/instance/>\n" +
+                "PREFIX pubo: <http://ontology.ontotext.com/publishing#>\n" +
+                "\n" +
+                "SELECT ?documentID ?score {\n" +
+                "    ?search a inst:apps_by_"+ documentType.getName()+" ;\n" +
+                "        :searchTerm \""+ feature +"\";\n" +
+                "        :searchParameters \"\";\n" +
+                "        :searchParameters \"-numsearchresults " + k +" \";\n" +
+                "        :documentResult ?result .\n" +
+                "    ?result :value ?documentID ;\n" +
+                "            :score ?score.\n" +
+                "}";
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+
+        List<SimilarityApp> similarApps = new ArrayList<>();
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            similarApps.add(new SimilarityApp(bindings.getValue("categories").stringValue().split(";"),
+                    bindings.getValue("documentID").stringValue(),
+                    Double.parseDouble(bindings.getValue("score").stringValue())));
+        }
+        return similarApps;
+    }
+
+    public void deleteSameAsRelations() {
+        String query = "delete where { \n" +
+                "    ?x <https://schema.org/sameAs> ?z .\n" +
+                "}";
+        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+
+        int counter = 0;
+        while (result.next() != null) ++counter;
+
+        logger.info(counter + " similarity relations deleted");
+    }
+
+    public void exportRepository(String fileName) throws Exception {
+        RepositoryConnection connection = repository.getConnection();
+        FileOutputStream outputStream = new FileOutputStream("src/main/resources/exports/" + fileName);
+        RDFWriter writer = Rio.createWriter(RDFFormat.RDFJSON, outputStream);
+        connection.exportStatements(null, null, null, false, writer);
+        IOUtils.closeQuietly(outputStream);
     }
 }
