@@ -70,6 +70,13 @@ public class AppGraphRepoApplication {
 		logger.info("Repository successfully exported at " + fileName);
 	}
 
+	@PostMapping("updateRepository")
+	public void updateRepository(@RequestParam(value = "url") String url) {
+		logger.info("Updating repo");
+		dbConnection.updateRepository(url);
+		logger.info("Repository updated");
+	}
+
 	/**
 	 * DEDUCTIVE KNOWLEDGE - App Features from Natural Language documents
 	 */

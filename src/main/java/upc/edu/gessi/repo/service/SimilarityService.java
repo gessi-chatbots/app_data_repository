@@ -69,7 +69,7 @@ public class SimilarityService {
             } else {
                 similarFeatures = graphDBService.getTopKAppsByFeature(feature, k, documentType);
             }
-            res.put("https://schema.org/DefinedTerm/" + feature, similarFeatures);
+            res.put("https://schema.org/DefinedTerm/" + feature.replace(" ", ""), similarFeatures);
         }
         return res;
     }

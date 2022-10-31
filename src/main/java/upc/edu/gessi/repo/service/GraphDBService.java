@@ -40,7 +40,7 @@ public class GraphDBService {
     @Autowired
     private InductiveKnowledgeService inductiveKnowledgeService;
 
-    private final Repository repository;
+    private Repository repository;
 
     private HashMap<String,String> user_map = new HashMap<>();
     private final ValueFactory factory = SimpleValueFactory.getInstance();
@@ -96,60 +96,8 @@ public class GraphDBService {
         repoConnection.close();
     }
 
-    //TODO delete dead code
-    /*public void insertData(String subject, String predicate, String object) {
-        IRI sub = factory.createIRI(subject);
-        IRI pred = factory.createIRI(predicate);
-        Literal name = factory.createLiteral(object);
-        Statement statement = factory.createStatement(sub,pred,name);
-        Model model = createEmptyModel();
-        model.add(statement);
-        RepositoryConnection repoConnection = repository.getConnection();
-        repoConnection.add(model);
-        repoConnection.close();
-    }
-
-    private String extractValue(Map<String,String> map, String key) {
-        return map.get(key);
-    }*/
-
-    @Deprecated
-    public void insertApp(App app, String name) throws ClassNotFoundException {
-        IRI sub = factory.createIRI("http://gessi.upc.edu/app/" + name);
-        Class<?> c = Class.forName("upc.edu.gessi.repo.domain.App");
-        Field[] fieldList = c.getDeclaredFields();
-        Method[] methodList = c.getMethods();
-        Model model = createEmptyModel();
-        for (Field f : fieldList) {
-            IRI pred = factory.createIRI("https://schema.org/" + f.getName());
-            Object obj = "";
-            for (Method m : methodList) {
-                if (m.getName().length() == (f.getName().length() + 3) && m.getName().toLowerCase().equals("get"+f.getName().toLowerCase())) {
-                    try {
-                        obj = m.invoke(app);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            if (obj instanceof List<?>) {
-                for (Object s : Collections.unmodifiableList((List) obj)) {
-                    Review review = (Review) s;
-                    Literal object = factory.createLiteral(review.getReview());
-                    Statement statement = factory.createStatement(sub, pred, object);
-                    model.add(statement);
-                }
-            }
-            else {
-                Literal object = factory.createLiteral(obj == null ? "Null" : (String) obj);
-                Statement statement = factory.createStatement(sub, pred, object);
-                model.add(statement);
-            }
-
-        }
-        RepositoryConnection repoConnection = repository.getConnection();
-        repoConnection.add(model);
-        repoConnection.close();
+    public void updateRepository(String url) {
+        repository = new HTTPRepository(url);
     }
 
     /**
@@ -586,7 +534,7 @@ public class GraphDBService {
                 "PREFIX inst:<http://www.ontotext.com/graphdb/similarity/instance/>\n" +
                 "PREFIX pubo: <http://ontology.ontotext.com/publishing#>\n" +
                 "\n" +
-                "SELECT ?documentID ?score {\n" +
+                "SELECT ?documentID (group_concat(distinct ?category;separator=\";\") as ?categories) ?score {\n" +
                 "    ?search a inst:apps_by_"+ documentType.getName()+" ;\n" +
                 "        :searchTerm \""+ feature +"\";\n" +
                 "        :searchParameters \"\";\n" +
@@ -594,7 +542,8 @@ public class GraphDBService {
                 "        :documentResult ?result .\n" +
                 "    ?result :value ?documentID ;\n" +
                 "            :score ?score.\n" +
-                "}";
+                "    ?documentID <https://schema.org/applicationCategory> ?category\n" +
+                "} GROUP BY ?documentID ?score";
         TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
 
         List<SimilarityApp> similarApps = new ArrayList<>();
