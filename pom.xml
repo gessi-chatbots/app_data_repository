@@ -11,6 +11,7 @@
 	<groupId>upc.edu.gessi</groupId>
 	<artifactId>repo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>app_graph_repo</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
