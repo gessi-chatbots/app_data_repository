@@ -216,18 +216,20 @@ public class GraphDBService {
         executeFeatureQuery(repository.getConnection(), query, batchSize, 0);
     }
 
-    public int extractFeaturesFromReviews(int batchSize, int from) {
+    public int extractFeaturesFromReviews(int batchSize, int from, double subjectivityThreshold) {
         String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
                 "?object <https://schema.org/reviewBody> ?text}";
 
-        return executeFeatureQuery(repository.getConnection(), query, batchSize, from);
+        return executeFeatureQuery(repository.getConnection(), query, batchSize, from, subjectivityThreshold);
     }
 
     private int count;
 
     public int getCount() {return count;}
 
-    private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
+    private int executeFeatureQuery(RepositoryConnection repoConnection, String query,
+                                    int batchSize,
+                                    int from) {
         TupleQueryResult result = Utils.runSparqlQuery(repoConnection, query);
 
         List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
@@ -277,9 +279,79 @@ public class GraphDBService {
 
     }
 
+    private int executeFeatureQuery(RepositoryConnection repoConnection, String query,
+                                    int batchSize,
+                                    int from,
+                                    double subjectivityThreshold) {
+        TupleQueryResult result = Utils.runSparqlQuery(repoConnection, query);
+
+        List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
+        List<IRI> source = new ArrayList<>();
+
+        count = 1;
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if (count >= from) {
+                try {
+
+                    IRI appIRI = (IRI) bindings.getValue("subject");
+                    IRI documentIRI = (IRI) bindings.getValue("object");
+                    String text = bindings.getValue("text").stringValue();
+
+                    analyzedDocuments.add(new AnalyzedDocument(documentIRI.toString(), text));
+
+                    if (documentIRI.toString().contains(reviewIRI.toString())) {
+                        String reviewSource = this.digitalDocumentIRI.toString()
+                                + appIRI.toString().replace(this.appIRI.toString(), "")
+                                + "-" + DocumentType.REVIEWS;
+                        documentIRI = factory.createIRI(reviewSource);
+                    }
+
+                    source.add(documentIRI);
+
+                    if (count % batchSize == 0) {
+                        runReviewFeatureExtractionBatch(analyzedDocuments, source, count, appIRI, subjectivityThreshold);
+
+                        analyzedDocuments = new ArrayList<>();
+                        source = new ArrayList<>();
+                    }
+                } catch (Exception e) {
+                    return count;
+                }
+
+            }
+            ++count;
+        }
+
+        // Run last batch
+        if (count % batchSize != 1)
+            runReviewFeatureExtractionBatch(analyzedDocuments, source, count, appIRI, subjectivityThreshold);
+
+        return -1;
+
+    }
+
     private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
         List<AnalyzedDocument> features = nlFeatureService.getNLFeatures(analyzedDocuments);
         Model model = createEmptyModel();
+        List<Statement> statements = generateStatements(source, appIRI, features);
+        commitChanges(model, statements);
+        logger.info(count + " documents already processed. Keep going...");
+    }
+
+    private void runReviewFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source,
+                                           int count,
+                                           IRI appIRI,
+                                           double subjectivityThreshold) {
+        List<AnalyzedDocument> features = nlFeatureService.getReviewNLFeatures(analyzedDocuments, subjectivityThreshold);
+        Model model = createEmptyModel();
+        List<Statement> statements = generateStatements(source, appIRI, features);
+        commitChanges(model, statements);
+        logger.info(count + " reviews already processed. Keep going...");
+    }
+
+    private List<Statement> generateStatements(List<IRI> source, IRI appIRI, List<AnalyzedDocument> features) {
         List<Statement> statements = new ArrayList<>();
 
         for (int i = 0; i < features.size(); ++i) {
@@ -291,8 +363,7 @@ public class GraphDBService {
                 logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
             }
         }
-        commitChanges(model, statements);
-        logger.info(count + " documents already processed. Keep going...");
+        return statements;
     }
 
     public List<GraphApp> getAllApps() {

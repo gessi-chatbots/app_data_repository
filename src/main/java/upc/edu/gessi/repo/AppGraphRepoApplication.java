@@ -89,13 +89,15 @@ public class AppGraphRepoApplication {
 	@PostMapping("/derivedNLFeatures")
 	public int derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType,
 								  @RequestParam(value = "batch-size") Integer batchSize,
-								  @RequestParam(value = "from") Integer from) {
+								  @RequestParam(value = "from") Integer from,
+								 @RequestParam(value = "maxSubj") Double subjectivityThreshold) {
 		logger.info("Generating derived deductive knowledge from natural language documents");
 		logger.info("Document type: " + documentType);
 		if (documentType.equals(DocumentType.REVIEWS)) {
 			logger.info("Deducting features from reviews...");
+			if (subjectivityThreshold == null || subjectivityThreshold < 0) subjectivityThreshold = 1.;
 			try {
-				return dbConnection.extractFeaturesFromReviews(batchSize, from);
+				return dbConnection.extractFeaturesFromReviews(batchSize, from, subjectivityThreshold);
 			} catch (Exception e) {
 				return dbConnection.getCount();
 			}

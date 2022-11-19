@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
@@ -34,43 +35,23 @@ public class NLFeatureService {
     @Value("${nl-feature-extraction.url}")
     private String nlFeatureExtractionEndpoint;
 
+    @Value("${nl-sentiment-analysis-extraction.url}")
+    private String nlReviewFeatureExtractionEndpoint = "http://gessi-chatbots.essi.upc.edu:5000/review-extraction";
+
     public List<AnalyzedDocument> getNLFeatures(List<AnalyzedDocument> documents) {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
+        List<AnalyzedDocument> analyzedDocuments = null;
         try {
             HttpPost request = new HttpPost(nlFeatureExtractionEndpoint);
             request.addHeader("Content-Type", "application/json");
 
-            JSONArray array = new JSONArray();
-            for (AnalyzedDocument doc : documents) {
-                doc.setText(Utils.escape(doc.getText()));
-                JSONObject obj = new JSONObject();
-                obj.put("id", doc.getId());
-                obj.put("text", doc.getText());
-                array.put(obj);
-            }
+            JSONObject object = prepareRequestBody(documents);
 
-            JSONObject object = new JSONObject();
-            object.put("text", array);
-            object.put("ignore-verbs", new JSONArray());
             request.setEntity(new StringEntity(object.toString()));
             HttpResponse response = httpClient.execute(request);
-
             JSONArray responseBody = new JSONArray(EntityUtils.toString(response.getEntity()));
 
-            for (int i = 0; i < responseBody.length(); ++i) {
-                JSONObject document = responseBody.getJSONObject(i);
-
-                JSONArray featureJSONArray = document.getJSONArray("features");
-                List<String> features = new ArrayList<>();
-                for (int j = 0; j < featureJSONArray.length(); ++j) {
-                    features.add(featureJSONArray.getString(j));
-                }
-
-                AnalyzedDocument analyzedDoc =
-                        new AnalyzedDocument(document.getString("id"), features);
-                analyzedDocuments.add(analyzedDoc);
-            }
+            analyzedDocuments = extractResultData(responseBody);
 
         } catch (Exception ex) {
             logger.error("There was some error with feature extraction");
@@ -82,6 +63,68 @@ public class NLFeatureService {
             }
             return analyzedDocuments;
         }
+    }
+
+    public List<AnalyzedDocument> getReviewNLFeatures(List<AnalyzedDocument> documents, double subjectivityThreshold) {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        List<AnalyzedDocument> analyzedDocuments = null;
+        try {
+            HttpPost request = new HttpPost(nlReviewFeatureExtractionEndpoint);
+            request.addHeader("Content-Type", "application/json");
+
+            JSONObject object = prepareRequestBody(documents);
+            object.put("maxSubj", subjectivityThreshold);
+
+            request.setEntity(new StringEntity(object.toString()));
+            HttpResponse response = httpClient.execute(request);
+            JSONArray responseBody = new JSONArray(EntityUtils.toString(response.getEntity()));
+
+            analyzedDocuments = extractResultData(responseBody);
+
+        } catch (Exception ex) {
+            logger.error("There was some error with feature extraction");
+        } finally {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return analyzedDocuments;
+        }
+    }
+
+
+
+    private List<AnalyzedDocument> extractResultData(JSONArray responseBody) throws JSONException {
+        List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
+        for (int i = 0; i < responseBody.length(); ++i) {
+            JSONObject document = responseBody.getJSONObject(i);
+            JSONArray featureJSONArray = document.getJSONArray("features");
+            List<String> features = new ArrayList<>();
+            for (int j = 0; j < featureJSONArray.length(); ++j) {
+                features.add(featureJSONArray.getString(j));
+            }
+            AnalyzedDocument analyzedDoc =
+                    new AnalyzedDocument(document.getString("id"), features);
+            analyzedDocuments.add(analyzedDoc);
+        }
+        return analyzedDocuments;
+    }
+
+
+    private JSONObject prepareRequestBody(List<AnalyzedDocument> documents) throws JSONException {
+        JSONArray array = new JSONArray();
+        for (AnalyzedDocument doc : documents) {
+            doc.setText(Utils.escape(doc.getText()));
+            JSONObject obj = new JSONObject();
+            obj.put("id", doc.getId());
+            obj.put("text", doc.getText());
+            array.put(obj);
+        }
+        JSONObject object = new JSONObject();
+        object.put("text", array);
+        object.put("ignore-verbs", new JSONArray());
+        return object;
     }
 
 }
