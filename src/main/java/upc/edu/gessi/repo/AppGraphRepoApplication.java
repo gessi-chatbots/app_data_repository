@@ -151,4 +151,11 @@ public class AppGraphRepoApplication {
 		return similarityService.findAppsByFeature(features, k, documentType);
 	}
 
+	@GetMapping("findAppsByFeatures")
+	public List<SimilarityApp> findAppsByFeatures(@RequestBody List<String> features,
+															  @RequestParam Integer k,
+															  @RequestParam DocumentType documentType) {
+		return similarityService.findAppsByFeatures(features, k, documentType);
+	}
+
 }

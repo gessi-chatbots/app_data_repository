@@ -74,6 +74,24 @@ public class SimilarityService {
         return res;
     }
 
+    public List<SimilarityApp> findAppsByFeatures(List<String> features, Integer k, DocumentType documentType) {
+        Map<String, List<SimilarityApp>> res = findAppsByFeature(features, k, documentType);
+        List<SimilarityApp> similarityApps = new ArrayList<>();
+        for (List<SimilarityApp> apps : res.values()) {
+            for (SimilarityApp app : apps) {
+                app.setScore(app.getScore() / features.size());
+                SimilarityApp existingApp = similarityApps.stream()
+                        .filter(a -> a.getDocumentID().equals(app.getDocumentID())).findFirst().orElse(null);
+                if (existingApp == null) {
+                    similarityApps.add(app);
+                } else {
+                    existingApp.setScore(existingApp.getScore() + app.getScore() / features.size());
+                }
+            }
+        }
+        return similarityApps;
+    }
+
     private void mergeSimilarities(List<SimilarityApp> similarApps, List<SimilarityApp> summarySimilarities, int i) {
         for (SimilarityApp app1 : summarySimilarities) {
             SimilarityApp foundApp = null;
@@ -111,4 +129,5 @@ public class SimilarityService {
     public void deleteFeatureSimilarities() {
         graphDBService.deleteSameAsRelations();
     }
+
 }
