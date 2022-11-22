@@ -16,6 +16,7 @@
 	<description>Demo project for Spring Boot</description>
 	<properties>
 		<java.version>17</java.version>
+		<start-class>upc.edu.gessi.repo.AppGraphRepoApplication</start-class>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -68,17 +69,4 @@
 			<version>4.4.9</version>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
-
-
 </project>
