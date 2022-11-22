@@ -1,29 +1,22 @@
 package upc.edu.gessi.repo.service;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.SerializableEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.configurationprocessor.json.JSONArray;
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
-import org.springframework.context.annotation.Bean;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.domain.AnalyzedDocument;
-import upc.edu.gessi.repo.domain.Document;
 import upc.edu.gessi.repo.utils.Utils;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +29,7 @@ public class NLFeatureService {
     private String nlFeatureExtractionEndpoint;
 
     @Value("${nl-sentiment-analysis-extraction.url}")
-    private String nlReviewFeatureExtractionEndpoint = "http://gessi-chatbots.essi.upc.edu:5000/review-extraction";
+    private String nlReviewFeatureExtractionEndpoint;
 
     public List<AnalyzedDocument> getNLFeatures(List<AnalyzedDocument> documents) {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();

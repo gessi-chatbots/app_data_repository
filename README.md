@@ -3,7 +3,11 @@
 ## Usage
 To launch it from IntelliJ, open AppGraphRepoApplication.java and click the Play button.
 
-For now, this API accepts two requests:
+To deploy the service in a Docker container, run the following commands from project root:
+1. docker build -t {image-name} .
+2. docker run -d -p {port#}:{port#} {image-name}
+
+For now, this API accepts several requests:
 - Send a GET request to /data?app_name to retrieve all the info saved for that app.
 - Send a POST request to /insert with a json containing the app info you want to save.
   - Format the json as follows:
@@ -30,5 +34,5 @@ For now, this API accepts two requests:
   ]
 }      
 ```
-      
+- Send a POST request to /derivedNLFeatures to extract features from the do
 
