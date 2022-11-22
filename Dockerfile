@@ -1,8 +1,15 @@
 FROM maven:3.8.6-openjdk-18-slim
 
-COPY * /service/
+RUN mkdir app-repo
 
-WORKDIR /service
-RUN mvn clean package
+ADD . /app-repo/
 
-CMD ["java", "-jar", "repo-0.0.1-SNAPSHOT.jar"]
+WORKDIR /app-repo
+
+RUN mvn clean
+
+RUN mvn package spring-boot:repackage
+
+ENTRYPOINT ["java"]
+
+CMD ["-jar", "./target/repo-0.0.1-SNAPSHOT.jar"]
