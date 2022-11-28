@@ -18,11 +18,12 @@ This software component provides and API for querying, updating and extracting k
 
 ## Used technologies
 
-| Component   | Description                                         | Version |
-|-------------|-----------------------------------------------------|---------|
-| Spring Boot | Collection of java libraries for creating REST APIs | 2.7.1   |
-| RDF4J       | Java library for manipulating RDF graphs            | 3.0.0   | 
-| GraphDB     | GraphDB is an enterprise ready Semantic Graph Database, compliant with W3C Standards. | 10.1.0 |
+| Component   | Description                                                                           | Version |
+|-------------|---------------------------------------------------------------------------------------|---------|
+| Spring Boot | Collection of java libraries for creating REST APIs                                   | 2.7.1   |
+| RDF4J       | Java library for manipulating RDF graphs                                              | 3.0.0   | 
+| GraphDB     | GraphDB is an enterprise ready Semantic Graph Database, compliant with W3C Standards. | 10.1.0  |
+
 
 
 ## Usage
