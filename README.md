@@ -25,6 +25,7 @@ This software component provides and API for querying, updating and extracting k
 | GraphDB     | GraphDB is an enterprise ready Semantic Graph Database, compliant with W3C Standards. | 10.1.0  |
 
 
+
 ## Usage
 Provide the DB Url in the application.properties field "db.url".
 
