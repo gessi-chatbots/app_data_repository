@@ -75,10 +75,12 @@ For now, this API accepts several requests:
 - Send a DELETE request to /deleteFeatureSimilarities to undo feature synonymy computed with /computeFeatureSimilarity.
 
 ## RDF graph example
-You can find an RDF graph already populated with app info in data/statements.zip.
+You can find an RDF graph instance already populated with app info in data/statements.zip. The data was originally obtained using the [https://github.com/gessi-chatbots/app_data_scanner_service] service.
 App info includes, among other info:
+
 - Package name
-- Developer
-- Play Store description
+- Description
+- Summary
+- Changelog
 - Reviews
 - Annotated features
