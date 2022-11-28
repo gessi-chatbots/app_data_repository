@@ -1,6 +1,6 @@
-# Controller for accessing a graph database
+# Knowledge Graph Repository
 
-API that exposes functionality to query and populate a graph database for mobile apps.
+The *KnowledgeGraphRepository* is developed as a Java-based Spring Boot service using the RDF4Jframework to build the hook with a GraphDB repository instance. 
 
 ## Description
 
@@ -18,11 +18,11 @@ This software component provides and API for querying, updating and extracting k
 
 ## Used technologies
 
-| Component   | Description                                         | Version |
-|-------------|-----------------------------------------------------|---------|
-| Spring Boot | Collection of java libraries for creating REST APIs | 2.7.1   |
-| RDF4J       | Java library for manipulating RDF graphs            | 3.0.0   | 
-
+| Component   | Description                                                                           | Version |
+|-------------|---------------------------------------------------------------------------------------|---------|
+| Spring Boot | Collection of java libraries for creating REST APIs                                   | 2.7.1   |
+| RDF4J       | Java library for manipulating RDF graphs                                              | 3.0.0   | 
+| GraphDB     | GraphDB is an enterprise ready Semantic Graph Database, compliant with W3C Standards. | 10.1.0  |
 
 
 ## Usage
