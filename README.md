@@ -74,4 +74,11 @@ For now, this API accepts several requests:
 - Send a POST request to /computeFeatureSimilarity to find and match synonyms between app features. This method accepts a "threshold" request parameter between 0 and 1. Default value is 0.5.
 - Send a DELETE request to /deleteFeatureSimilarities to undo feature synonymy computed with /computeFeatureSimilarity.
 
-
+## RDF graph example
+You can find an RDF graph already populated with app info in data/statements.zip.
+App info includes, among other info:
+- Package name
+- Developer
+- Play Store description
+- Reviews
+- Annotated features
