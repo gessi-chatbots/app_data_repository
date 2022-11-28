@@ -1,5 +1,30 @@
 # Controller for accessing a graph database
 
+API that exposes functionality to query and populate a graph database for mobile apps.
+
+## Description
+
+This software component provides and API for querying, updating and extracting knowledge from a graph database. 
+
+## File structure
+
+- \src\main\java\upc.edu.gessi.repo
+  - AppGraphRepoApplication.java: Main class and controller for the service.
+  - \domain: this package contains entities for the domain.
+  - \service: this package includes the services that build this application.
+    - GraphDBService.java: main service. It contains methods for querying and updating the database.
+    - NLFeatureService.java: auxiliary service that communicates with a remote NL service for feature extraction.
+  - \utils: package with several auxiliary functions.
+
+## Used technologies
+
+| Component   | Description                                         | Version |
+|-------------|-----------------------------------------------------|---------|
+| Spring Boot | Collection of java libraries for creating REST APIs | 2.7.1   |
+| RDF4J       | Java library for manipulating RDF graphs            | 3.0.0   | 
+
+
+
 ## Usage
 Provide the DB Url in the application.properties field "db.url".
 
