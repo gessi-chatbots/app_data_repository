@@ -12,10 +12,10 @@ import upc.edu.gessi.repo.domain.SimilarityAlgorithm;
 import upc.edu.gessi.repo.domain.SimilarityApp;
 import upc.edu.gessi.repo.service.AppFinder;
 import upc.edu.gessi.repo.service.GraphDBService;
-import upc.edu.gessi.repo.service.NLFeatureService;
 import upc.edu.gessi.repo.service.SimilarityService;
+import upc.edu.gessi.repo.utils.NLExtractionThread;
+import upc.edu.gessi.repo.utils.Notifier;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +28,9 @@ public class AppGraphRepoApplication {
 
 	@Autowired
 	private SimilarityService similarityService;
+
+	@Autowired
+	private Notifier notifier;
 
 	@Autowired
 	private AppFinder appFinder;
@@ -96,11 +99,23 @@ public class AppGraphRepoApplication {
 		if (documentType.equals(DocumentType.REVIEWS)) {
 			logger.info("Deducting features from reviews...");
 			if (subjectivityThreshold == null || subjectivityThreshold < 0) subjectivityThreshold = 1.;
-			try {
-				return dbConnection.extractFeaturesFromReviews(batchSize, from, subjectivityThreshold);
-			} catch (Exception e) {
-				return dbConnection.getCount();
-			}
+
+
+
+			NLExtractionThread thread = new NLExtractionThread(dbConnection, notifier);
+			logger.info("Thread created...");
+			int requestId = thread.setParameters(batchSize,from,subjectivityThreshold);
+			logger.info("Thread set up...");
+			Thread t = new Thread(thread);
+			t.start();
+			logger.info("Thread running. Returning request id " + requestId);
+			return requestId;
+
+//			try {
+//				return dbConnection.extractFeaturesFromReviews(batchSize, from, subjectivityThreshold);
+//			} catch (Exception e) {
+//				return dbConnection.getCount();
+//			}
 		} else if (!documentType.equals(DocumentType.ALL)) {
 			logger.info("Deducting features from " + documentType.getName());
 			dbConnection.extractFeaturesByDocument(documentType,batchSize);
