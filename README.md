@@ -1,4 +1,30 @@
-# Controller for accessing a graph database
+# Knowledge Graph Repository
+
+The *KnowledgeGraphRepository* is developed as a Java-based Spring Boot service using the RDF4Jframework to build the hook with a GraphDB repository instance. 
+
+## Description
+
+This software component provides and API for querying, updating and extracting knowledge from a graph database. 
+
+## File structure
+
+- \src\main\java\upc.edu.gessi.repo
+  - AppGraphRepoApplication.java: Main class and controller for the service.
+  - \domain: this package contains entities for the domain.
+  - \service: this package includes the services that build this application.
+    - GraphDBService.java: main service. It contains methods for querying and updating the database.
+    - NLFeatureService.java: auxiliary service that communicates with a remote NL service for feature extraction.
+  - \utils: package with several auxiliary functions.
+
+## Used technologies
+
+| Component   | Description                                                                           | Version |
+|-------------|---------------------------------------------------------------------------------------|---------|
+| Spring Boot | Collection of java libraries for creating REST APIs                                   | 2.7.1   |
+| RDF4J       | Java library for manipulating RDF graphs                                              | 3.0.0   | 
+| GraphDB     | GraphDB is an enterprise ready Semantic Graph Database, compliant with W3C Standards. | 10.1.0  |
+
+
 
 ## Usage
 Provide the DB Url in the application.properties field "db.url".
@@ -48,4 +74,13 @@ For now, this API accepts several requests:
 - Send a POST request to /computeFeatureSimilarity to find and match synonyms between app features. This method accepts a "threshold" request parameter between 0 and 1. Default value is 0.5.
 - Send a DELETE request to /deleteFeatureSimilarities to undo feature synonymy computed with /computeFeatureSimilarity.
 
+## RDF graph example
+You can find an RDF graph instance already populated with app info in [data/statements.zip](https://github.com/gessi-chatbots/app_data_repository/tree/master/data). The data was originally obtained using the https://github.com/gessi-chatbots/app_data_scanner_service service.
+App info includes, among other info:
 
+- Package name
+- Description
+- Summary
+- Changelog
+- Reviews
+- Annotated features
