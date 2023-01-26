@@ -20,14 +20,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.domain.*;
 import upc.edu.gessi.repo.domain.graph.*;
+import upc.edu.gessi.repo.utils.NLExtractionThread;
+import upc.edu.gessi.repo.utils.Notifier;
 import upc.edu.gessi.repo.utils.Utils;
 
-import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class GraphDBService {
@@ -36,6 +37,9 @@ public class GraphDBService {
 
     @Autowired
     private NLFeatureService nlFeatureService;
+
+    @Autowired
+    private Notifier notifier;
 
     @Autowired
     private InductiveKnowledgeService inductiveKnowledgeService;
@@ -216,11 +220,33 @@ public class GraphDBService {
         executeFeatureQuery(repository.getConnection(), query, batchSize, 0);
     }
 
+    public int startFeaturesByDocumentExtraction(DocumentType documentType, int batchSize) {
+        NLExtractionThread thread = new NLExtractionThread(this, notifier);
+        logger.info("Thread created...");
+        int requestId = thread.setParameters(batchSize, 0, documentType);
+        logger.info("Thread set up...");
+        Thread t = new Thread(thread);
+        t.start();
+        logger.info("Thread running. Returning request id {}",requestId);
+        return requestId;
+    }
+
     public int extractFeaturesFromReviews(int batchSize, int from, double subjectivityThreshold) {
         String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
                 "?object <https://schema.org/reviewBody> ?text}";
 
         return executeFeatureQuery(repository.getConnection(), query, batchSize, from, subjectivityThreshold);
+    }
+
+    public int startFeaturesFromReviewsExtraction(int batchSize, int from, double subjectivityThreshold) {
+        NLExtractionThread thread = new NLExtractionThread(this, notifier);
+        logger.info("Thread created...");
+        int requestId = thread.setParameters(batchSize,from,subjectivityThreshold);
+        logger.info("Thread set up...");
+        Thread t = new Thread(thread);
+        t.start();
+        logger.info("Thread running. Returning request id {}",requestId);
+        return requestId;
     }
 
     private int count;

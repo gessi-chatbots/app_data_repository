@@ -13,7 +13,6 @@ import upc.edu.gessi.repo.domain.SimilarityApp;
 import upc.edu.gessi.repo.service.AppFinder;
 import upc.edu.gessi.repo.service.GraphDBService;
 import upc.edu.gessi.repo.service.SimilarityService;
-import upc.edu.gessi.repo.utils.NLExtractionThread;
 import upc.edu.gessi.repo.utils.Notifier;
 
 import java.util.List;
@@ -92,44 +91,21 @@ public class AppGraphRepoApplication {
 	@PostMapping("/derivedNLFeatures")
 	public int derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType,
 								  @RequestParam(value = "batch-size") Integer batchSize,
-								  @RequestParam(value = "from") Integer from,
-								 @RequestParam(value = "maxSubj") Double subjectivityThreshold) {
+								  @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
+								 @RequestParam(value = "maxSubj", required = false, defaultValue = "1") Double subjectivityThreshold) {
 		logger.info("Generating derived deductive knowledge from natural language documents");
-		logger.info("Document type: " + documentType);
+		logger.info("Document type: {}",documentType);
 		if (documentType.equals(DocumentType.REVIEWS)) {
 			logger.info("Deducting features from reviews...");
-			if (subjectivityThreshold == null || subjectivityThreshold < 0) subjectivityThreshold = 1.;
-
-
-
-			NLExtractionThread thread = new NLExtractionThread(dbConnection, notifier);
-			logger.info("Thread created...");
-			int requestId = thread.setParameters(batchSize,from,subjectivityThreshold);
-			logger.info("Thread set up...");
-			Thread t = new Thread(thread);
-			t.start();
-			logger.info("Thread running. Returning request id " + requestId);
-			return requestId;
-
-//			try {
-//				return dbConnection.extractFeaturesFromReviews(batchSize, from, subjectivityThreshold);
-//			} catch (Exception e) {
-//				return dbConnection.getCount();
-//			}
+			if (subjectivityThreshold == null || subjectivityThreshold < 0 || subjectivityThreshold > 1) subjectivityThreshold = 1.;
+			return dbConnection.startFeaturesFromReviewsExtraction(batchSize,from,subjectivityThreshold);
 		} else if (!documentType.equals(DocumentType.ALL)) {
-			logger.info("Deducting features from " + documentType.getName());
-			dbConnection.extractFeaturesByDocument(documentType,batchSize);
+			logger.info("Deducting features from {}",documentType.getName());
+			return dbConnection.startFeaturesByDocumentExtraction(documentType,batchSize);
 		} else {
-			logger.info("Deducting features from descriptions...");
-			dbConnection.extractFeaturesByDocument(DocumentType.DESCRIPTION,batchSize);
-			logger.info("Deducting features from changelogs...");
-			dbConnection.extractFeaturesByDocument(DocumentType.CHANGELOG,batchSize);
-			logger.info("Deducting features from summaries...");
-			dbConnection.extractFeaturesByDocument(DocumentType.SUMMARY,batchSize);
-			//logger.info("Deducting features from reviews...");
-			//dbConnection.extractFeaturesFromReviews();
+			logger.info("Deducting features from all document types except reviews...");
+			return dbConnection.startFeaturesByDocumentExtraction(DocumentType.ALL,batchSize);
 		}
-		return -1;
 	}
 
 	/**
