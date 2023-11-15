@@ -1,6 +1,9 @@
 package upc.edu.gessi.repo.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.io.Serializable;
+import java.util.Date;
 
 public class Review implements Serializable {
 
@@ -11,7 +14,8 @@ public class Review implements Serializable {
     private String userName;
     private Integer score;
     private String source;
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
+    private Date at;
 
     public String getReviewId() {
         if (reviewId != null)
@@ -63,5 +67,10 @@ public class Review implements Serializable {
         this.source = source;
     }
 
+    public Date getReviewDate() {
+        return at;
+    }
+
+    public void setReviewDate(Date at) {this.at = at;}
 
 }

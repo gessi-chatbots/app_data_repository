@@ -6,13 +6,21 @@ public class GraphApp  extends GraphNode implements Serializable {
 
     private String identifier;
     private String name;
+    @Deprecated
     private String[] applicationCategory;
 
+    @Deprecated
     public GraphApp(String nodeIdentifier, String identifier, String name, String[] applicationCategory) {
         super(nodeIdentifier);
         this.identifier = identifier;
         this.name = name;
         this.applicationCategory = applicationCategory;
+    }
+
+    public GraphApp(String nodeIdentifier, String identifier, String name) {
+        super(nodeIdentifier);
+        this.identifier = identifier;
+        this.name = name;
     }
 
     public String getIdentifier() {

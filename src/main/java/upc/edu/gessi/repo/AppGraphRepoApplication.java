@@ -63,6 +63,12 @@ public class AppGraphRepoApplication {
 		return 1;
 	}
 
+	@PostMapping("/update")
+	public int update(@RequestParam(value = "daysFromLastUpdate") int daysFromLastUpdate) {
+		dbConnection.updateApps(daysFromLastUpdate);
+		return 1;
+	}
+
 	@GetMapping("/export")
 	public void export(@RequestParam(value = "fileName") String fileName) throws Exception{
 		logger.info("Initializing export...");

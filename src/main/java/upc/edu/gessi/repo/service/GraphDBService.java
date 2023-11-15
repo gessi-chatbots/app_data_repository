@@ -40,6 +40,12 @@ public class GraphDBService {
     @Autowired
     private InductiveKnowledgeService inductiveKnowledgeService;
 
+    @Autowired
+    private AppDataScannerService appDataScannerService;
+
+    @Value("${max-days-reviews}")
+    private int MAX_DAYS_REVIEWS;
+
     private Repository repository;
 
     private HashMap<String,String> user_map = new HashMap<>();
@@ -69,7 +75,7 @@ public class GraphDBService {
 
     //Review objects
     private  IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
-
+    private  IRI datePublishedIRI = factory.createIRI("https://schema.org/datePublished");
     private  IRI authorIRI = factory.createIRI("https://schema.org/author");
     private  IRI reviewRatingIRI = factory.createIRI("https://schema.org/reviewRating");
 
@@ -200,6 +206,7 @@ public class GraphDBService {
              statements.add(factory.createStatement(review, authorIRI, author));*/
              //IRI rating = factory.createIRI(reviewRatingIRI)
              statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getScore())));
+             statements.add(factory.createStatement(review, datePublishedIRI, factory.createLiteral(r.getReviewDate())));
              statements.add(factory.createStatement(sub, reviewsIRI, review));
              statements.add(factory.createStatement(review, typeIRI, reviewIRI));
              //statements.add(factory.createStatement(author, typeIRI, personIRI));
@@ -316,7 +323,7 @@ public class GraphDBService {
 
         String query = "PREFIX schema: <https://schema.org/>\n" +
                 "\n" +
-                "select ?app ?identifier ?name (GROUP_CONCAT(?applicationCategory;separator=\",\") As ?categories) where {\n" +
+                "select ?app ?identifier ?name where {\n" +
                 "    ?app schema:identifier ?identifier ;\n" +
                 "         schema:name ?name ;\n" +
                 "         schema:applicationCategory ?applicationCategory\n" +
@@ -329,9 +336,8 @@ public class GraphDBService {
             IRI app = (IRI) bindings.getValue("app");
             String identifier = bindings.getValue("identifier").stringValue();
             String name = bindings.getValue("name").stringValue();
-            String[] categories = bindings.getValue("categories").stringValue().split(",");
 
-            GraphApp graphApp = new GraphApp(app.toString(), identifier, name, categories);
+            GraphApp graphApp = new GraphApp(app.toString(), identifier, name);
             apps.add(graphApp);
         }
 
@@ -590,5 +596,25 @@ public class GraphDBService {
         RDFWriter writer = Rio.createWriter(RDFFormat.RDFJSON, outputStream);
         connection.exportStatements(null, null, null, false, writer);
         IOUtils.closeQuietly(outputStream);
+    }
+
+    public void updateApps(int daysFromLastUpdate) {
+       List<GraphApp> apps = getAllApps();
+       for (GraphApp app : apps) {
+           //We send requests app per app
+           App updatedApp = appDataScannerService.scanApp(Collections.singletonList(app)).get(0);
+
+           //TODO filter out reviews that were published before last update
+           insertApp(updatedApp);
+
+
+           //TODO remove reviews older than MAX_DAYS_REVIEWS
+       }
+    }
+
+    private void filterExistingReviews(int daysFromLastUpdate, App updatedApp) {
+        for (Review r: updatedApp.getReviews()) {
+            //TODO
+        }
     }
 }
