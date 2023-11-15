@@ -48,6 +48,7 @@ public class GraphDBService {
     private final String prefix = "https://schema.org/";
 
     //Data types
+    private IRI typeIRI = factory.createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
     private IRI appIRI = factory.createIRI("https://schema.org/MobileApplication");
     private IRI reviewIRI = factory.createIRI("https://schema.org/Review");
     private IRI personIRI = factory.createIRI("https://schema.org/Person");
@@ -110,17 +111,28 @@ public class GraphDBService {
         Model model = createEmptyModel();
 
         IRI sub = factory.createIRI(appIRI + "/" + app.getPackage_name());
+        statements.add(factory.createStatement(sub, typeIRI, appIRI));
 
         String developerName = app.getDeveloper().replace(" ","_");
         IRI dev = factory.createIRI(developerIRI+"/"+developerName);
 
         statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(developerName)));
+        statements.add(factory.createStatement(dev, typeIRI, developerIRI));
         statements.add(factory.createStatement(sub,authorIRI,dev));
 
         //some fields are not populated, so we check them to avoid null pointers.
-        for (AppCategory category : app.getCategories()) {
-            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(String.valueOf(category))));
+        //for (AppCategory category : app.getCategories()) {
+        //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(String.valueOf(category))));
+        //}
+
+        //if (app.getCategory() != null) {
+        //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategory())));
+        //}
+
+        if (app.getCategoryId() != null) {
+            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategoryId())));
         }
+
         if (app.getApp_name() != null) {
             String sanitizedName = Utils.sanitizeString(app.getApp_name());
             statements.add(factory.createStatement(sub, nameIRI, factory.createLiteral(sanitizedName)));
@@ -155,6 +167,7 @@ public class GraphDBService {
         statements.add(factory.createStatement(appDescription, textIRI, factory.createLiteral(text)));
         statements.add(factory.createStatement(appDescription, disambiguatingDescriptionIRI, factory.createLiteral(documentType.getName())));
         statements.add(factory.createStatement(sub, pred, appDescription));
+        statements.add(factory.createStatement(appDescription, typeIRI, digitalDocumentIRI));
     }
 
     private void addReviews(App app, IRI sub, List<Statement> statements) {
@@ -169,7 +182,7 @@ public class GraphDBService {
              }
 
              //normalize the text to utf-8 encoding
-             String reviewAuthor = r.getUserName();
+             /*String reviewAuthor = r.getUserName();
              byte[] authorBytes = reviewAuthor.getBytes();
              String  encoded_author = new String(authorBytes, StandardCharsets.UTF_8);
              String  ascii_encoded_author = new String(authorBytes, StandardCharsets.US_ASCII);
@@ -184,10 +197,12 @@ public class GraphDBService {
 
              }
              statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(encoded_author)));
-             statements.add(factory.createStatement(review, authorIRI, author));
+             statements.add(factory.createStatement(review, authorIRI, author));*/
              //IRI rating = factory.createIRI(reviewRatingIRI)
              statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getScore())));
              statements.add(factory.createStatement(sub, reviewsIRI, review));
+             statements.add(factory.createStatement(review, typeIRI, reviewIRI));
+             //statements.add(factory.createStatement(author, typeIRI, personIRI));
          }
     }
 
@@ -196,6 +211,7 @@ public class GraphDBService {
             IRI featureIRI = factory.createIRI(definedTermIRI + "/" + WordUtils.capitalize(feature).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", ""));
             statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature)));
             statements.add(factory.createStatement(sub, featuresIRI, featureIRI));
+            statements.add(factory.createStatement(featureIRI, typeIRI, definedTermIRI));
         }
     }
 

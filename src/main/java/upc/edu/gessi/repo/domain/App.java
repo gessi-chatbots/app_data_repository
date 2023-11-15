@@ -12,6 +12,7 @@ public class App implements Serializable {
     private String description;
     private String summary;
     private String category;
+    private String categoryId;
     private String version;
     private String android_version;
     private String genre;
@@ -19,6 +20,7 @@ public class App implements Serializable {
     private String developer;
     private String developer_site;
     private List<Review> reviews;
+    @Deprecated
     private List<AppCategory> categories;
 
     public List<String> getFeatures() {
@@ -120,6 +122,14 @@ public class App implements Serializable {
         this.category = category;
     }
 
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
+    }
+
     public String getAndroid_version() {
         return android_version;
     }
@@ -144,12 +154,12 @@ public class App implements Serializable {
         this.developer_site = developer_site;
     }
 
+    @Deprecated
     public List<AppCategory> getCategories() {
         return categories;
     }
-
+    @Deprecated
     public void setCategories(List<AppCategory> categories) {
         this.categories = categories;
     }
 }
-
