@@ -2,7 +2,6 @@ package upc.edu.gessi.repo.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -22,6 +21,7 @@ import upc.edu.gessi.repo.domain.graph.GraphNode;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,26 +33,29 @@ public class AppDataScannerService {
     @Value("${scanner-service.url}")
     private String url;
 
-    public List<App> scanApp(List<GraphApp> apps) {
+    public List<App> scanApp(List<GraphApp> apps, int daysFromLastUpdate) {
         List<App> updatedApps = new ArrayList<>();
         try {
             JSONArray array = new JSONArray();
             for (GraphNode app : apps) array.put(app);
             StringEntity stringEntity = new StringEntity(array.toString());
-            JSONArray response = request(stringEntity);
+            URI uri = new URIBuilder(url)
+                    .addParameter("daysFromLastUpdate", String.valueOf(daysFromLastUpdate))
+                    .build();
+
+            JSONArray response = request(uri, stringEntity);
 
             updatedApps = new ObjectMapper().readValue(response.toString(), new TypeReference<List<App>>() {});
 
-        } catch (UnsupportedEncodingException | JsonProcessingException e) {
+        } catch (UnsupportedEncodingException | JsonProcessingException | URISyntaxException e) {
             e.printStackTrace();
         }
         return updatedApps;
     }
 
-    private JSONArray request(StringEntity entity) {
+    private JSONArray request(URI uri, StringEntity entity) {
         HttpClient httpClient = HttpClientBuilder.create().build();
         try {
-            URI uri = new URIBuilder(url).build();
             HttpPost request = new HttpPost(uri);
             request.addHeader("Content-Type", "application/json");
 

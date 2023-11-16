@@ -1,6 +1,10 @@
 package upc.edu.gessi.repo.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import upc.edu.gessi.repo.domain.serializer.CustomDateDeserializer;
+import upc.edu.gessi.repo.domain.serializer.CustomDateSerializer;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -15,6 +19,8 @@ public class Review implements Serializable {
     private Integer score;
     private String source;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date at;
 
     public String getReviewId() {

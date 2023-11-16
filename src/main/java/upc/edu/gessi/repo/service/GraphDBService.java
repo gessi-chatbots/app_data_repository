@@ -46,7 +46,7 @@ public class GraphDBService {
     @Value("${max-days-reviews}")
     private int MAX_DAYS_REVIEWS;
 
-    private Repository repository;
+    private HTTPRepository repository;
 
     private HashMap<String,String> user_map = new HashMap<>();
     private final ValueFactory factory = SimpleValueFactory.getInstance();
@@ -86,8 +86,11 @@ public class GraphDBService {
     //Feature object
     private IRI synonymIRI = factory.createIRI("https://schema.org/sameAs");
 
-    public GraphDBService(@Value("${db.url}") String url) {
+    public GraphDBService(@Value("${db.url}") String url,
+                          @Value("${db.username}") String username,
+                          @Value("${db.password}") String password) {
         repository = new HTTPRepository(url);
+        repository.setUsernameAndPassword(username, password);
     }
 
     private Model createEmptyModel() {
@@ -206,7 +209,9 @@ public class GraphDBService {
              statements.add(factory.createStatement(review, authorIRI, author));*/
              //IRI rating = factory.createIRI(reviewRatingIRI)
              statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getScore())));
-             statements.add(factory.createStatement(review, datePublishedIRI, factory.createLiteral(r.getReviewDate())));
+             if (r.getReviewDate() != null) {
+                 statements.add(factory.createStatement(review, datePublishedIRI, factory.createLiteral(r.getReviewDate())));
+             }
              statements.add(factory.createStatement(sub, reviewsIRI, review));
              statements.add(factory.createStatement(review, typeIRI, reviewIRI));
              //statements.add(factory.createStatement(author, typeIRI, personIRI));
@@ -602,19 +607,12 @@ public class GraphDBService {
        List<GraphApp> apps = getAllApps();
        for (GraphApp app : apps) {
            //We send requests app per app
-           App updatedApp = appDataScannerService.scanApp(Collections.singletonList(app)).get(0);
+           App updatedApp = appDataScannerService.scanApp(Collections.singletonList(app), daysFromLastUpdate).get(0);
 
-           //TODO filter out reviews that were published before last update
            insertApp(updatedApp);
-
 
            //TODO remove reviews older than MAX_DAYS_REVIEWS
        }
     }
 
-    private void filterExistingReviews(int daysFromLastUpdate, App updatedApp) {
-        for (Review r: updatedApp.getReviews()) {
-            //TODO
-        }
-    }
 }
