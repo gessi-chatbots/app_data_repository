@@ -607,7 +607,7 @@ public class GraphDBService {
        List<GraphApp> apps = getAllApps();
        for (GraphApp app : apps) {
            //We send requests app per app
-           App updatedApp = appDataScannerService.scanApp(Collections.singletonList(app), daysFromLastUpdate).get(0);
+           App updatedApp = appDataScannerService.scanApp(app, daysFromLastUpdate);
 
            insertApp(updatedApp);
 

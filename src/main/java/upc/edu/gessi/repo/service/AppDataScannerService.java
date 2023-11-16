@@ -33,14 +33,15 @@ public class AppDataScannerService {
     @Value("${scanner-service.url}")
     private String url;
 
-    public List<App> scanApp(List<GraphApp> apps, int daysFromLastUpdate) {
+    public App scanApp(GraphApp app, int daysFromLastUpdate) {
         List<App> updatedApps = new ArrayList<>();
         try {
             JSONArray array = new JSONArray();
-            for (GraphNode app : apps) array.put(app);
-            StringEntity stringEntity = new StringEntity(array.toString());
+            array.put(app);
+            String s = "[{\"package\":\"" + app.getIdentifier() + "\", \"name\": \"" + app.getName() + "\"}]";
+            StringEntity stringEntity = new StringEntity(s);
             URI uri = new URIBuilder(url)
-                    .addParameter("daysFromLastUpdate", String.valueOf(daysFromLastUpdate))
+                    .addParameter("review_days_old", String.valueOf(daysFromLastUpdate))
                     .build();
 
             JSONArray response = request(uri, stringEntity);
@@ -50,7 +51,7 @@ public class AppDataScannerService {
         } catch (UnsupportedEncodingException | JsonProcessingException | URISyntaxException e) {
             e.printStackTrace();
         }
-        return updatedApps;
+        return updatedApps.get(0);
     }
 
     private JSONArray request(URI uri, StringEntity entity) {
@@ -72,7 +73,7 @@ public class AppDataScannerService {
             return new JSONArray(jsonResponse);
 
         } catch (Exception ex) {
-            logger.error("Error occurred with feature extraction", ex);
+            logger.error("Error occurred", ex);
             return null; // Or throw an exception if appropriate
         }
     }
