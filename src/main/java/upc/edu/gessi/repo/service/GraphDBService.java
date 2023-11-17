@@ -60,6 +60,7 @@ public class GraphDBService {
     private IRI personIRI = factory.createIRI("https://schema.org/Person");
     private IRI definedTermIRI = factory.createIRI("https://schema.org/DefinedTerm");
     private IRI digitalDocumentIRI = factory.createIRI("https://schema.org/DigitalDocument");
+    private  IRI developerIRI = factory.createIRI("https://schema.org/Organization");
 
     //App objects
     private IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
@@ -81,7 +82,6 @@ public class GraphDBService {
 
     //Person objects
     private  IRI nameIRI = factory.createIRI("https://schema.org/name");
-    private  IRI developerIRI = factory.createIRI("https://schema.org/Organization");
 
     //Feature object
     private IRI synonymIRI = factory.createIRI("https://schema.org/sameAs");
@@ -609,7 +609,7 @@ public class GraphDBService {
            //We send requests app per app
            App updatedApp = appDataScannerService.scanApp(app, daysFromLastUpdate);
 
-           insertApp(updatedApp);
+           if (updatedApp != null) insertApp(updatedApp);
 
            //TODO remove reviews older than MAX_DAYS_REVIEWS
        }

@@ -19,6 +19,8 @@ import upc.edu.gessi.repo.domain.App;
 import upc.edu.gessi.repo.domain.graph.GraphApp;
 import upc.edu.gessi.repo.domain.graph.GraphNode;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,19 +44,26 @@ public class AppDataScannerService {
             StringEntity stringEntity = new StringEntity(s);
             URI uri = new URIBuilder(url)
                     .addParameter("review_days_old", String.valueOf(daysFromLastUpdate))
+                    .addParameter("return_data", "true")
+                    .addParameter("web-scrapers", "false")
                     .build();
 
-            JSONArray response = request(uri, stringEntity);
+            //JSONArray response = request(uri, stringEntity);
 
-            updatedApps = new ObjectMapper().readValue(response.toString(), new TypeReference<List<App>>() {});
+            try {
+                InputStream inputStream = request(uri, stringEntity).getEntity().getContent();
+                updatedApps = new ObjectMapper().readValue(inputStream, new TypeReference<List<App>>() {});
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-        } catch (UnsupportedEncodingException | JsonProcessingException | URISyntaxException e) {
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
             e.printStackTrace();
         }
-        return updatedApps.get(0);
+        return updatedApps.size() > 0 ? updatedApps.get(0) : null;
     }
 
-    private JSONArray request(URI uri, StringEntity entity) {
+    private HttpResponse request(URI uri, StringEntity entity) {
         HttpClient httpClient = HttpClientBuilder.create().build();
         try {
             HttpPost request = new HttpPost(uri);
@@ -69,8 +78,9 @@ public class AppDataScannerService {
                 return null; // Or throw an exception if appropriate
             }
 
-            String jsonResponse = EntityUtils.toString(response.getEntity());
-            return new JSONArray(jsonResponse);
+            return response;
+            //String jsonResponse = EntityUtils.toString(response.getEntity());
+            //return new JSONArray(jsonResponse);
 
         } catch (Exception ex) {
             logger.error("Error occurred", ex);
