@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.json.JSONObject;
 import upc.edu.gessi.repo.domain.graph.Graph;
 import upc.edu.gessi.repo.domain.graph.GraphEdge;
 import upc.edu.gessi.repo.domain.graph.GraphNode;
