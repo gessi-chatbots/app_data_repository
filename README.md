@@ -37,6 +37,8 @@ To deploy the service in a Docker container, run the following commands from pro
 
 ## Features
 
+The API of the App Data Repository is available here: http://localhost:8080/swagger-ui/. Below we provide a brief summarization of the main functionalities integrated in the last version of this service.
+
 For now, this API accepts several requests:
 - Send a GET request to /data?app_name to retrieve all the info saved for that app.
 - Send a POST request to /insert with a json containing the app info you want to save.
