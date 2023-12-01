@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
+@Deprecated
 public class GraphDBService {
 
     private Logger logger = LoggerFactory.getLogger(GraphDBService.class);

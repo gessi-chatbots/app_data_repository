@@ -9,10 +9,10 @@
 
 <#DeveloperMapping> a rr:TriplesMap;
   rml:logicalSource [
-    rml:source "App.json";
-    rml:referenceFormulation ql:JSONPath;
-    rml:iterator "$"
-  ];
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+] ;
 
   rr:subjectMap [
     rr:template "http://schema.org/Organization/{developer}";
@@ -31,17 +31,17 @@
     rr:objectMap [
       rml:reference "developer_site"
     ]
-  ];
+  ].
 
 <#DescriptionMapping> a rr:TriplesMap;
   rml:logicalSource [
-    rml:source "App.json";
-    rml:referenceFormulation ql:JSONPath;
-    rml:iterator "$"
-  ];
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+] ;
 
   rr:subjectMap [
-    rr:template "http://schema.org/DigitalDocument/{package_name}-DESCRIPTION";
+    rr:template "http://schema.org/DigitalDocument/{package}-DESCRIPTION";
     rr:class schema:DigitalDocument
   ];
 
@@ -55,19 +55,19 @@
   rr:predicateObjectMap [
     rr:predicate schema:disambiguatingDescription;
     rr:objectMap [
-      rml:constant "description"
+      rr:constant "description"
     ]
-  ];
+  ].
 
 <#SummaryMapping> a rr:TriplesMap;
   rml:logicalSource [
-    rml:source "App.json";
-    rml:referenceFormulation ql:JSONPath;
-    rml:iterator "$"
-  ];
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+] ;
 
   rr:subjectMap [
-    rr:template "http://schema.org/DigitalDocument/{package_name}-SUMMARY";
+    rr:template "http://schema.org/DigitalDocument/{package}-SUMMARY";
     rr:class schema:DigitalDocument
   ];
 
@@ -81,19 +81,19 @@
   rr:predicateObjectMap [
     rr:predicate schema:disambiguatingDescription;
     rr:objectMap [
-      rml:constant "summary"
+      rr:constant "summary"
     ]
-  ];
+  ].
 
 <#ChangelogMapping> a rr:TriplesMap;
   rml:logicalSource [
-    rml:source "App.json";
-    rml:referenceFormulation ql:JSONPath;
-    rml:iterator "$"
-  ];
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+] ;
 
   rr:subjectMap [
-    rr:template "http://schema.org/DigitalDocument/{package_name}-CHANGELOG";
+    rr:template "http://schema.org/DigitalDocument/{package}-CHANGELOG";
     rr:class schema:DigitalDocument
   ];
 
@@ -107,20 +107,20 @@
   rr:predicateObjectMap [
     rr:predicate schema:disambiguatingDescription;
     rr:objectMap [
-      rml:constant "changelog"
+      rr:constant "changelog"
     ]
-  ];
+  ].
 
 <#ReviewMapping> a rr:TriplesMap;
   rml:logicalSource [
-    rml:source "App.json";
-    rml:referenceFormulation ql:JSONPath;
-    rml:iterator "$.reviews[*]"
-  ];
+  rml:source "App.json";
+  rml:referenceFormulation ql:JSONPath;
+  rml:iterator "$[*].reviews[*]"
+] ;
 
   rr:subjectMap [
     rr:template "http://schema.org/DigitalDocument/{reviewId}";
-    rr:class schema:DefinedTerm
+    rr:class schema:DigitalDocument
   ];
 
   rr:predicateObjectMap [
@@ -156,24 +156,28 @@
     rr:objectMap [
       rml:reference "userName"
     ]
-  ];
+  ].
 
 <#AppMapping> a rr:TriplesMap;
   rml:logicalSource [
-    rml:source "App.json";
-    rml:referenceFormulation ql:JSONPath;
-    rml:iterator "$"
-  ];
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+]  ;
 
   rr:subjectMap [
-    rr:template "http://schema.org/MobileApplication/{package_name}";
+    rr:template "http://schema.org/MobileApplication/{package}";
     rr:class schema:MobileApplication
   ];
 
   rr:predicateObjectMap [
     rr:predicate schema:author;
     rr:objectMap [
-      rml:parentTriplesMap <#DeveloperMapping>
+      rr:parentTriplesMap <#DeveloperMapping> ;
+	  rr:joinCondition [
+        rr:child "developer";
+        rr:parent "developer";
+      ];
     ]
   ];
 
@@ -194,28 +198,40 @@
   rr:predicateObjectMap [
     rr:predicate schema:identifier;
     rr:objectMap [
-      rml:reference "package_name"
+      rml:reference "package"
     ]
   ];
 
   rr:predicateObjectMap [
     rr:predicate schema:description;
     rr:objectMap [
-      rml:parentTriplesMap <#DescriptionMapping>
+      rr:parentTriplesMap <#DescriptionMapping> ;
+	  rr:joinCondition [
+        rr:child "description";
+        rr:parent "description";
+      ];
     ]
   ];
 
   rr:predicateObjectMap [
     rr:predicate schema:abstract;
     rr:objectMap [
-      rml:parentTriplesMap <#SummaryMapping>
+      rr:parentTriplesMap <#SummaryMapping> ;
+	  rr:joinCondition [
+        rr:child "summary";
+        rr:parent "summary";
+      ];
     ]
   ];
 
   rr:predicateObjectMap [
     rr:predicate schema:releaseNotes;
     rr:objectMap [
-      rml:parentTriplesMap <#ChangelogMapping>
+      rr:parentTriplesMap <#ChangelogMapping> ;
+	  rr:joinCondition [
+        rr:child "changelog";
+        rr:parent "changelog";
+      ];
     ]
   ];
 
@@ -243,6 +259,10 @@
   rr:predicateObjectMap [
     rr:predicate schema:review;
     rr:objectMap [
-      rml:parentTriplesMap <#ReviewMapping>
+      rr:parentTriplesMap <#ReviewMapping> ;
+	  rr:joinCondition [
+        rr:child "reviewId";
+        rr:parent "reviews.reviewId";
+      ];
     ]
-  ];
+  ].

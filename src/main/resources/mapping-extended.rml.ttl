@@ -1,0 +1,294 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix schema: <http://schema.org/>.
+@prefix wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>.
+@prefix gn: <http://www.geonames.org/ontology#>.
+@base <http://example.com/ns#>.
+
+<#DeveloperMapping> a rr:TriplesMap;
+  rml:logicalSource [
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+] ;
+
+  rr:subjectMap [
+    rr:template "http://schema.org/Organization/{developer}";
+    rr:class schema:Organization
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:author;
+    rr:objectMap [
+      rml:reference "developer"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:sameAs;
+    rr:objectMap [
+      rml:reference "developer_site"
+    ]
+  ].
+
+<#DescriptionMapping> a rr:TriplesMap;
+  rml:logicalSource [
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+] ;
+
+  rr:subjectMap [
+    rr:template "http://schema.org/DigitalDocument/{package}-DESCRIPTION";
+    rr:class schema:DigitalDocument
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:text;
+    rr:objectMap [
+      rml:reference "description"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:disambiguatingDescription;
+    rr:objectMap [
+      rr:constant "description"
+    ]
+  ].
+
+<#SummaryMapping> a rr:TriplesMap;
+  rml:logicalSource [
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+] ;
+
+  rr:subjectMap [
+    rr:template "http://schema.org/DigitalDocument/{package}-SUMMARY";
+    rr:class schema:DigitalDocument
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:text;
+    rr:objectMap [
+      rml:reference "summary"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:disambiguatingDescription;
+    rr:objectMap [
+      rr:constant "summary"
+    ]
+  ].
+
+<#ChangelogMapping> a rr:TriplesMap;
+  rml:logicalSource [
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+] ;
+
+  rr:subjectMap [
+    rr:template "http://schema.org/DigitalDocument/{package}-CHANGELOG";
+    rr:class schema:DigitalDocument
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:text;
+    rr:objectMap [
+      rml:reference "changelog"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:disambiguatingDescription;
+    rr:objectMap [
+      rr:constant "changelog"
+    ]
+  ].
+
+<#ReviewMapping> a rr:TriplesMap;
+  rml:logicalSource [
+  rml:source "App.json";
+  rml:referenceFormulation ql:JSONPath;
+  rml:iterator "$[*].reviews[*]"
+] ;
+
+  rr:subjectMap [
+    rr:template "http://schema.org/DigitalDocument/{reviewId}";
+    rr:class schema:DigitalDocument
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:identifier;
+    rr:objectMap [
+      rml:reference "reviewId"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:reviewBody;
+    rr:objectMap [
+      rml:reference "review"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:reviewRating;
+    rr:objectMap [
+      rml:reference "score"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:datePublished;
+    rr:objectMap [
+      rml:reference "at"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:author;
+    rr:objectMap [
+      rml:reference "userName"
+    ]
+  ].
+
+<#AppMapping> a rr:TriplesMap;
+  rml:logicalSource [
+	rml:source "App.json";
+    rml:referenceFormulation ql:JSONPath ;
+    rml:iterator "$.*"
+]  ;
+
+  rr:subjectMap [
+    rr:template "http://schema.org/MobileApplication/{package}";
+    rr:class schema:MobileApplication
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:author;
+    rr:objectMap [
+      rr:parentTriplesMap <#DeveloperMapping> ;
+	  rr:joinCondition [
+        rr:child "developer";
+        rr:parent "developer";
+      ];
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:applicationCategory;
+    rr:objectMap [
+      rml:reference "categoryId"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:name;
+    rr:objectMap [
+      rml:reference "app_name"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:identifier;
+    rr:objectMap [
+      rml:reference "package"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:description;
+    rr:objectMap [
+      rr:parentTriplesMap <#DescriptionMapping> ;
+	  rr:joinCondition [
+        rr:child "description";
+        rr:parent "description";
+      ];
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:abstract;
+    rr:objectMap [
+      rr:parentTriplesMap <#SummaryMapping> ;
+	  rr:joinCondition [
+        rr:child "summary";
+        rr:parent "summary";
+      ];
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:releaseNotes;
+    rr:objectMap [
+      rr:parentTriplesMap <#ChangelogMapping> ;
+	  rr:joinCondition [
+        rr:child "changelog";
+        rr:parent "changelog";
+      ];
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:softwareVersion;
+    rr:objectMap [
+      rml:reference "version"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:datePublished;
+    rr:objectMap [
+      rml:reference "release_date"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:dateModified;
+    rr:objectMap [
+      rml:reference "current_version_release_date"
+    ]
+  ];
+
+  rr:predicateObjectMap [
+    rr:predicate schema:review;
+    rr:objectMap [
+      rr:parentTriplesMap <#ReviewMapping> ;
+	  rr:joinCondition [
+        rr:child "reviewId";
+        rr:parent "reviews.reviewId";
+      ];
+    ]
+  ].
+
+<#FeatureMapping> a rr:TriplesMap;
+    rml:logicalSource [
+      rml:source "App.json";
+      rml:referenceFormulation ql:JSONPath;
+      rml:iterator "$.features[*]"
+    ];
+
+    rr:subjectMap [
+      rr:template "http://schema.org/DefinedTerm/{%feature%}";
+      rr:class schema:DefinedTerm
+    ];
+
+    rr:predicateObjectMap [
+        rr:predicate schema:identifier;
+        rr:objectMap [
+          rml:reference "feature"
+        ]
+      ];
+
+    rr:predicateObjectMap [
+      rr:predicate schema:name;
+      rr:objectMap [
+        rml:reference "feature"
+      ]
+    ];
