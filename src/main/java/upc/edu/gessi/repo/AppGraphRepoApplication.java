@@ -5,7 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.domain.App;
 import upc.edu.gessi.repo.domain.DocumentType;
 import upc.edu.gessi.repo.domain.SimilarityAlgorithm;
@@ -55,12 +58,28 @@ public class AppGraphRepoApplication {
 			//throw new RuntimeException(e);
 		}
 	}
+
 	@PostMapping("/insert")
 	public int insertData(@RequestBody List<App> apps) {
 		for (App app : apps) {
 			dbConnection.insertApp(app);
 		}
 		return 1;
+	}
+
+	@PostMapping("/insert-rdf")
+	public ResponseEntity<String> insertRDF(@RequestParam("file") MultipartFile file) {
+		try {
+			if (file.isEmpty()) {
+				return new ResponseEntity<>("File is empty", HttpStatus.BAD_REQUEST);
+			}
+
+			dbConnection.insertRDF(file);
+
+			return new ResponseEntity<>("RDF data inserted successfully", HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>("Error inserting RDF data: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	@PostMapping("/update")

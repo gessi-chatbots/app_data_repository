@@ -5,6 +5,7 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModelFactory;
+import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
@@ -18,19 +19,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.domain.*;
 import upc.edu.gessi.repo.domain.graph.*;
 import upc.edu.gessi.repo.utils.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
-@Deprecated
 public class GraphDBService {
 
     private Logger logger = LoggerFactory.getLogger(GraphDBService.class);
@@ -631,4 +633,16 @@ public class GraphDBService {
        }
     }
 
+    public void insertRDF(MultipartFile file) throws Exception {
+        // Parse the Turtle file into an RDF model
+        try (InputStream inputStream = file.getInputStream()) {
+            Model model = Rio.parse(inputStream, "", RDFFormat.TURTLE);
+            RepositoryConnection repoConnection = repository.getConnection();
+            repoConnection.add(model);
+            repoConnection.commit();
+            repoConnection.close();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 }
