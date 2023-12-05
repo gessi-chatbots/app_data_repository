@@ -74,6 +74,7 @@ public class GraphDBService {
     private  IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
     private  IRI reviewsIRI = factory.createIRI("https://schema.org/review");
     private IRI reviewDocumentIRI = factory.createIRI("https://schema.org/featureList");
+    private IRI sameAsIRI = factory.createIRI("https://schema.org/sameAs");
 
     //Review objects
     private  IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
@@ -126,7 +127,9 @@ public class GraphDBService {
         String developerName = app.getDeveloper().replace(" ","_");
         IRI dev = factory.createIRI(developerIRI+"/"+developerName);
 
-        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(developerName)));
+        statements.add(factory.createStatement(dev,identifierIRI,factory.createLiteral(developerName)));
+        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(app.getDeveloper())));
+        statements.add(factory.createStatement(dev,sameAsIRI,factory.createLiteral(app.getDeveloper_site())));
         statements.add(factory.createStatement(dev, typeIRI, developerIRI));
         statements.add(factory.createStatement(sub,authorIRI,dev));
 
@@ -164,16 +167,19 @@ public class GraphDBService {
         //Adding reviewDocumentPlaceholder
         addDigitalDocument(app.getPackage_name(), "Aggregated NL data for app " + app.getApp_name(), statements, sub, reviewDocumentIRI, DocumentType.REVIEWS);
 
-        //Adding all features - given features are injected at creation time, they are user annotated
-        addFeatures(app, sub, statements);
         //Adding all reviews
         addReviews(app, sub, statements);
+
+        //EXTENDED KNOWLEDGE - Add features
+        addFeatures(app, sub, statements);
+
         //Committing all changes
         commitChanges(model, statements);
     }
 
     private void addDigitalDocument(String packageName, String text, List<Statement> statements, IRI sub, IRI pred, DocumentType documentType) {
         IRI appDescription = factory.createIRI(digitalDocumentIRI + "/" + packageName + "-" + documentType);
+        statements.add(factory.createStatement(appDescription, identifierIRI, factory.createLiteral(packageName + "-" + documentType)));
         statements.add(factory.createStatement(appDescription, textIRI, factory.createLiteral(text)));
         statements.add(factory.createStatement(appDescription, disambiguatingDescriptionIRI, factory.createLiteral(documentType.getName())));
         statements.add(factory.createStatement(sub, pred, appDescription));
@@ -213,16 +219,20 @@ public class GraphDBService {
              if (r.getReviewDate() != null) {
                  statements.add(factory.createStatement(review, datePublishedIRI, factory.createLiteral(r.getReviewDate())));
              }
+             statements.add(factory.createStatement(review, authorIRI, factory.createLiteral(r.getUserName())));
              statements.add(factory.createStatement(sub, reviewsIRI, review));
              statements.add(factory.createStatement(review, typeIRI, reviewIRI));
+             statements.add(factory.createStatement(review, identifierIRI, factory.createLiteral(r.getReviewId())));
              //statements.add(factory.createStatement(author, typeIRI, personIRI));
          }
     }
 
     private void addFeatures(App app, IRI sub, List<Statement> statements) {
-        for (String feature : app.getFeatures()) {
-            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + WordUtils.capitalize(feature).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", ""));
-            statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature)));
+        for (Feature feature : app.getFeatures()) {
+            String id = WordUtils.capitalize(feature.getName()).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", "");
+            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + id);
+            statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature.getName())));
+            statements.add(factory.createStatement(featureIRI, identifierIRI, factory.createLiteral(id)));
             statements.add(factory.createStatement(sub, featuresIRI, featureIRI));
             statements.add(factory.createStatement(featureIRI, typeIRI, definedTermIRI));
         }
@@ -313,7 +323,12 @@ public class GraphDBService {
 
         for (int i = 0; i < features.size(); ++i) {
             App app = new App();
-            app.setFeatures(features.get(i).getFeatures());
+            List<String> featureString = features.get(i).getFeatures();
+            List<Feature> featureList = new ArrayList<>();
+            for (String fs : featureString) {
+                featureList.add(new Feature(appIRI.toString(), fs));
+            }
+            app.setFeatures(featureList);
             try {
                 addFeatures(app, source.get(i), statements);
             } catch (Exception e) {

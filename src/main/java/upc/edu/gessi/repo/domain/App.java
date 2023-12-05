@@ -39,15 +39,23 @@ public class App implements Serializable {
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date current_version_release_date;
+    private List<String> tags;
 
-    public List<String> getFeatures() {
+
+    /**
+     * Extended model - Feature
+     */
+    private List<Feature> features;
+
+
+    public List<Feature> getFeatures() {
         //otherwise it leads to problems when inserting the app
         if (features != null)
             return features;
         else return new ArrayList<>();
     }
 
-    public void setFeatures(List<String> features) {
+    public void setFeatures(List<Feature> features) {
         this.features = features;
     }
 
@@ -58,10 +66,6 @@ public class App implements Serializable {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
-
-    private List<String> features;
-    private List<String> tags;
-
 
     public String getPackage_name() {
         return package_name;

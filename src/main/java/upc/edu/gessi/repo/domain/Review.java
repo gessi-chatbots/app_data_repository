@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import upc.edu.gessi.repo.domain.serializer.CustomDateDeserializer;
@@ -12,6 +13,9 @@ import java.util.Date;
 public class Review implements Serializable {
 
     private static int counter = 0;
+
+    @JsonProperty("package")
+    private String package_name;
     private String reviewId;
     private String review;
     private String reply;
@@ -78,5 +82,13 @@ public class Review implements Serializable {
     }
 
     public void setReviewDate(Date at) {this.at = at;}
+
+    public String getPackage_name() {
+        return package_name;
+    }
+
+    public void setPackage_name(String package_name) {
+        this.package_name = package_name;
+    }
 
 }
