@@ -18,7 +18,9 @@ This software component provides and API for querying, updating and extracting k
 
 ## How to configure
 
-Configure the GraphDB access by setting the proper values for ```db.url```, ```db.username``` and ```db.password``` in ```src/main/resources/application.properties``` file.
+Configure the GraphDB connection by setting the proper values for ```db.url```, ```db.username``` and ```db.password``` in ```src/main/resources/application.properties```.
+
+Configure the RML file path by setting proper value for ```rml.path``` to use a custom RML file for schema integration.
 
 ## How to build
 
@@ -41,11 +43,14 @@ To deploy the service in a Docker container, run the following commands from pro
 
 The API of the App Data Repository is available here: http://localhost:8080/swagger-ui/. Below we provide a brief summarization of the main functionalities integrated in the last version of this service.
 
-For now, this API accepts several requests:
-- Send a GET request to /data?app_name to retrieve all the info saved for that app.
-- Send a POST request to /insert with a json containing the app info you want to save.
-- Send a GET request to /export (with a query parameter named "fileName") to export the contents of the DB to a file.
-- Send a POST request to /updateRepository with a single JSON object with the attribute "url" to change the graph database endpoint.
+Main methods for data import are listed below:
+
+- **Add Mobile Apps (JSON format)**: Store a list of mobile apps using a JSON Array of mobile apps as body for the HTTP request. See the Swagger doc for the schema.
+- **Add Mobile Apps (RDF format)**: Store all triplets withina given RDF file.
+- **Add Mobile Apps (RML-based)**: Store all mobile apps extracted from a JSON file using a given RML mapping instance.
+
+In addition, based on inductive knowledge generation techniques:
+
 - Send a POST request to /derivedNLFeatures to send textual data (i.e. descriptions, summaries, changelogs and/or reviews) through a natural language pipeline in order to extract potential app features. This requests needs the following query parameters:
   - documentType: the type of document to be processed. Possible values are: DESCRIPTION, SUMMARY, CHANGELOG, REVIEWS, USER_ANNOTATED and ALL.
   - batch-size: the number of documents to be processed at once.
@@ -57,7 +62,10 @@ For now, this API accepts several requests:
 ## File structure
 
 - \src\main\java\upc.edu.gessi.repo
-  - AppGraphRepoApplication.java: Main class and controller for the service.
+  - AppGraphRepoApplication.java: Main class.
+  - \controller: this package contains the repositories for processing HTTP requests.
+  	- GraphDBController.java: Logic for storing and retrieving data from the GraphDB repository.
+    - InductiveKnowledgeController.java: auxiliary repository handling extended knowledge generation embedded into the system.
   - \domain: this package contains entities for the domain.
   - \service: this package includes the services that build this application.
     - GraphDBService.java: main service. It contains methods for querying and updating the database.
