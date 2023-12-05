@@ -2,14 +2,14 @@
 @prefix rml: <http://semweb.mmlab.be/ns/rml#>.
 @prefix ql: <http://semweb.mmlab.be/ns/ql#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
-@prefix schema: <http://schema.org/>.
+@prefix schema: <https://schema.org/>.
 @prefix wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>.
 @prefix gn: <http://www.geonames.org/ontology#>.
 @base <http://example.com/ns#>.
 
 <#DeveloperMapping> a rr:TriplesMap;
   rml:logicalSource [
-	rml:source "App.json";
+	rml:source "app_list_example.json";
     rml:referenceFormulation ql:JSONPath ;
     rml:iterator "$.*"
 ] ;
@@ -17,6 +17,13 @@
   rr:subjectMap [
     rr:template "http://schema.org/Organization/{developer}";
     rr:class schema:Organization
+  ];
+  
+  rr:predicateObjectMap [
+    rr:predicate schema:identifier;
+    rr:objectMap [
+      rml:reference "developer"
+    ]
   ];
 
   rr:predicateObjectMap [
@@ -35,7 +42,7 @@
 
 <#DescriptionMapping> a rr:TriplesMap;
   rml:logicalSource [
-	rml:source "App.json";
+	rml:source "app_list_example.json";
     rml:referenceFormulation ql:JSONPath ;
     rml:iterator "$.*"
 ] ;
@@ -61,7 +68,7 @@
 
 <#SummaryMapping> a rr:TriplesMap;
   rml:logicalSource [
-	rml:source "App.json";
+	rml:source "app_list_example.json";
     rml:referenceFormulation ql:JSONPath ;
     rml:iterator "$.*"
 ] ;
@@ -87,7 +94,7 @@
 
 <#ChangelogMapping> a rr:TriplesMap;
   rml:logicalSource [
-	rml:source "App.json";
+	rml:source "app_list_example.json";
     rml:referenceFormulation ql:JSONPath ;
     rml:iterator "$.*"
 ] ;
@@ -113,7 +120,7 @@
 
 <#ReviewMapping> a rr:TriplesMap;
   rml:logicalSource [
-  rml:source "App.json";
+  rml:source "app_list_example.json";
   rml:referenceFormulation ql:JSONPath;
   rml:iterator "$[*].reviews[*]"
 ] ;
@@ -157,10 +164,10 @@
       rml:reference "userName"
     ]
   ].
-
+  
 <#AppMapping> a rr:TriplesMap;
   rml:logicalSource [
-	rml:source "App.json";
+	rml:source "app_list_example.json";
     rml:referenceFormulation ql:JSONPath ;
     rml:iterator "$.*"
 ]  ;
@@ -261,34 +268,8 @@
     rr:objectMap [
       rr:parentTriplesMap <#ReviewMapping> ;
 	  rr:joinCondition [
-        rr:child "reviewId";
-        rr:parent "reviews.reviewId";
+        rr:child "package";
+		rr:parent "package";
       ];
     ]
   ].
-
-<#FeatureMapping> a rr:TriplesMap;
-    rml:logicalSource [
-      rml:source "App.json";
-      rml:referenceFormulation ql:JSONPath;
-      rml:iterator "$.features[*]"
-    ];
-
-    rr:subjectMap [
-      rr:template "http://schema.org/DefinedTerm/{%feature%}";
-      rr:class schema:DefinedTerm
-    ];
-
-    rr:predicateObjectMap [
-        rr:predicate schema:identifier;
-        rr:objectMap [
-          rml:reference "feature"
-        ]
-      ];
-
-    rr:predicateObjectMap [
-      rr:predicate schema:name;
-      rr:objectMap [
-        rml:reference "feature"
-      ]
-    ];

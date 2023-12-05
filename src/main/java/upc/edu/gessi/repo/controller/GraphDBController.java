@@ -1,8 +1,17 @@
 package upc.edu.gessi.repo.controller;
 
+import be.ugent.rml.Utils;
+import be.ugent.rml.records.RecordsFactory;
+import be.ugent.rml.store.QuadStore;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +20,8 @@ import upc.edu.gessi.repo.domain.App;
 import upc.edu.gessi.repo.service.AppFinder;
 import upc.edu.gessi.repo.service.GraphDBService;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -23,6 +34,9 @@ public class GraphDBController {
 
     @Autowired
     private AppFinder appFinder;
+
+    @Value("${rml.path}")
+    private String rmlPath;
 
     @GetMapping("/app")
     public App getData(@RequestParam(value = "app_name", defaultValue = "OsmAnd") String name) {
@@ -45,6 +59,22 @@ public class GraphDBController {
             dbConnection.insertApp(app);
         }
         return 1;
+    }
+
+    @PostMapping("/app/rml")
+    public ResponseEntity<String> insertRML(@RequestBody List<App> apps) {
+        try {
+
+            File mappingFile = Utils.getFile(rmlPath);
+
+            for (App app : apps) {
+
+            }
+
+            return new ResponseEntity<>("RML data inserted successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error inserting RML data: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/app/rdf")
