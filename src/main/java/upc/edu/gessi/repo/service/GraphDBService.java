@@ -69,14 +69,16 @@ public class GraphDBService {
     private IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
     private IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
     private IRI descriptionIRI = factory.createIRI("https://schema.org/description");
-    private  IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
+    private IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
     private IRI textIRI = factory.createIRI("https://schema.org/text");
     private IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
-    private  IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
-    private  IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
-    private  IRI reviewsIRI = factory.createIRI("https://schema.org/review");
+    private IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
+    private IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
+    private IRI reviewsIRI = factory.createIRI("https://schema.org/review");
     private IRI reviewDocumentIRI = factory.createIRI("https://schema.org/featureList");
     private IRI sameAsIRI = factory.createIRI("https://schema.org/sameAs");
+    private IRI softwareVersionIRI = factory.createIRI("https://schema.org/softwareVersion");
+    private IRI dateModifiedIRI = factory.createIRI("https://schema.org/dateModified");
 
     //Review objects
     private  IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
@@ -143,6 +145,18 @@ public class GraphDBService {
         //if (app.getCategory() != null) {
         //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategory())));
         //}
+
+        if (app.getRelease_date() != null) {
+            statements.add(factory.createStatement(sub, datePublishedIRI, factory.createLiteral(app.getRelease_date())));
+        }
+
+        if (app.getCurrent_version_release_date() != null) {
+            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(app.getRelease_date())));
+        }
+
+        if (app.getVersion() != null) {
+            statements.add(factory.createStatement(sub, softwareVersionIRI, factory.createLiteral(app.getVersion())));
+        }
 
         if (app.getCategoryId() != null) {
             statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategoryId())));
@@ -638,6 +652,7 @@ public class GraphDBService {
         try (InputStream inputStream = file.getInputStream()) {
             Model model = Rio.parse(inputStream, "", RDFFormat.TURTLE);
             RepositoryConnection repoConnection = repository.getConnection();
+            repoConnection.begin();
             repoConnection.add(model);
             repoConnection.commit();
             repoConnection.close();
