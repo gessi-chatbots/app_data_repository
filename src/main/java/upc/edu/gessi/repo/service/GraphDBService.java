@@ -1,5 +1,13 @@
 package upc.edu.gessi.repo.service;
 
+import be.ugent.idlab.knows.functions.agent.Agent;
+import be.ugent.idlab.knows.functions.agent.AgentFactory;
+import be.ugent.rml.Executor;
+import be.ugent.rml.records.RecordsFactory;
+import be.ugent.rml.store.QuadStore;
+import be.ugent.rml.store.QuadStoreFactory;
+import be.ugent.rml.store.RDF4JStore;
+import be.ugent.rml.term.NamedNode;
 import org.apache.commons.text.WordUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.eclipse.rdf4j.model.*;
@@ -7,7 +15,6 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModelFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -18,19 +25,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.domain.*;
 import upc.edu.gessi.repo.domain.graph.*;
 import upc.edu.gessi.repo.utils.Utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
-@Deprecated
 public class GraphDBService {
 
     private Logger logger = LoggerFactory.getLogger(GraphDBService.class);
@@ -67,13 +74,16 @@ public class GraphDBService {
     private IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
     private IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
     private IRI descriptionIRI = factory.createIRI("https://schema.org/description");
-    private  IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
+    private IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
     private IRI textIRI = factory.createIRI("https://schema.org/text");
     private IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
-    private  IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
-    private  IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
-    private  IRI reviewsIRI = factory.createIRI("https://schema.org/review");
+    private IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
+    private IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
+    private IRI reviewsIRI = factory.createIRI("https://schema.org/review");
     private IRI reviewDocumentIRI = factory.createIRI("https://schema.org/featureList");
+    private IRI sameAsIRI = factory.createIRI("https://schema.org/sameAs");
+    private IRI softwareVersionIRI = factory.createIRI("https://schema.org/softwareVersion");
+    private IRI dateModifiedIRI = factory.createIRI("https://schema.org/dateModified");
 
     //Review objects
     private  IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
@@ -126,7 +136,9 @@ public class GraphDBService {
         String developerName = app.getDeveloper().replace(" ","_");
         IRI dev = factory.createIRI(developerIRI+"/"+developerName);
 
-        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(developerName)));
+        statements.add(factory.createStatement(dev,identifierIRI,factory.createLiteral(developerName)));
+        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(app.getDeveloper())));
+        statements.add(factory.createStatement(dev,sameAsIRI,factory.createLiteral(app.getDeveloper_site())));
         statements.add(factory.createStatement(dev, typeIRI, developerIRI));
         statements.add(factory.createStatement(sub,authorIRI,dev));
 
@@ -138,6 +150,18 @@ public class GraphDBService {
         //if (app.getCategory() != null) {
         //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategory())));
         //}
+
+        if (app.getRelease_date() != null) {
+            statements.add(factory.createStatement(sub, datePublishedIRI, factory.createLiteral(app.getRelease_date())));
+        }
+
+        if (app.getCurrent_version_release_date() != null) {
+            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(app.getRelease_date())));
+        }
+
+        if (app.getVersion() != null) {
+            statements.add(factory.createStatement(sub, softwareVersionIRI, factory.createLiteral(app.getVersion())));
+        }
 
         if (app.getCategoryId() != null) {
             statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategoryId())));
@@ -164,16 +188,19 @@ public class GraphDBService {
         //Adding reviewDocumentPlaceholder
         addDigitalDocument(app.getPackage_name(), "Aggregated NL data for app " + app.getApp_name(), statements, sub, reviewDocumentIRI, DocumentType.REVIEWS);
 
-        //Adding all features - given features are injected at creation time, they are user annotated
-        addFeatures(app, sub, statements);
         //Adding all reviews
         addReviews(app, sub, statements);
+
+        //EXTENDED KNOWLEDGE - Add features
+        addFeatures(app, sub, statements);
+
         //Committing all changes
         commitChanges(model, statements);
     }
 
     private void addDigitalDocument(String packageName, String text, List<Statement> statements, IRI sub, IRI pred, DocumentType documentType) {
         IRI appDescription = factory.createIRI(digitalDocumentIRI + "/" + packageName + "-" + documentType);
+        statements.add(factory.createStatement(appDescription, identifierIRI, factory.createLiteral(packageName + "-" + documentType)));
         statements.add(factory.createStatement(appDescription, textIRI, factory.createLiteral(text)));
         statements.add(factory.createStatement(appDescription, disambiguatingDescriptionIRI, factory.createLiteral(documentType.getName())));
         statements.add(factory.createStatement(sub, pred, appDescription));
@@ -213,16 +240,20 @@ public class GraphDBService {
              if (r.getReviewDate() != null) {
                  statements.add(factory.createStatement(review, datePublishedIRI, factory.createLiteral(r.getReviewDate())));
              }
+             statements.add(factory.createStatement(review, authorIRI, factory.createLiteral(r.getUserName())));
              statements.add(factory.createStatement(sub, reviewsIRI, review));
              statements.add(factory.createStatement(review, typeIRI, reviewIRI));
+             statements.add(factory.createStatement(review, identifierIRI, factory.createLiteral(r.getReviewId())));
              //statements.add(factory.createStatement(author, typeIRI, personIRI));
          }
     }
 
     private void addFeatures(App app, IRI sub, List<Statement> statements) {
-        for (String feature : app.getFeatures()) {
-            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + WordUtils.capitalize(feature).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", ""));
-            statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature)));
+        for (Feature feature : app.getFeatures()) {
+            String id = WordUtils.capitalize(feature.getName()).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", "");
+            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + id);
+            statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature.getName())));
+            statements.add(factory.createStatement(featureIRI, identifierIRI, factory.createLiteral(id)));
             statements.add(factory.createStatement(sub, featuresIRI, featureIRI));
             statements.add(factory.createStatement(featureIRI, typeIRI, definedTermIRI));
         }
@@ -313,7 +344,12 @@ public class GraphDBService {
 
         for (int i = 0; i < features.size(); ++i) {
             App app = new App();
-            app.setFeatures(features.get(i).getFeatures());
+            List<String> featureString = features.get(i).getFeatures();
+            List<Feature> featureList = new ArrayList<>();
+            for (String fs : featureString) {
+                featureList.add(new Feature(appIRI.toString(), fs));
+            }
+            app.setFeatures(featureList);
             try {
                 addFeatures(app, source.get(i), statements);
             } catch (Exception e) {
@@ -616,4 +652,56 @@ public class GraphDBService {
        }
     }
 
+    public void insertRDF(MultipartFile file) throws Exception {
+        // Parse the Turtle file into an RDF model
+        try (InputStream inputStream = file.getInputStream()) {
+            Model model = Rio.parse(inputStream, "", RDFFormat.TURTLE);
+            RepositoryConnection repoConnection = repository.getConnection();
+            repoConnection.begin();
+            repoConnection.add(model);
+            repoConnection.commit();
+            repoConnection.close();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    public void insertRML(String jsonFolder, File mappingFile) throws Exception {
+        InputStream mappingStream = new FileInputStream(mappingFile);
+        QuadStore rmlStore = QuadStoreFactory.read(mappingStream);
+
+        // Create RecordsGenerator for JSON data
+        RecordsFactory recordsFactory = new RecordsFactory(jsonFolder);
+
+        QuadStore outputStore = new RDF4JStore();
+        // Set up the functions used during the mapping
+        Agent functionAgent = AgentFactory.createFromFnO(
+                "fno/functions_idlab.ttl",
+                "fno/functions_idlab_classes_java_mapping.ttl",
+                "grel_java_mapping.ttl",
+                "functions_grel.ttl");
+
+        // Create the Executor
+        Executor executor = new Executor(rmlStore, recordsFactory, outputStore, be.ugent.rml.Utils.getBaseDirectiveTurtle(mappingStream), functionAgent);
+        // Execute the mapping
+        QuadStore result = executor.execute(null).get(new NamedNode("rmlmapper://default.store"));
+        // Optionally, you can convert the result to an RDF4J Model
+        System.out.println(result);
+
+    }
+
+    /*private static Model convertQuadStoreToRDF4JModel(QuadStore quadStore) {
+        Model rdf4jModel = new LinkedHashModel();
+
+        quadStore.ite(quad -> {
+            rdf4jModel.add(
+                    SimpleValueFactory.getInstance().createIRI(quad.getSubject().getValue()),
+                    SimpleValueFactory.getInstance().createIRI(quad.getPredicate().getValue()),
+                    SimpleValueFactory.getInstance().createLiteral(quad.getObject().getValue()),
+                    SimpleValueFactory.getInstance().createIRI(quad.getGraph().getValue())
+            );
+        });
+
+        return rdf4jModel;
+    }*/
 }
