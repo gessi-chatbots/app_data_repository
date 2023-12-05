@@ -1,0 +1,61 @@
+[
+{"name": "Running Distance Tracker +", 
+"package": "com.fitness22.running", 
+"app_name": "Running Distance Tracker +", 
+"description": "Running Tracker+ tracks your distance, pace, calories and more. Its the most accurate running distance / time tracker available on the market, packed into the simplest & most gorgeous interface. It includes access to your music player + voice feedback guiding you as you run towards your target distance / time. It also maintains a history of your runs and improvements over time, and shows you a complete log of your running activities. \r\n\r\nMain Features\r\n- Most accurate distance / time tracking available\r\n- Average & current pace tracking\r\n- Running GPS with Maps & running routes\r\n- Calories spent\r\n- Voice feedback letting you know your progress as you run. Customizable per distance / time.\r\n- Run log: run history tracking with monthly averages\r\n- Music player access\r\n\r\nComments? Ideas? Feedback?\r\nwe're here for you: support@fitness22.com", 
+"summary": "Running tracker pro: GPS, maps, calories, pace, audio coach, run log & more", 
+"category": "Health & Fitness", 
+"categoryId": "HEALTH_AND_FITNESS", 
+"in_app_purchases": true, 
+"android_version": null, 
+"developer": "Fitness22", 
+"developer_site": "http://fitness22.com", 
+"release_date": "Jun 20, 2016", 
+"current_version_release_date": null, 
+"version": "3.715", 
+"changelog": "Changelog_Running", 
+"reviews": [
+{"package":"com.fitness22.running", "reviewId": "625dfc4e-816c-495b-bb9d-f33df6d81de7", "review": "Awesome app.", "reply": null, "userName": "Erik G", "score": 5, "source": "Google Play", "at": "Nov 17, 2020"},
+{"package":"com.fitness22.running", "reviewId": "ef2b486d-30e3-41a5-a322-534ec8af383a", "review": "Does the job with pleasure!", "reply": null, "userName": "Keith Miller", "score": 5, "source": "Google Play", "at": "Nov 17, 2020"}
+], 
+"package_name": "com.fitness22.running", 
+"other_apps": null, 
+"play_store_link": "https://play.google.com/store/apps/details?id=com.fitness22.running&hl=en&gl=us", 
+"features": [
+{"package": "com.fitness22.running", "name":"Cycling"}, 
+{"package": "com.fitness22.running", "name":"Run Tracking"},
+{"package": "com.fitness22.running", "name":"Route Planning"}
+], 
+"tags": [], 
+"is_open_source": false
+},
+{"name": "Instagram", 
+"package": "com.instagram", 
+"app_name": "Instagram App", 
+"description": "Bringing you closer to the people and things you love. — Instagram from Meta. Connect with friends, share what you’re up to, or see what's new from others all over the world. Explore our community where you can feel free to be yourself and share everything from your daily moments to life's highlights. Express Yourself and Connect With Friends. * Add photos and videos to your story that disappear after 24 hours, and bring them to life with fun creative tools. * Message your friends with Messenger. Share and connect over what you see on Feed and Stories. * Create and discover short, entertaining videos on Instagram with Reels. * Post photos and videos to your feed that you want to show on your profile. Learn More About Your Interests * Watch videos from your favorite Creators and discover new content through Instagram Video and Reels. * Get inspired by photos and videos from new accounts in Explore. * Discover brands and small businesses, and shop products that are relevant to your personal style. Some Instagram features may not be available in your country or region. Terms of Service - https://help.instagram.com/581066165581870", 
+"summary": "Bringing you closer to the people and things you love.", 
+"category": "Social", 
+"categoryId": "SOCIAL", 
+"in_app_purchases": true, 
+"android_version": null, 
+"developer": "META", 
+"developer_site": "http://facebook.com", 
+"release_date": "Jun 20, 2016", 
+"current_version_release_date": null, 
+"version": "3.715", 
+"changelog": "Changelog_Instagram", 
+"reviews": [
+{"reviewId": "a603d897-886a-4c88-a49a-878b00bcd29c", "review": "By far the best app, making life easy and enjoyable", "reply": null, "userName": "Clifford Mwamba", "score": 5, "source": "Google Play", "at": "Nov 17, 2020"}, 
+{"reviewId": "268d8f48-1e57-4458-b910-1c3988689d50", "review": "Excellent", "reply": null, "userName": "AMAN SINGH", "score": 5, "source": "Google Play", "at": "Nov 17, 2020"}
+], 
+"package_name": "com.instagram", 
+"other_apps": null, 
+"play_store_link": "https://play.google.com/store/apps/details?id=com.instagram", 
+"features": [
+{"package": "com.instagram", "name":"Messaging"}, 
+{"package": "com.instagram", "name":"Friends"}
+], 
+"tags": [], 
+"is_open_source": false
+}
+]

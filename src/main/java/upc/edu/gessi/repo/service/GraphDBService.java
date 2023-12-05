@@ -1,14 +1,20 @@
 package upc.edu.gessi.repo.service;
 
+import be.ugent.idlab.knows.functions.agent.Agent;
+import be.ugent.idlab.knows.functions.agent.AgentFactory;
+import be.ugent.rml.Executor;
+import be.ugent.rml.records.RecordsFactory;
+import be.ugent.rml.store.QuadStore;
+import be.ugent.rml.store.QuadStoreFactory;
+import be.ugent.rml.store.RDF4JStore;
+import be.ugent.rml.term.NamedNode;
 import org.apache.commons.text.WordUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModelFactory;
-import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -25,10 +31,9 @@ import upc.edu.gessi.repo.domain.graph.*;
 import upc.edu.gessi.repo.utils.Utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -660,4 +665,43 @@ public class GraphDBService {
             throw e;
         }
     }
+
+    public void insertRML(String jsonFolder, File mappingFile) throws Exception {
+        InputStream mappingStream = new FileInputStream(mappingFile);
+        QuadStore rmlStore = QuadStoreFactory.read(mappingStream);
+
+        // Create RecordsGenerator for JSON data
+        RecordsFactory recordsFactory = new RecordsFactory(jsonFolder);
+
+        QuadStore outputStore = new RDF4JStore();
+        // Set up the functions used during the mapping
+        Agent functionAgent = AgentFactory.createFromFnO(
+                "fno/functions_idlab.ttl",
+                "fno/functions_idlab_classes_java_mapping.ttl",
+                "grel_java_mapping.ttl",
+                "functions_grel.ttl");
+
+        // Create the Executor
+        Executor executor = new Executor(rmlStore, recordsFactory, outputStore, be.ugent.rml.Utils.getBaseDirectiveTurtle(mappingStream), functionAgent);
+        // Execute the mapping
+        QuadStore result = executor.execute(null).get(new NamedNode("rmlmapper://default.store"));
+        // Optionally, you can convert the result to an RDF4J Model
+        System.out.println(result);
+
+    }
+
+    /*private static Model convertQuadStoreToRDF4JModel(QuadStore quadStore) {
+        Model rdf4jModel = new LinkedHashModel();
+
+        quadStore.ite(quad -> {
+            rdf4jModel.add(
+                    SimpleValueFactory.getInstance().createIRI(quad.getSubject().getValue()),
+                    SimpleValueFactory.getInstance().createIRI(quad.getPredicate().getValue()),
+                    SimpleValueFactory.getInstance().createLiteral(quad.getObject().getValue()),
+                    SimpleValueFactory.getInstance().createIRI(quad.getGraph().getValue())
+            );
+        });
+
+        return rdf4jModel;
+    }*/
 }
