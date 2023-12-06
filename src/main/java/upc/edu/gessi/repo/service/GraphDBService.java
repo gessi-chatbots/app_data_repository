@@ -138,7 +138,9 @@ public class GraphDBService {
 
         statements.add(factory.createStatement(dev,identifierIRI,factory.createLiteral(developerName)));
         statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(app.getDeveloper())));
-        statements.add(factory.createStatement(dev,sameAsIRI,factory.createLiteral(app.getDeveloper_site())));
+        if (app.getDeveloper_site() != null) {
+            statements.add(factory.createStatement(dev, sameAsIRI, factory.createLiteral(app.getDeveloper_site())));
+        }
         statements.add(factory.createStatement(dev, typeIRI, developerIRI));
         statements.add(factory.createStatement(sub,authorIRI,dev));
 
@@ -156,7 +158,7 @@ public class GraphDBService {
         }
 
         if (app.getCurrent_version_release_date() != null) {
-            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(app.getRelease_date())));
+            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(app.getCurrent_version_release_date())));
         }
 
         if (app.getVersion() != null) {
