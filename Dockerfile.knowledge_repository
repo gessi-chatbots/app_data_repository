@@ -10,6 +10,8 @@ RUN mvn clean
 
 RUN mvn package spring-boot:repackage
 
+EXPOSE 3001
+
 ENTRYPOINT ["java"]
 
 CMD ["-jar", "./target/repo-0.0.1-SNAPSHOT.jar"]
