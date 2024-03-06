@@ -1,4 +1,4 @@
-package upc.edu.gessi.repo.domain.graph;
+package upc.edu.gessi.repo.dto.graph;
 
 import java.io.Serializable;
 

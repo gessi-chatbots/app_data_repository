@@ -5,18 +5,15 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.domain.graph.GraphEdge;
-import upc.edu.gessi.repo.domain.graph.GraphNode;
-import upc.edu.gessi.repo.utils.Utils;
+import upc.edu.gessi.repo.dto.graph.GraphEdge;
+import upc.edu.gessi.repo.dto.graph.GraphNode;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

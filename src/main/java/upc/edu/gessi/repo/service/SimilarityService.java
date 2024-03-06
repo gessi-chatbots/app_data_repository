@@ -5,9 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.domain.DocumentType;
-import upc.edu.gessi.repo.domain.SimilarityAlgorithm;
-import upc.edu.gessi.repo.domain.SimilarityApp;
+import upc.edu.gessi.repo.dto.DocumentType;
+import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
+import upc.edu.gessi.repo.dto.SimilarityApp;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package upc.edu.gessi.repo.utils;
+package upc.edu.gessi.repo.util;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -7,9 +7,9 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.json.JSONObject;
-import upc.edu.gessi.repo.domain.graph.Graph;
-import upc.edu.gessi.repo.domain.graph.GraphEdge;
-import upc.edu.gessi.repo.domain.graph.GraphNode;
+import upc.edu.gessi.repo.dto.graph.Graph;
+import upc.edu.gessi.repo.dto.graph.GraphEdge;
+import upc.edu.gessi.repo.dto.graph.GraphNode;
 
 import java.io.*;
 import java.util.ArrayList;

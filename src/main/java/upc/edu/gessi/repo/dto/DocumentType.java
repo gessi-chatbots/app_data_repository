@@ -1,6 +1,4 @@
-package upc.edu.gessi.repo.domain;
-
-import javax.print.Doc;
+package upc.edu.gessi.repo.dto;
 
 public enum DocumentType {
 

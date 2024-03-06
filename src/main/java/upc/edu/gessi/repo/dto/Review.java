@@ -1,11 +1,11 @@
-package upc.edu.gessi.repo.domain;
+package upc.edu.gessi.repo.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import upc.edu.gessi.repo.domain.serializer.CustomDateDeserializer;
-import upc.edu.gessi.repo.domain.serializer.CustomDateSerializer;
+import upc.edu.gessi.repo.dto.serializer.CustomDateDeserializer;
+import upc.edu.gessi.repo.dto.serializer.CustomDateSerializer;
 
 import java.io.Serializable;
 import java.util.Date;

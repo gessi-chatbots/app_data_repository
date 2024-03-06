@@ -26,9 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import upc.edu.gessi.repo.domain.*;
-import upc.edu.gessi.repo.domain.graph.*;
-import upc.edu.gessi.repo.utils.Utils;
+import upc.edu.gessi.repo.dto.*;
+import upc.edu.gessi.repo.dto.graph.*;
+import upc.edu.gessi.repo.util.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
