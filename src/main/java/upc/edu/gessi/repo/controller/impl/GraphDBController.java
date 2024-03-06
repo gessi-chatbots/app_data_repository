@@ -10,9 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
 import upc.edu.gessi.repo.controller.GraphDBApi;
 import upc.edu.gessi.repo.dto.App;
+import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.service.AppFinder;
 import upc.edu.gessi.repo.service.GraphDBService;
 
@@ -34,25 +34,12 @@ public class GraphDBController implements GraphDBApi {
     private String rmlPath;
 
     @Override
-    public ResponseEntity<String> ping() {
-        return new ResponseEntity<>(HttpStatus.OK);
+    public void ping() {
     }
 
     @Override
-    @GetMapping("/app")
-    @ApiIgnore
-    public App getData(@RequestParam(value = "app_name", defaultValue = "OsmAnd") String name) {
-        App app;
-        try {
-            app =  appFinder.retrieveAppByName(name.toLowerCase());
-            return app;
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            return null;
-            //throw new RuntimeException(e);
-        }
+    public App getApp(@PathVariable final String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return appFinder.retrieveAppByName(appName.toLowerCase());
     }
 
     @Override

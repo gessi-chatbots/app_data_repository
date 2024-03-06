@@ -1,11 +1,12 @@
 package upc.edu.gessi.repo.controller;
 
 import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
 import upc.edu.gessi.repo.dto.App;
+import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 
 import java.util.List;
 
@@ -14,11 +15,12 @@ import java.util.List;
 public interface GraphDBApi {
 
     @PostMapping("/ping")
-    ResponseEntity<String> ping();
+    @ResponseStatus(HttpStatus.OK)
+    void ping();
 
-    @GetMapping("/app")
-    @ApiIgnore
-    App getData(@RequestParam(value = "app_name", defaultValue = "OsmAnd") String name);
+    @GetMapping(value = "/app/{appName}", produces = "application/json")
+    @ResponseBody
+    App getApp(@PathVariable String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException;
 
     @PostMapping("/app/json")
     @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of App entities into the GraphDB. The " +

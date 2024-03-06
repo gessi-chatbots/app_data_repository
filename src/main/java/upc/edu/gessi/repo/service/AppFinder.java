@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.App;
+import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -49,11 +50,14 @@ public class AppFinder {
         return apps;
     }
 
-    public App retrieveAppByName(String appName) throws ClassNotFoundException, IllegalAccessException {
+    public App retrieveAppByName(String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
         RepositoryConnection repoConnection = repository.getConnection();
         String query = "PREFIX gessi: <http://gessi.upc.edu/app/> SELECT ?x ?y ?z WHERE {gessi:"+appName+" ?y ?z}" ;
         TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
         TupleQueryResult result = tupleQuery.evaluate();
+        if (result.getBindingNames().isEmpty()) {
+            throw new ApplicationNotFoundException("No application was found with the app name given");
+        }
         App res = new App();
         Class<?> c = Class.forName("upc.edu.gessi.repo.dto.App");
         Field[] fieldList = c.getDeclaredFields();
