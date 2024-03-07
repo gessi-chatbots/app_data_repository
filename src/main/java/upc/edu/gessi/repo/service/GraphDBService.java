@@ -123,23 +123,23 @@ public class GraphDBService {
 
     /**
      * Insert Apps
-     * @param app
+     * @param applicationDTO
      */
-    public void insertApp(App app) {
+    public void insertApp(ApplicationDTO applicationDTO) {
 
         List<Statement> statements = new ArrayList<>();
         Model model = createEmptyModel();
 
-        IRI sub = factory.createIRI(appIRI + "/" + app.getPackage_name());
+        IRI sub = factory.createIRI(appIRI + "/" + applicationDTO.getPackageName());
         statements.add(factory.createStatement(sub, typeIRI, appIRI));
 
-        String developerName = app.getDeveloper().replace(" ","_");
+        String developerName = applicationDTO.getDeveloper().replace(" ","_");
         IRI dev = factory.createIRI(developerIRI+"/"+developerName);
 
         statements.add(factory.createStatement(dev,identifierIRI,factory.createLiteral(developerName)));
-        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(app.getDeveloper())));
-        if (app.getDeveloper_site() != null) {
-            statements.add(factory.createStatement(dev, sameAsIRI, factory.createLiteral(app.getDeveloper_site())));
+        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(applicationDTO.getDeveloper())));
+        if (applicationDTO.getDeveloperSite() != null) {
+            statements.add(factory.createStatement(dev, sameAsIRI, factory.createLiteral(applicationDTO.getDeveloperSite())));
         }
         statements.add(factory.createStatement(dev, typeIRI, developerIRI));
         statements.add(factory.createStatement(sub,authorIRI,dev));
@@ -153,48 +153,48 @@ public class GraphDBService {
         //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategory())));
         //}
 
-        if (app.getRelease_date() != null) {
-            statements.add(factory.createStatement(sub, datePublishedIRI, factory.createLiteral(app.getRelease_date())));
+        if (applicationDTO.getRelease_date() != null) {
+            statements.add(factory.createStatement(sub, datePublishedIRI, factory.createLiteral(applicationDTO.getRelease_date())));
         }
 
-        if (app.getCurrent_version_release_date() != null) {
-            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(app.getCurrent_version_release_date())));
+        if (applicationDTO.getCurrent_version_release_date() != null) {
+            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(applicationDTO.getCurrent_version_release_date())));
         }
 
-        if (app.getVersion() != null) {
-            statements.add(factory.createStatement(sub, softwareVersionIRI, factory.createLiteral(app.getVersion())));
+        if (applicationDTO.getVersion() != null) {
+            statements.add(factory.createStatement(sub, softwareVersionIRI, factory.createLiteral(applicationDTO.getVersion())));
         }
 
-        if (app.getCategoryId() != null) {
-            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategoryId())));
+        if (applicationDTO.getCategoryId() != null) {
+            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(applicationDTO.getCategoryId())));
         }
 
-        if (app.getApp_name() != null) {
-            String sanitizedName = Utils.sanitizeString(app.getApp_name());
+        if (applicationDTO.getName() != null) {
+            String sanitizedName = Utils.sanitizeString(applicationDTO.getName());
             statements.add(factory.createStatement(sub, nameIRI, factory.createLiteral(sanitizedName)));
         }
-        if (app.getPackage_name() != null) statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(app.getPackage_name())));
+        if (applicationDTO.getPackageName() != null) statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(applicationDTO.getPackageName())));
 
-        if (app.getDescription() != null) {
-            addDigitalDocument(app.getPackage_name(), app.getDescription(), statements, sub, descriptionIRI, DocumentType.DESCRIPTION);
+        if (applicationDTO.getDescription() != null) {
+            addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getDescription(), statements, sub, descriptionIRI, DocumentType.DESCRIPTION);
             //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
         }
-        if (app.getSummary() != null) {
-            addDigitalDocument(app.getPackage_name(), app.getSummary(), statements, sub, summaryIRI, DocumentType.SUMMARY);
+        if (applicationDTO.getSummary() != null) {
+            addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getSummary(), statements, sub, summaryIRI, DocumentType.SUMMARY);
             //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
         }
-        if (app.getChangelog() != null) {
-            addDigitalDocument(app.getPackage_name(), app.getChangelog(), statements, sub, changelogIRI, DocumentType.CHANGELOG);
+        if (applicationDTO.getChangelog() != null) {
+            addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getChangelog(), statements, sub, changelogIRI, DocumentType.CHANGELOG);
             //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
         }
         //Adding reviewDocumentPlaceholder
-        addDigitalDocument(app.getPackage_name(), "Aggregated NL data for app " + app.getApp_name(), statements, sub, reviewDocumentIRI, DocumentType.REVIEWS);
+        addDigitalDocument(applicationDTO.getPackageName(), "Aggregated NL data for app " + applicationDTO.getName(), statements, sub, reviewDocumentIRI, DocumentType.REVIEWS);
 
         //Adding all reviews
-        addReviews(app, sub, statements);
+        addReviews(applicationDTO, sub, statements);
 
         //EXTENDED KNOWLEDGE - Add features
-        addFeatures(app, sub, statements);
+        addFeatures(applicationDTO, sub, statements);
 
         //Committing all changes
         commitChanges(model, statements);
@@ -209,8 +209,8 @@ public class GraphDBService {
         statements.add(factory.createStatement(appDescription, typeIRI, digitalDocumentIRI));
     }
 
-    private void addReviews(App app, IRI sub, List<Statement> statements) {
-        for (Review r : app.getReviews()) {
+    private void addReviews(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
+        for (Review r : applicationDTO.getReviews()) {
              IRI review = factory.createIRI(reviewIRI + "/" + r.getReviewId());
              //normalize the text to utf-8 encoding
              String reviewBody = r.getReview();
@@ -250,8 +250,8 @@ public class GraphDBService {
          }
     }
 
-    private void addFeatures(App app, IRI sub, List<Statement> statements) {
-        for (Feature feature : app.getFeatures()) {
+    private void addFeatures(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
+        for (Feature feature : applicationDTO.getFeatures()) {
             String id = WordUtils.capitalize(feature.getName()).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", "");
             IRI featureIRI = factory.createIRI(definedTermIRI + "/" + id);
             statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature.getName())));
@@ -345,15 +345,15 @@ public class GraphDBService {
         List<Statement> statements = new ArrayList<>();
 
         for (int i = 0; i < features.size(); ++i) {
-            App app = new App();
+            ApplicationDTO applicationDTO = new ApplicationDTO();
             List<String> featureString = features.get(i).getFeatures();
             List<Feature> featureList = new ArrayList<>();
             for (String fs : featureString) {
                 featureList.add(new Feature(appIRI.toString(), fs));
             }
-            app.setFeatures(featureList);
+            applicationDTO.setFeatures(featureList);
             try {
-                addFeatures(app, source.get(i), statements);
+                addFeatures(applicationDTO, source.get(i), statements);
             } catch (Exception e) {
                 logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
             }
@@ -646,9 +646,9 @@ public class GraphDBService {
        List<GraphApp> apps = getAllApps();
        for (GraphApp app : apps) {
            //We send requests app per app
-           App updatedApp = appDataScannerService.scanApp(app, daysFromLastUpdate);
+           ApplicationDTO updatedApplicationDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
 
-           if (updatedApp != null) insertApp(updatedApp);
+           if (updatedApplicationDTO != null) insertApp(updatedApplicationDTO);
 
            //TODO remove reviews older than MAX_DAYS_REVIEWS
        }

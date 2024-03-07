@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gson.Gson;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import upc.edu.gessi.repo.dto.serializer.CustomDateDeserializer;
 import upc.edu.gessi.repo.dto.serializer.CustomDateSerializer;
 
@@ -13,21 +17,24 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class App implements Serializable {
-
-    private String app_name;
-    private String package_name;
+public class ApplicationDTO implements Serializable {
+    private String name;
+    private String packageName;
     private String description;
     private String summary;
     private String category;
     private String categoryId;
     private String version;
-    private String android_version;
+    private String androidVersion;
     private String genre;
     private String changelog;
     private String developer;
-    private String developer_site;
+    private String developerSite;
     private List<Review> reviews;
     @Deprecated
     private List<AppCategory> categories;
@@ -67,12 +74,12 @@ public class App implements Serializable {
         this.tags = tags;
     }
 
-    public String getPackage_name() {
-        return package_name;
+    public String getPackageName() {
+        return packageName;
     }
 
-    public void setPackage_name(String package_name) {
-        this.package_name = package_name;
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
     public List<Review> getReviews() {
@@ -83,12 +90,12 @@ public class App implements Serializable {
         this.reviews = reviews;
     }
 
-    public String getApp_name() {
-        return this.app_name;
+    public String getName() {
+        return this.name;
     }
 
-    public void setApp_name(String app_name) {
-        this.app_name = app_name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -151,12 +158,12 @@ public class App implements Serializable {
         this.categoryId = categoryId;
     }
 
-    public String getAndroid_version() {
-        return android_version;
+    public String getAndroidVersion() {
+        return androidVersion;
     }
 
-    public void setAndroid_version(String android_version) {
-        this.android_version = android_version;
+    public void setAndroidVersion(String androidVersion) {
+        this.androidVersion = androidVersion;
     }
 
     public String getDeveloper() {
@@ -167,12 +174,12 @@ public class App implements Serializable {
         this.developer = developer;
     }
 
-    public String getDeveloper_site() {
-        return developer_site;
+    public String getDeveloperSite() {
+        return developerSite;
     }
 
-    public void setDeveloper_site(String developer_site) {
-        this.developer_site = developer_site;
+    public void setDeveloperSite(String developerSite) {
+        this.developerSite = developerSite;
     }
 
     @Deprecated

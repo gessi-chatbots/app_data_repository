@@ -11,9 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.controller.GraphDBApi;
-import upc.edu.gessi.repo.dto.App;
+import upc.edu.gessi.repo.dto.ApplicationDTO;
+import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
-import upc.edu.gessi.repo.service.AppFinder;
+import upc.edu.gessi.repo.service.ApplicationService;
 import upc.edu.gessi.repo.service.GraphDBService;
 
 import java.io.File;
@@ -21,14 +22,16 @@ import java.util.List;
 
 @RestController
 public class GraphDBController implements GraphDBApi {
-
     private final Logger logger = LoggerFactory.getLogger(GraphDBController.class);
 
+    private final GraphDBService dbConnection;
+    private final ApplicationService applicationService;
     @Autowired
-    private GraphDBService dbConnection;
-
-    @Autowired
-    private AppFinder appFinder;
+    public GraphDBController(final GraphDBService graphDBService,
+                             final ApplicationService applicationService) {
+        this.dbConnection = graphDBService;
+        this.applicationService = applicationService;
+    }
 
     @Value("${rml.path}")
     private String rmlPath;
@@ -38,17 +41,27 @@ public class GraphDBController implements GraphDBApi {
     }
 
     @Override
-    public App getApp(@PathVariable final String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return appFinder.retrieveAppByName(appName.toLowerCase());
+    public List<ApplicationDTO> getAllApplications() throws ApplicationNotFoundException {
+        return applicationService.findAll();
+    }
+
+    @Override
+    public List<ApplicationSimplifiedDTO> getAllApplicationsNames() throws ApplicationNotFoundException {
+        return applicationService.findAllApplicationNames();
+    }
+
+    @Override
+    public ApplicationDTO getApp(@PathVariable final String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return applicationService.findByName(appName.toLowerCase());
     }
 
     @Override
     @PostMapping("/app/json")
     @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of App entities into the GraphDB. The " +
             "data is sent in JSON format through the request body.")
-    public int insertData(@RequestBody List<App> apps) {
-        for (App app : apps) {
-            dbConnection.insertApp(app);
+    public int insertData(@RequestBody List<ApplicationDTO> applicationDTOS) {
+        for (ApplicationDTO applicationDTO : applicationDTOS) {
+            dbConnection.insertApp(applicationDTO);
         }
         return 1;
     }
