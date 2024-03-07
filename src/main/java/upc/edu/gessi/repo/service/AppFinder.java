@@ -52,10 +52,10 @@ public class AppFinder {
 
     public App retrieveAppByName(String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
         RepositoryConnection repoConnection = repository.getConnection();
-        String query = "PREFIX gessi: <http://gessi.upc.edu/app/> SELECT ?x ?y ?z WHERE {gessi:"+appName+" ?y ?z}" ;
+        String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX schema: <https://schema.org/>  SELECT ?app ?name ?package WHERE { ?app rdf:type schema:MobileApplication ; schema:name ?name ; schema:identifier ?package}" ;
         TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
         TupleQueryResult result = tupleQuery.evaluate();
-        if (result.getBindingNames().isEmpty()) {
+        if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No application was found with the app name given");
         }
         App res = new App();
