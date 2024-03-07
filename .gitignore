@@ -10,9 +10,9 @@ graphdb-data/graphdb-import/*
 graphdb-data/work/*
 graphdb-data/data/*
 
-!graphdb-data/data/
+!graphdb-data/data/readme.md
 !graphdb-data/logs/
-!graphdb-data/graphdb-import/
+!graphdb-data/graphdb-import/readme.md
 !graphdb-data/work/
 
 ### STS ###
