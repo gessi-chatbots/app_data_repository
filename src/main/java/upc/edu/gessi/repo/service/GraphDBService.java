@@ -153,12 +153,12 @@ public class GraphDBService {
         //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategory())));
         //}
 
-        if (applicationDTO.getRelease_date() != null) {
-            statements.add(factory.createStatement(sub, datePublishedIRI, factory.createLiteral(applicationDTO.getRelease_date())));
+        if (applicationDTO.getReleaseDate() != null) {
+            statements.add(factory.createStatement(sub, datePublishedIRI, factory.createLiteral(applicationDTO.getReleaseDate())));
         }
 
-        if (applicationDTO.getCurrent_version_release_date() != null) {
-            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(applicationDTO.getCurrent_version_release_date())));
+        if (applicationDTO.getCurrentVersionReleaseDate() != null) {
+            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(applicationDTO.getCurrentVersionReleaseDate())));
         }
 
         if (applicationDTO.getVersion() != null) {

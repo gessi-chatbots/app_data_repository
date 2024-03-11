@@ -12,52 +12,84 @@ import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.repository.RdfRepository;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Repository
-public class ApplicationRepository implements RdfRepository<ApplicationDTO> {
+public class ApplicationRepository <T> implements RdfRepository<ApplicationDTO> {
 
     private final org.eclipse.rdf4j.repository.Repository repository;
 
     public ApplicationRepository(final @Value("${db.url}") String url) {
         repository = new HTTPRepository(url);
     }
-
-    private ApplicationSimplifiedDTO bindingSetToApplicationSimplifiedDTO(final BindingSet bindings) {
-
-        ApplicationSimplifiedDTO applicationSimplifiedDTO = new ApplicationSimplifiedDTO();
-        if (bindings.getBinding("name") != null
-                && bindings.getBinding("name").getValue() != null) {
-            applicationSimplifiedDTO.setName(String.valueOf(bindings.getBinding("name").getValue()));
+    private String findAllSimplifiedQuery(Integer page, Integer size) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT ?name ?authorName ?reviewCount\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  {\n");
+        queryBuilder.append("    SELECT ?name  ?authorName\n");
+        queryBuilder.append("    WHERE {\n");
+        queryBuilder.append("      ?app rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("           schema:name ?name ;\n");
+        queryBuilder.append("           schema:abstract ?abstract ;\n");
+        queryBuilder.append("           schema:author ?author .\n");
+        queryBuilder.append("      ?author schema:author ?authorName .\n");
+        queryBuilder.append("    }\n");
+        if (size != null) {
+            queryBuilder.append("    LIMIT ").append(size).append("\n");
         }
-        return applicationSimplifiedDTO;
-    }
-
-    private ApplicationDTO bindingSetToApplicationDTO(final BindingSet bindings) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
-        if (bindings.getBinding("name") != null
-                && bindings.getBinding("name").getValue() != null) {
-            applicationDTO.setName(String.valueOf(bindings.getBinding("name").getValue()));
+        if (page != null && size != null) {
+            int offset = (page - 1) * size;
+            queryBuilder.append("    OFFSET ").append(offset).append("\n");
         }
-        return applicationDTO;
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  {\n");
+        queryBuilder.append("    SELECT ?name (STR(COUNT(?review)) as ?reviewCount)\n");
+        queryBuilder.append("    WHERE {\n");
+        queryBuilder.append("      ?app rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("           schema:name ?name ;\n");
+        queryBuilder.append("           schema:review ?review .\n");
+        queryBuilder.append("    }\n");
+        queryBuilder.append("    GROUP BY ?name\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  FILTER (?name = ?name)\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
     }
 
     private String findAllQuery() {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?name\n");
+        queryBuilder.append("SELECT ?name ?description ?authorName ?reviewCount\n");
         queryBuilder.append("WHERE {\n");
-        queryBuilder.append("  ?app rdf:type schema:MobileApplication ;\n");
-        queryBuilder.append("       schema:name ?name ;\n");
-        queryBuilder.append("       schema:identifier ?package .\n");
+        queryBuilder.append("  {\n");
+        queryBuilder.append("    SELECT ?name ?description ?authorName\n");
+        queryBuilder.append("    WHERE {\n");
+        queryBuilder.append("      ?app rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("           schema:name ?name ;\n");
+        queryBuilder.append("           schema:abstract ?abstract ;\n");
+        queryBuilder.append("           schema:author ?author .\n");
+        queryBuilder.append("      ?abstract schema:text ?description .\n");
+        queryBuilder.append("      ?author schema:author ?authorName .\n");
+        queryBuilder.append("    }\n");
+        queryBuilder.append("    LIMIT 20\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  {\n");
+        queryBuilder.append("    SELECT ?name (STR(COUNT(?review)) as ?reviewCount)\n");
+        queryBuilder.append("    WHERE {\n");
+        queryBuilder.append("      ?app rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("           schema:name ?name ;\n");
+        queryBuilder.append("           schema:review ?review .\n");
+        queryBuilder.append("    }\n");
+        queryBuilder.append("    GROUP BY ?name\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  FILTER (?name = ?name)\n");
         queryBuilder.append("}\n");
-        String query = queryBuilder.toString();
-        return query;
+        return queryBuilder.toString();
     }
 
     private String findAllApplicationNamesQuery() {
@@ -70,8 +102,7 @@ public class ApplicationRepository implements RdfRepository<ApplicationDTO> {
         queryBuilder.append("       schema:name ?name ;\n");
         queryBuilder.append("       schema:identifier ?package .\n");
         queryBuilder.append("}\n");
-        String query = queryBuilder.toString();
-        return query;
+        return queryBuilder.toString();
     }
 
     private String findByNameQuery(final String appName) {
@@ -86,25 +117,86 @@ public class ApplicationRepository implements RdfRepository<ApplicationDTO> {
         queryBuilder.append("    FILTER (STRSTARTS(STR(?name), \"").append(appName).append("\"))\n");
         queryBuilder.append("}\n");
         queryBuilder.append("LIMIT 1");
-        String query = queryBuilder.toString();
-        return query;
+        return queryBuilder.toString();
     }
 
+    private TupleQueryResult runSparqlQuery(final String query) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
+        return tupleQuery.evaluate();
+    }
+    private ApplicationSimplifiedDTO bindingSetToApplicationSimplifiedDTO(final BindingSet bindings) {
+        ApplicationSimplifiedDTO applicationSimplifiedDTO = new ApplicationSimplifiedDTO();
+        if (bindings.getBinding("name") != null
+                && bindings.getBinding("name").getValue() != null) {
+            applicationSimplifiedDTO.setName(
+                    bindings.getBinding("name").getValue().stringValue());
+        }
+        if (bindings.getBinding("authorName") != null
+                && bindings.getBinding("authorName").getValue() != null) {
+            applicationSimplifiedDTO.setAuthor(
+                    bindings.getBinding("authorName").getValue().stringValue());
+        }
+        if (bindings.getBinding("reviewCount") != null
+                && bindings.getBinding("reviewCount").getValue() != null) {
+            applicationSimplifiedDTO.setReviewCount(
+                    Integer.valueOf(
+                                    bindings.getBinding("reviewCount").getValue().stringValue()
+                    )
+            );
+        }
+
+        return applicationSimplifiedDTO;
+    }
+
+    private ApplicationDTO bindingSetToApplicationDTO(final BindingSet bindings) {
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        if (bindings.getBinding("name") != null
+                && bindings.getBinding("name").getValue() != null) {
+            applicationDTO.setName(String.valueOf(bindings.getBinding("name").getValue()));
+        }
+        return applicationDTO;
+    }
     @Override
     public List<ApplicationDTO> findAll() throws ApplicationNotFoundException {
-        RepositoryConnection repoConnection = repository.getConnection();
-        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(findAllQuery());
-        TupleQueryResult result = tupleQuery.evaluate();
+        TupleQueryResult result = runSparqlQuery(findAllQuery());
+        List<ApplicationDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
-        return null;
+        while (result.hasNext()) {
+            applicationDTOS.add(bindingSetToApplicationDTO(result.next()));
+        }
+        return applicationDTOS;
+    }
+
+    public List<ApplicationSimplifiedDTO> findAllSimplified() throws ApplicationNotFoundException {
+        TupleQueryResult result = runSparqlQuery(findAllSimplifiedQuery(null, null));
+        List<ApplicationSimplifiedDTO> applicationDTOS = new ArrayList<>();
+        if (!result.hasNext()) {
+            throw new ApplicationNotFoundException("No applications were found");
+        }
+        while (result.hasNext()) {
+            applicationDTOS.add(bindingSetToApplicationSimplifiedDTO(result.next()));
+        }
+        return applicationDTOS;
+    }
+
+    public List<ApplicationSimplifiedDTO> findAllSimplifiedPaginated(final Integer page,
+                                                                     final Integer size) throws ApplicationNotFoundException {
+        TupleQueryResult result = runSparqlQuery(findAllSimplifiedQuery(page, size));
+        List<ApplicationSimplifiedDTO> applicationDTOS = new ArrayList<>();
+        if (!result.hasNext()) {
+            throw new ApplicationNotFoundException("No applications were found");
+        }
+        while (result.hasNext()) {
+            applicationDTOS.add(bindingSetToApplicationSimplifiedDTO(result.next()));
+        }
+        return applicationDTOS;
     }
 
     public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
-        RepositoryConnection repoConnection = repository.getConnection();
-        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(findAllApplicationNamesQuery());
-        TupleQueryResult result = tupleQuery.evaluate();
+        TupleQueryResult result = runSparqlQuery(findAllApplicationNamesQuery());
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
@@ -112,48 +204,14 @@ public class ApplicationRepository implements RdfRepository<ApplicationDTO> {
         while (result.hasNext()) {
             applicationDTOS.add(bindingSetToApplicationSimplifiedDTO(result.next()));
         }
-
         return applicationDTOS;
     }
 
-    public ApplicationDTO findByName(final String appName) throws IllegalAccessException, ClassNotFoundException, ApplicationNotFoundException {
-        RepositoryConnection repoConnection = repository.getConnection();
-        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(findByNameQuery(appName));
-        TupleQueryResult result = tupleQuery.evaluate();
+    public ApplicationDTO findByName(final String appName) throws ApplicationNotFoundException {
+        TupleQueryResult result = runSparqlQuery(findByNameQuery(appName));
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found with the given app name");
         }
-        ApplicationDTO res = new ApplicationDTO();
-        Class<?> c = Class.forName("upc.edu.gessi.repo.dto.ApplicationDTO");
-        Field[] fieldList = c.getDeclaredFields();
-        List<Map<String,String>> reviews = new ArrayList<>();
-        Field rev = null;
-        while (result.hasNext()) {
-            BindingSet bindings = result.next();
-            org.eclipse.rdf4j.model.Value pred = bindings.getValue("y");
-            org.eclipse.rdf4j.model.Value obj = bindings.getValue("z");
-            String object = obj.stringValue();
-            String predicate = pred.stringValue();
-            for (Field f : fieldList) {
-                if (predicate.toLowerCase().endsWith(f.getName().toLowerCase())) {
-                    if (predicate.toLowerCase().endsWith("reviews")) {
-                        Map<String,String> aux = new HashMap<>();
-                        aux.put("review",object);
-                        aux.put("reply",null);
-                        reviews.add(aux);
-                        rev = f;
-                    } else {
-                        f.setAccessible(true);
-                        f.set(res, object);
-                    }
-                }
-            }
-        }
-        if (rev != null) {
-            rev.setAccessible(true);
-            rev.set(res, reviews);
-        }
-        repoConnection.close();
-        return res;
+        return bindingSetToApplicationDTO(result.next());
     }
 }

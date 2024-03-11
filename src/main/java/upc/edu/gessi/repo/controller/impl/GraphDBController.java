@@ -21,7 +21,7 @@ import java.io.File;
 import java.util.List;
 
 @RestController
-public class GraphDBController implements GraphDBApi {
+public class GraphDBController <T> implements GraphDBApi<Object> {
     private final Logger logger = LoggerFactory.getLogger(GraphDBController.class);
 
     private final GraphDBService dbConnection;
@@ -41,8 +41,12 @@ public class GraphDBController implements GraphDBApi {
     }
 
     @Override
-    public List<ApplicationDTO> getAllApplications() throws ApplicationNotFoundException {
-        return applicationService.findAll();
+    public List<Object> getAllApplications(
+            final boolean paginated,
+            final Integer page,
+            final Integer size,
+            final boolean simplified) throws ApplicationNotFoundException {
+        return (paginated) ? applicationService.findAllPaginated(page, size, simplified) : applicationService.findAll(simplified);
     }
 
     @Override

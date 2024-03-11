@@ -21,16 +21,18 @@ public class ApplicationService {
         applicationRepository = appRepository;
     }
 
-    public List<ApplicationDTO> findAll() throws ApplicationNotFoundException {
-        return applicationRepository.findAll();
+    public List findAll(boolean simplified) throws ApplicationNotFoundException {
+        return simplified ? applicationRepository.findAllSimplified() : applicationRepository.findAll();
+    }
+    public List findAllPaginated(final Integer page, final Integer size, final boolean simplified) throws ApplicationNotFoundException {
+        return simplified ? applicationRepository.findAllSimplifiedPaginated(page, size) : applicationRepository.findAll();
     }
 
     public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
-        return applicationRepository.findAllApplicationNames();
+        return  (List<ApplicationSimplifiedDTO>) applicationRepository.findAllApplicationNames();
     }
 
-    public ApplicationDTO findByName(String appName) throws ApplicationNotFoundException,
-            ClassNotFoundException, IllegalAccessException {
+    public ApplicationDTO findByName(String appName) throws ApplicationNotFoundException {
         return applicationRepository.findByName(appName);
     }
 

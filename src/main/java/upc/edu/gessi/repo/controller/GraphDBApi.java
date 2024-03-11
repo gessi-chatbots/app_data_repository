@@ -13,15 +13,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/graph-db-api")
-public interface GraphDBApi {
+public interface GraphDBApi <T> {
 
     @PostMapping("/ping")
     @ResponseStatus(HttpStatus.OK)
     void ping();
 
-    @GetMapping(value = "/applications", produces = "application/json")
+    @GetMapping(value = "/applications", params = {"paginated"}, produces = "application/json")
     @ResponseBody
-    List<ApplicationDTO> getAllApplications() throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException;
+    List<T> getAllApplications(
+            @RequestParam(value = "paginated", defaultValue = "false", required = false) boolean paginated,
+            @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,
+            @RequestParam(value = "size", defaultValue = "20", required = false) Integer size,
+            @RequestParam(value = "simplified", defaultValue = "true") boolean simplified)
+            throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException;
+
 
     @GetMapping(value = "/applications/names", produces = "application/json")
     @ResponseBody
