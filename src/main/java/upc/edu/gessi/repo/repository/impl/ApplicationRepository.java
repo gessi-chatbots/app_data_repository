@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class ApplicationRepository <T> implements RdfRepository<ApplicationDTO> {
+public class ApplicationRepository <T> implements RdfRepository {
 
     private final org.eclipse.rdf4j.repository.Repository repository;
 
@@ -212,6 +212,7 @@ public class ApplicationRepository <T> implements RdfRepository<ApplicationDTO> 
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found with the given app name");
         }
+
         return bindingSetToApplicationDTO(result.next());
     }
 }

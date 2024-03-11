@@ -55,7 +55,7 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
     }
 
     @Override
-    public ApplicationDTO getApp(@PathVariable final String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public ApplicationDTO getApplicationData(@PathVariable final String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
         return applicationService.findByName(appName.toLowerCase());
     }
 

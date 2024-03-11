@@ -35,7 +35,7 @@ public interface GraphDBApi <T> {
 
     @GetMapping(value = "/applications/{appName}", produces = "application/json")
     @ResponseBody
-    ApplicationDTO getApp(@PathVariable String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException;
+    ApplicationDTO getApplicationData(@PathVariable String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException;
 
     @PostMapping("/app/json")
     @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of App entities into the GraphDB. The " +

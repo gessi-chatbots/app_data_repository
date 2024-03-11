@@ -8,7 +8,6 @@ import be.ugent.rml.store.QuadStore;
 import be.ugent.rml.store.QuadStoreFactory;
 import be.ugent.rml.store.RDF4JStore;
 import be.ugent.rml.term.NamedNode;
-import org.apache.commons.text.WordUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -133,14 +132,15 @@ public class GraphDBService {
         IRI sub = factory.createIRI(appIRI + "/" + applicationDTO.getPackageName());
         statements.add(factory.createStatement(sub, typeIRI, appIRI));
 
-        String developerName = applicationDTO.getDeveloper().replace(" ","_");
+        String developerName = applicationDTO.getAuthor().replace(" ","_");
         IRI dev = factory.createIRI(developerIRI+"/"+developerName);
 
         statements.add(factory.createStatement(dev,identifierIRI,factory.createLiteral(developerName)));
-        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(applicationDTO.getDeveloper())));
+        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(applicationDTO.getAuthor())));
+        /*
         if (applicationDTO.getDeveloperSite() != null) {
             statements.add(factory.createStatement(dev, sameAsIRI, factory.createLiteral(applicationDTO.getDeveloperSite())));
-        }
+        }*/
         statements.add(factory.createStatement(dev, typeIRI, developerIRI));
         statements.add(factory.createStatement(sub,authorIRI,dev));
 
@@ -160,7 +160,7 @@ public class GraphDBService {
         if (applicationDTO.getCurrentVersionReleaseDate() != null) {
             statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(applicationDTO.getCurrentVersionReleaseDate())));
         }
-
+/*
         if (applicationDTO.getVersion() != null) {
             statements.add(factory.createStatement(sub, softwareVersionIRI, factory.createLiteral(applicationDTO.getVersion())));
         }
@@ -168,7 +168,7 @@ public class GraphDBService {
         if (applicationDTO.getCategoryId() != null) {
             statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(applicationDTO.getCategoryId())));
         }
-
+*/
         if (applicationDTO.getName() != null) {
             String sanitizedName = Utils.sanitizeString(applicationDTO.getName());
             statements.add(factory.createStatement(sub, nameIRI, factory.createLiteral(sanitizedName)));
@@ -183,10 +183,11 @@ public class GraphDBService {
             addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getSummary(), statements, sub, summaryIRI, DocumentType.SUMMARY);
             //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
         }
+        /*
         if (applicationDTO.getChangelog() != null) {
             addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getChangelog(), statements, sub, changelogIRI, DocumentType.CHANGELOG);
             //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
-        }
+        }*/
         //Adding reviewDocumentPlaceholder
         addDigitalDocument(applicationDTO.getPackageName(), "Aggregated NL data for app " + applicationDTO.getName(), statements, sub, reviewDocumentIRI, DocumentType.REVIEWS);
 
@@ -210,10 +211,10 @@ public class GraphDBService {
     }
 
     private void addReviews(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
-        for (Review r : applicationDTO.getReviews()) {
-             IRI review = factory.createIRI(reviewIRI + "/" + r.getReviewId());
+        for (ReviewDTO r : applicationDTO.getReviewDTOS()) {
+             IRI review = factory.createIRI(reviewIRI + "/" + r.getId());
              //normalize the text to utf-8 encoding
-             String reviewBody = r.getReview();
+             String reviewBody = r.getBody();
              if (reviewBody != null) {
                  byte[] reviewBytes = reviewBody.getBytes();
                  String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
@@ -238,19 +239,20 @@ public class GraphDBService {
              statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(encoded_author)));
              statements.add(factory.createStatement(review, authorIRI, author));*/
              //IRI rating = factory.createIRI(reviewRatingIRI)
-             statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getScore())));
-             if (r.getReviewDate() != null) {
-                 statements.add(factory.createStatement(review, datePublishedIRI, factory.createLiteral(r.getReviewDate())));
+             statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getRating())));
+             if (r.getPublished() != null) {
+                 statements.add(factory.createStatement(review, datePublishedIRI, factory.createLiteral(r.getPublished())));
              }
-             statements.add(factory.createStatement(review, authorIRI, factory.createLiteral(r.getUserName())));
+             statements.add(factory.createStatement(review, authorIRI, factory.createLiteral(r.getAuthor())));
              statements.add(factory.createStatement(sub, reviewsIRI, review));
              statements.add(factory.createStatement(review, typeIRI, reviewIRI));
-             statements.add(factory.createStatement(review, identifierIRI, factory.createLiteral(r.getReviewId())));
+             statements.add(factory.createStatement(review, identifierIRI, factory.createLiteral(r.getId())));
              //statements.add(factory.createStatement(author, typeIRI, personIRI));
          }
     }
 
     private void addFeatures(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
+        /*
         for (Feature feature : applicationDTO.getFeatures()) {
             String id = WordUtils.capitalize(feature.getName()).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", "");
             IRI featureIRI = factory.createIRI(definedTermIRI + "/" + id);
@@ -259,6 +261,7 @@ public class GraphDBService {
             statements.add(factory.createStatement(sub, featuresIRI, featureIRI));
             statements.add(factory.createStatement(featureIRI, typeIRI, definedTermIRI));
         }
+         */
     }
 
     /**
@@ -351,7 +354,7 @@ public class GraphDBService {
             for (String fs : featureString) {
                 featureList.add(new Feature(appIRI.toString(), fs));
             }
-            applicationDTO.setFeatures(featureList);
+            // applicationDTO.setFeatures(featureList);
             try {
                 addFeatures(applicationDTO, source.get(i), statements);
             } catch (Exception e) {

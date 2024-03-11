@@ -7,33 +7,34 @@ import upc.edu.gessi.repo.dto.ApplicationDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.repository.impl.ApplicationRepository;
+import upc.edu.gessi.repo.repository.impl.ReviewRepository;
 
 import java.util.List;
 
 
 @Service
-public class ApplicationService {
+public class ReviewService {
 
-    private final ApplicationRepository applicationRepository;
+    private final ReviewRepository reviewRepository;
 
     @Autowired
-    public ApplicationService(ApplicationRepository appRepository) {
-        applicationRepository = appRepository;
+    public ReviewService(ReviewRepository reviewRep) {
+        reviewRepository = reviewRep;
     }
 
     public List findAll(boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? applicationRepository.findAllSimplified() : applicationRepository.findAll();
+        return simplified ? reviewRepository.findAllSimplified() : reviewRepository.findAll();
     }
     public List findAllPaginated(final Integer page, final Integer size, final boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? applicationRepository.findAllSimplifiedPaginated(page, size) : applicationRepository.findAll();
+        return simplified ? reviewRepository.findAllSimplifiedPaginated(page, size) : reviewRepository.findAll();
     }
 
     public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
-        return  (List<ApplicationSimplifiedDTO>) applicationRepository.findAllApplicationNames();
+        return  (List<ApplicationSimplifiedDTO>) reviewRepository.findAllReviewIDs();
     }
 
-    public ApplicationDTO findByName(final String appName) throws ApplicationNotFoundException {
-        return applicationRepository.findByName(appName);
+    public List findByName(final String appName) throws ApplicationNotFoundException {
+        return reviewRepository.findByApplicationName(appName);
     }
 
 
