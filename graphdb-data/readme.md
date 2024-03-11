@@ -28,6 +28,38 @@ WHERE {
   mobileApplication:air.com.aceviral.motox3m schema:name ?name.
 }
 ```
+Get All Application data
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX schema: <https://schema.org/>
+SELECT ?name ?description ?authorName ?reviewCount
+WHERE {
+    {
+        SELECT ?name ?description ?authorName
+        WHERE {
+            ?app rdf:type schema:MobileApplication;
+                 schema:name ?name ;
+                 schema:abstract ?abstract ;
+                 schema:author ?author .
+            
+            ?abstract schema:text ?description .
+            ?author schema:author ?authorName .
+            }
+        LIMIT 20
+    }
+    {
+        SELECT ?name (COUNT(?review) as ?reviewCount)
+        WHERE {
+            ?app rdf:type schema:MobileApplication;
+                 schema:name ?name;
+                 schema:review ?review .
+        }
+        GROUP BY ?name
+    }
+    FILTER (?name = ?name)
+}
+```
+
 ### SPARQL Query examples
 
 Below we present a few query examples for the MApp-KG snapshot to illustrate its use in querying its data content. The folder ```data/sparql-examples``` contains one file for each of these examples with a built-in HTTP call using curl to access MApp-KG public instance.
