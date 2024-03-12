@@ -19,7 +19,7 @@ public class SimilarityService {
 
     @Autowired
     GraphDBService graphDBService;
-
+/*
     public void computeSimilarity(SimilarityAlgorithm algorithm) {
         graphDBService.getAppsWithFeatures();
         //TODO after creating nodes, use algorithm to compute similarity
@@ -27,7 +27,7 @@ public class SimilarityService {
         //Utils.convertGraphSchemaToJSON("statements.rj", "graph.json");
 
     }
-
+*/
     public Map<String, List<SimilarityApp>> getTopKSimilarApps(List<String> apps, int k, DocumentType documentType) {
         Map<String, List<SimilarityApp>> res = new HashMap<>();
         for (String app : apps) {
@@ -115,7 +115,7 @@ public class SimilarityService {
             }
         }
     }
-
+/*
     public void computeFeatureSimilarity(double synonymThreshold) {
         List<IRI> features = graphDBService.getAllFeatures();
         int count = 0;
@@ -125,7 +125,7 @@ public class SimilarityService {
             if (count % 100 == 0) logger.info(count + " apps out of " + features.size());
         }
     }
-
+*/
     public void deleteFeatureSimilarities() {
         graphDBService.deleteSameAsRelations();
     }

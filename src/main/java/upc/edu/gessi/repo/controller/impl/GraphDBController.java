@@ -60,14 +60,9 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
     }
 
     @Override
-    @PostMapping("/app/json")
-    @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of App entities into the GraphDB. The " +
-            "data is sent in JSON format through the request body.")
-    public int insertData(@RequestBody List<ApplicationDTO> applicationDTOS) {
-        for (ApplicationDTO applicationDTO : applicationDTOS) {
-            dbConnection.insertApp(applicationDTO);
-        }
-        return 1;
+    public ResponseEntity<String> insertJSONData(@RequestBody List<ApplicationDTO> applicationDTOS) {
+        applicationService.insertApps(applicationDTOS);
+        return new ResponseEntity<>("created", HttpStatus.CREATED);
     }
 
     @Override
@@ -102,12 +97,14 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
         }
     }
 
+    /*
+
     @Override
     @PostMapping("/update")
     public int update(@RequestParam(value = "daysFromLastUpdate") int daysFromLastUpdate) {
         dbConnection.updateApps(daysFromLastUpdate);
         return 1;
-    }
+    }*/
 
     @Override
     @GetMapping("/export")

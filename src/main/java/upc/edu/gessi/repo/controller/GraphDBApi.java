@@ -37,10 +37,11 @@ public interface GraphDBApi <T> {
     @ResponseBody
     ApplicationDTO getApplicationData(@PathVariable String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException;
 
-    @PostMapping("/app/json")
+    @PostMapping(value = "/applications", produces = "application/json")
     @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of App entities into the GraphDB. The " +
             "data is sent in JSON format through the request body.")
-    int insertData(@RequestBody List<ApplicationDTO> applicationDTOS);
+    @ResponseBody
+    ResponseEntity<String> insertJSONData(@RequestBody List<ApplicationDTO> applicationDTOS);
 
     @PostMapping("/app/rml")
     @ApiOperation(value = "Insert Data (RML format)", notes = "Inserts a list of App entities into the GraphDB. The " +
@@ -52,9 +53,10 @@ public interface GraphDBApi <T> {
             "data is sent directly in RDF format through a multipart file in Turtle format (.ttl).")
     ResponseEntity<String> insertRDF(@RequestParam("file") MultipartFile file);
 
+    /*
     @PostMapping("/update")
     int update(@RequestParam(value = "daysFromLastUpdate") int daysFromLastUpdate);
-
+*/
     @GetMapping("/export")
     void export(@RequestParam(value = "fileName") String fileName) throws Exception;
 

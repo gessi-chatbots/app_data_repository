@@ -41,20 +41,21 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
         if (documentType.equals(DocumentType.REVIEWS)) {
             logger.info("Deducting features from reviews...");
             try {
-                return dbConnection.extractFeaturesFromReviews(batchSize, from);
+                return 1;
+                //return dbConnection.extractFeaturesFromReviews(batchSize, from);
             } catch (Exception e) {
                 return dbConnection.getCount();
             }
         } else if (!documentType.equals(DocumentType.ALL)) {
             logger.info("Deducting features from " + documentType.getName());
-            dbConnection.extractFeaturesByDocument(documentType,batchSize);
+            //dbConnection.extractFeaturesByDocument(documentType,batchSize);
         } else {
             logger.info("Deducting features from descriptions...");
-            dbConnection.extractFeaturesByDocument(DocumentType.DESCRIPTION,batchSize);
+            //dbConnection.extractFeaturesByDocument(DocumentType.DESCRIPTION,batchSize);
             logger.info("Deducting features from changelogs...");
-            dbConnection.extractFeaturesByDocument(DocumentType.CHANGELOG,batchSize);
+            //dbConnection.extractFeaturesByDocument(DocumentType.CHANGELOG,batchSize);
             logger.info("Deducting features from summaries...");
-            dbConnection.extractFeaturesByDocument(DocumentType.SUMMARY,batchSize);
+            //dbConnection.extractFeaturesByDocument(DocumentType.SUMMARY,batchSize);
             //logger.info("Deducting features from reviews...");
             //dbConnection.extractFeaturesFromReviews();
         }
@@ -67,7 +68,7 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     @Override
     @PostMapping("computeFeatureSimilarity")
     public void computeFeatureSimilarity(@RequestParam(defaultValue = "0.5", name = "threshold") double synonymThreshold) {
-        similarityService.computeFeatureSimilarity(synonymThreshold);
+        //similarityService.computeFeatureSimilarity(synonymThreshold);
     }
 
     @Override
@@ -83,7 +84,7 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     @Override
     @PostMapping("computeSimilarity")
     public void computeSimilarity(@RequestParam(defaultValue = "JACCARD") SimilarityAlgorithm algorithm) {
-        similarityService.computeSimilarity(algorithm);
+        //similarityService.computeSimilarity(algorithm);
     }
 
     @Override

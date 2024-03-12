@@ -59,43 +59,7 @@ public class GraphDBService {
     private final ValueFactory factory = SimpleValueFactory.getInstance();
 
     private final String prefix = "https://schema.org/";
-
-    //Data types
-    private IRI typeIRI = factory.createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-    private IRI appIRI = factory.createIRI("https://schema.org/MobileApplication");
-    private IRI reviewIRI = factory.createIRI("https://schema.org/Review");
-    private IRI personIRI = factory.createIRI("https://schema.org/Person");
-    private IRI definedTermIRI = factory.createIRI("https://schema.org/DefinedTerm");
-    private IRI digitalDocumentIRI = factory.createIRI("https://schema.org/DigitalDocument");
-    private  IRI developerIRI = factory.createIRI("https://schema.org/Organization");
-
-    //App objects
-    private IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
-    private IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
-    private IRI descriptionIRI = factory.createIRI("https://schema.org/description");
-    private IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
-    private IRI textIRI = factory.createIRI("https://schema.org/text");
-    private IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
-    private IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
-    private IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
-    private IRI reviewsIRI = factory.createIRI("https://schema.org/review");
-    private IRI reviewDocumentIRI = factory.createIRI("https://schema.org/featureList");
-    private IRI sameAsIRI = factory.createIRI("https://schema.org/sameAs");
-    private IRI softwareVersionIRI = factory.createIRI("https://schema.org/softwareVersion");
-    private IRI dateModifiedIRI = factory.createIRI("https://schema.org/dateModified");
-
-    //Review objects
-    private  IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
-    private  IRI datePublishedIRI = factory.createIRI("https://schema.org/datePublished");
-    private  IRI authorIRI = factory.createIRI("https://schema.org/author");
-    private  IRI reviewRatingIRI = factory.createIRI("https://schema.org/reviewRating");
-
-    //Person objects
-    private  IRI nameIRI = factory.createIRI("https://schema.org/name");
-
-    //Feature object
-    private IRI synonymIRI = factory.createIRI("https://schema.org/sameAs");
-
+    
     public GraphDBService(@Value("${db.url}") String url,
                           @Value("${db.username}") String username,
                           @Value("${db.password}") String password) {
@@ -109,147 +73,13 @@ public class GraphDBService {
         return model;
     }
 
-    private void commitChanges(Model model, List<Statement> statements) {
-        //model.addAll(statements);
-        RepositoryConnection repoConnection = repository.getConnection();
-        repoConnection.add(statements);
-        repoConnection.close();
-    }
 
     public void updateRepository(String url) {
         repository = new HTTPRepository(url);
     }
 
-    /**
-     * Insert Apps
-     * @param applicationDTO
-     */
-    public void insertApp(ApplicationDTO applicationDTO) {
 
-        List<Statement> statements = new ArrayList<>();
-        Model model = createEmptyModel();
 
-        IRI sub = factory.createIRI(appIRI + "/" + applicationDTO.getPackageName());
-        statements.add(factory.createStatement(sub, typeIRI, appIRI));
-
-        String developerName = applicationDTO.getAuthor().replace(" ","_");
-        IRI dev = factory.createIRI(developerIRI+"/"+developerName);
-
-        statements.add(factory.createStatement(dev,identifierIRI,factory.createLiteral(developerName)));
-        statements.add(factory.createStatement(dev,authorIRI,factory.createLiteral(applicationDTO.getAuthor())));
-        /*
-        if (applicationDTO.getDeveloperSite() != null) {
-            statements.add(factory.createStatement(dev, sameAsIRI, factory.createLiteral(applicationDTO.getDeveloperSite())));
-        }*/
-        statements.add(factory.createStatement(dev, typeIRI, developerIRI));
-        statements.add(factory.createStatement(sub,authorIRI,dev));
-
-        //some fields are not populated, so we check them to avoid null pointers.
-        //for (AppCategory category : app.getCategories()) {
-        //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(String.valueOf(category))));
-        //}
-
-        //if (app.getCategory() != null) {
-        //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategory())));
-        //}
-
-        if (applicationDTO.getReleaseDate() != null) {
-            statements.add(factory.createStatement(sub, datePublishedIRI, factory.createLiteral(applicationDTO.getReleaseDate())));
-        }
-
-        if (applicationDTO.getCurrentVersionReleaseDate() != null) {
-            statements.add(factory.createStatement(sub, dateModifiedIRI, factory.createLiteral(applicationDTO.getCurrentVersionReleaseDate())));
-        }
-/*
-        if (applicationDTO.getVersion() != null) {
-            statements.add(factory.createStatement(sub, softwareVersionIRI, factory.createLiteral(applicationDTO.getVersion())));
-        }
-
-        if (applicationDTO.getCategoryId() != null) {
-            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(applicationDTO.getCategoryId())));
-        }
-*/
-        if (applicationDTO.getName() != null) {
-            String sanitizedName = Utils.sanitizeString(applicationDTO.getName());
-            statements.add(factory.createStatement(sub, nameIRI, factory.createLiteral(sanitizedName)));
-        }
-        if (applicationDTO.getPackageName() != null) statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(applicationDTO.getPackageName())));
-
-        if (applicationDTO.getDescription() != null) {
-            addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getDescription(), statements, sub, descriptionIRI, DocumentType.DESCRIPTION);
-            //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
-        }
-        if (applicationDTO.getSummary() != null) {
-            addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getSummary(), statements, sub, summaryIRI, DocumentType.SUMMARY);
-            //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
-        }
-        /*
-        if (applicationDTO.getChangelog() != null) {
-            addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getChangelog(), statements, sub, changelogIRI, DocumentType.CHANGELOG);
-            //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
-        }*/
-        //Adding reviewDocumentPlaceholder
-        addDigitalDocument(applicationDTO.getPackageName(), "Aggregated NL data for app " + applicationDTO.getName(), statements, sub, reviewDocumentIRI, DocumentType.REVIEWS);
-
-        //Adding all reviews
-        addReviews(applicationDTO, sub, statements);
-
-        //EXTENDED KNOWLEDGE - Add features
-        addFeatures(applicationDTO, sub, statements);
-
-        //Committing all changes
-        commitChanges(model, statements);
-    }
-
-    private void addDigitalDocument(String packageName, String text, List<Statement> statements, IRI sub, IRI pred, DocumentType documentType) {
-        IRI appDescription = factory.createIRI(digitalDocumentIRI + "/" + packageName + "-" + documentType);
-        statements.add(factory.createStatement(appDescription, identifierIRI, factory.createLiteral(packageName + "-" + documentType)));
-        statements.add(factory.createStatement(appDescription, textIRI, factory.createLiteral(text)));
-        statements.add(factory.createStatement(appDescription, disambiguatingDescriptionIRI, factory.createLiteral(documentType.getName())));
-        statements.add(factory.createStatement(sub, pred, appDescription));
-        statements.add(factory.createStatement(appDescription, typeIRI, digitalDocumentIRI));
-    }
-
-    private void addReviews(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
-        for (ReviewDTO r : applicationDTO.getReviewDTOS()) {
-             IRI review = factory.createIRI(reviewIRI + "/" + r.getId());
-             //normalize the text to utf-8 encoding
-             String reviewBody = r.getBody();
-             if (reviewBody != null) {
-                 byte[] reviewBytes = reviewBody.getBytes();
-                 String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
-                 statements.add(factory.createStatement(review, reviewBodyIRI, factory.createLiteral(encoded_string)));
-             }
-
-             //normalize the text to utf-8 encoding
-             /*String reviewAuthor = r.getUserName();
-             byte[] authorBytes = reviewAuthor.getBytes();
-             String  encoded_author = new String(authorBytes, StandardCharsets.UTF_8);
-             String  ascii_encoded_author = new String(authorBytes, StandardCharsets.US_ASCII);
-             String temp = ascii_encoded_author.replaceAll("[^a-zA-Z0-9]","");
-             IRI author;
-             if (temp.equals("")) {
-                 String new_user_name = "User_"+user_map.size();
-                 user_map.put(new_user_name,encoded_author);
-                 author = factory.createIRI(personIRI  + "/" +  new_user_name);
-             } else {
-                 author = factory.createIRI(personIRI + "/" + ascii_encoded_author.replaceAll("[^a-zA-Z0-9]", ""));
-
-             }
-             statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(encoded_author)));
-             statements.add(factory.createStatement(review, authorIRI, author));*/
-             //IRI rating = factory.createIRI(reviewRatingIRI)
-             statements.add(factory.createStatement(review, reviewRatingIRI, factory.createLiteral(r.getRating())));
-             if (r.getPublished() != null) {
-                 statements.add(factory.createStatement(review, datePublishedIRI, factory.createLiteral(r.getPublished())));
-             }
-             statements.add(factory.createStatement(review, authorIRI, factory.createLiteral(r.getAuthor())));
-             statements.add(factory.createStatement(sub, reviewsIRI, review));
-             statements.add(factory.createStatement(review, typeIRI, reviewIRI));
-             statements.add(factory.createStatement(review, identifierIRI, factory.createLiteral(r.getId())));
-             //statements.add(factory.createStatement(author, typeIRI, personIRI));
-         }
-    }
 
     private void addFeatures(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
         /*
@@ -268,30 +98,11 @@ public class GraphDBService {
      * Deductive Methods
      */
 
-    public void extractFeaturesByDocument(DocumentType documentType, int batchSize) {
-        String predicateQueue = null;
-        switch(documentType) {
-            case SUMMARY -> predicateQueue = "abstract";
-            case CHANGELOG -> predicateQueue = "releaseNotes";
-            default -> predicateQueue = "description";
-        }
-        String predicate1 = "https://schema.org/" + predicateQueue;
-        String predicate2 = "https://schema.org/text";
-        String query = "SELECT ?subject ?object ?text WHERE { ?subject <" + predicate1 + "> ?object . ?object <"+ predicate2 +"> ?text}";
-        executeFeatureQuery(repository.getConnection(), query, batchSize, 0);
-    }
-
-    public int extractFeaturesFromReviews(int batchSize, int from) {
-        String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
-                "?object <https://schema.org/reviewBody> ?text}";
-
-        return executeFeatureQuery(repository.getConnection(), query, batchSize, from);
-    }
 
     private int count;
 
     public int getCount() {return count;}
-
+    /*
     private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
         TupleQueryResult result = Utils.runSparqlQuery(repoConnection, query);
 
@@ -341,6 +152,26 @@ public class GraphDBService {
         return -1;
 
     }
+    public void extractFeaturesByDocument(DocumentType documentType, int batchSize) {
+        String predicateQueue = null;
+        switch(documentType) {
+            case SUMMARY -> predicateQueue = "abstract";
+            case CHANGELOG -> predicateQueue = "releaseNotes";
+            default -> predicateQueue = "description";
+        }
+        String predicate1 = "https://schema.org/" + predicateQueue;
+        String predicate2 = "https://schema.org/text";
+        String query = "SELECT ?subject ?object ?text WHERE { ?subject <" + predicate1 + "> ?object . ?object <"+ predicate2 +"> ?text}";
+        executeFeatureQuery(repository.getConnection(), query, batchSize, 0);
+    }
+
+    public int extractFeaturesFromReviews(int batchSize, int from) {
+        String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
+                "?object <https://schema.org/reviewBody> ?text}";
+
+        return executeFeatureQuery(repository.getConnection(), query, batchSize, from);
+    }
+
 
     private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
         List<AnalyzedDocument> features = nlFeatureService.getNLFeatures(analyzedDocuments);
@@ -364,32 +195,7 @@ public class GraphDBService {
         commitChanges(model, statements);
         logger.info(count + " documents already processed. Keep going...");
     }
-
-    public List<GraphApp> getAllApps() {
-        List<GraphApp> apps = new ArrayList<>();
-
-        String query = "PREFIX schema: <https://schema.org/>\n" +
-                "\n" +
-                "select ?app ?identifier ?name where {\n" +
-                "    ?app schema:identifier ?identifier ;\n" +
-                "         schema:name ?name ;\n" +
-                "         schema:applicationCategory ?applicationCategory\n" +
-                "} group by ?app ?identifier ?name";
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
-
-        while (result.hasNext()) {
-            BindingSet bindings = result.next();
-
-            IRI app = (IRI) bindings.getValue("app");
-            String identifier = bindings.getValue("identifier").stringValue();
-            String name = bindings.getValue("name").stringValue();
-
-            GraphApp graphApp = new GraphApp(app.toString(), identifier, name);
-            apps.add(graphApp);
-        }
-
-        return apps;
-    }
+*/
 
     public List<GraphDocument> getDocumentsByApp(String app) {
         List<GraphDocument> apps = new ArrayList<>();
@@ -472,6 +278,7 @@ public class GraphDBService {
         return graphReviews;
     }
 
+    /*
     public void getAppsWithFeatures() {
 
         List<GraphApp> apps = getAllApps();
@@ -523,7 +330,7 @@ public class GraphDBService {
         }
         //return new Graph(nodes, edges);
     }
-
+*/
     public List<IRI> getAllFeatures() {
         String query = "PREFIX schema: <https://schema.org/>\n" +
                 "\n" +
@@ -540,6 +347,7 @@ public class GraphDBService {
         return features;
     }
 
+    /*
     public void connectFeatureWithSynonyms(IRI feature, double synonymThreshold) {
         String query = "PREFIX :<http://www.ontotext.com/graphdb/similarity/>\n" +
                 "PREFIX inst:<http://www.ontotext.com/graphdb/similarity/instance/>\n" +
@@ -570,7 +378,7 @@ public class GraphDBService {
             statements.add(factory.createStatement(feature, synonymIRI, connectedFeatures.get(i)));
         }
         commitChanges(createEmptyModel(), statements);
-    }
+    }*/
 
     public List<SimilarityApp> getTopKSimilarApps(String app, int k, DocumentType documentType) {
         String query = "PREFIX :<http://www.ontotext.com/graphdb/similarity/>\n" +
@@ -645,17 +453,7 @@ public class GraphDBService {
         IOUtils.closeQuietly(outputStream);
     }
 
-    public void updateApps(int daysFromLastUpdate) {
-       List<GraphApp> apps = getAllApps();
-       for (GraphApp app : apps) {
-           //We send requests app per app
-           ApplicationDTO updatedApplicationDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
 
-           if (updatedApplicationDTO != null) insertApp(updatedApplicationDTO);
-
-           //TODO remove reviews older than MAX_DAYS_REVIEWS
-       }
-    }
 
     public void insertRDF(MultipartFile file) throws Exception {
         // Parse the Turtle file into an RDF model
