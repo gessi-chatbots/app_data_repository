@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import upc.edu.gessi.repo.dto.ApplicationDTO;
+import upc.edu.gessi.repo.dto.ApplicationDataDTO;
+import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 
@@ -35,13 +36,13 @@ public interface GraphDBApi <T> {
 
     @GetMapping(value = "/applications/{appName}", produces = "application/json")
     @ResponseBody
-    ApplicationDTO getApplicationData(@PathVariable String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException;
+    ApplicationDataDTO getApplicationData(@PathVariable String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException;
 
     @PostMapping(value = "/applications", produces = "application/json")
     @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of App entities into the GraphDB. The " +
             "data is sent in JSON format through the request body.")
     @ResponseBody
-    ResponseEntity<String> insertJSONData(@RequestBody List<ApplicationDTO> applicationDTOS);
+    ResponseEntity<String> insertJSONData(@RequestBody List<CompleteApplicationDataDTO> completeApplicationDataDTOS);
 
     @PostMapping("/app/rml")
     @ApiOperation(value = "Insert Data (RML format)", notes = "Inserts a list of App entities into the GraphDB. The " +

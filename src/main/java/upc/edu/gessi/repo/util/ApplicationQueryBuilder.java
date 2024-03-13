@@ -78,7 +78,7 @@ public class ApplicationQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?name\n");
+        queryBuilder.append("SELECT ?name ?package\n");
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication ;\n");
         queryBuilder.append("       schema:name ?name ;\n");
@@ -91,15 +91,15 @@ public class ApplicationQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT DISTINCT ?name\n");
+        queryBuilder.append("SELECT ?predicate ?object ?text\n");
         queryBuilder.append("WHERE {\n");
-        queryBuilder.append("  ?app rdf:type schema:MobileApplication ;\n");
-        queryBuilder.append("       schema:name ?name ;\n");
-        queryBuilder.append("       schema:identifier ?package .\n");
-        queryBuilder.append("    FILTER (STRSTARTS(STR(?name), \"").append(appName).append("\"))\n");
+        queryBuilder.append("  ?s schema:name \"").append(appName).append("\" .\n");
+        queryBuilder.append("  ?s ?predicate ?object .\n");
         queryBuilder.append("}\n");
-        queryBuilder.append("LIMIT 1");
         return queryBuilder.toString();
     }
+
+
+
 
 }

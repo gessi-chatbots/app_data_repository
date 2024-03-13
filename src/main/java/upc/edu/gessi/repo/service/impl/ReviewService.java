@@ -10,11 +10,9 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.dto.ApplicationDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
-import upc.edu.gessi.repo.repository.impl.ApplicationRepository;
 import upc.edu.gessi.repo.repository.impl.ReviewRepository;
 import upc.edu.gessi.repo.util.Utils;
 

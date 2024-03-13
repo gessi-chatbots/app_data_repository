@@ -23,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApplicationDTO implements Serializable {
+public class CompleteApplicationDataDTO implements Serializable {
     @JsonProperty("app_name")
     private String name;
     private String description;

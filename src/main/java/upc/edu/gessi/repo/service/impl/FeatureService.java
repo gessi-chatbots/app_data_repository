@@ -131,7 +131,7 @@ public class FeatureService {
         List<Statement> statements = new ArrayList<>();
 
         for (int i = 0; i < features.size(); ++i) {
-            ApplicationDTO applicationDTO = new ApplicationDTO();
+            CompleteApplicationDataDTO completeApplicationDataDTO = new CompleteApplicationDataDTO();
             List<String> featureString = features.get(i).getFeatures();
             List<Feature> featureList = new ArrayList<>();
             for (String fs : featureString) {
@@ -139,7 +139,7 @@ public class FeatureService {
             }
             // applicationDTO.setFeatures(featureList);
             try {
-                applicationService.addFeatures(applicationDTO, source.get(i), statements);
+                applicationService.addFeatures(completeApplicationDataDTO, source.get(i), statements);
             } catch (Exception e) {
                 logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
             }

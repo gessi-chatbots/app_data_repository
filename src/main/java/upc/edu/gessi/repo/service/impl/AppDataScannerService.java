@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.dto.ApplicationDTO;
+import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 
 import java.io.InputStream;
@@ -31,8 +31,8 @@ public class AppDataScannerService {
     @Value("${scanner-service.url}")
     private String url;
 
-    public ApplicationDTO scanApp(GraphApp app, int daysFromLastUpdate) {
-        List<ApplicationDTO> updatedApplicationDTOS = new ArrayList<>();
+    public CompleteApplicationDataDTO scanApp(GraphApp app, int daysFromLastUpdate) {
+        List<CompleteApplicationDataDTO> updatedCompleteApplicationDataDTOS = new ArrayList<>();
         try {
             JSONArray array = new JSONArray();
             array.put(app);
@@ -48,7 +48,7 @@ public class AppDataScannerService {
 
             try {
                 InputStream inputStream = request(uri, stringEntity).getEntity().getContent();
-                updatedApplicationDTOS = new ObjectMapper().readValue(inputStream, new TypeReference<List<ApplicationDTO>>() {});
+                updatedCompleteApplicationDataDTOS = new ObjectMapper().readValue(inputStream, new TypeReference<List<CompleteApplicationDataDTO>>() {});
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -56,7 +56,7 @@ public class AppDataScannerService {
         } catch (UnsupportedEncodingException | URISyntaxException e) {
             e.printStackTrace();
         }
-        return updatedApplicationDTOS.size() > 0 ? updatedApplicationDTOS.get(0) : null;
+        return updatedCompleteApplicationDataDTOS.size() > 0 ? updatedCompleteApplicationDataDTOS.get(0) : null;
     }
 
     private HttpResponse request(URI uri, StringEntity entity) {

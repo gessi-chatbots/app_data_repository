@@ -14,6 +14,7 @@ public class SchemaIRI {
     private final IRI typeIRI = factory.createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
     private final IRI appIRI = factory.createIRI("https://schema.org/MobileApplication");
     private final IRI reviewIRI = factory.createIRI("https://schema.org/Review");
+    private final IRI reviewIRIAux = factory.createIRI("https://schema.org/review");
     private final IRI definedTermIRI = factory.createIRI("https://schema.org/DefinedTerm");
     private final IRI digitalDocumentIRI = factory.createIRI("https://schema.org/DigitalDocument");
     private final IRI developerIRI = factory.createIRI("https://schema.org/Organization");

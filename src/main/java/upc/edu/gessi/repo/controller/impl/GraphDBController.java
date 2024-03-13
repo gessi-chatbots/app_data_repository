@@ -11,7 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.controller.GraphDBApi;
-import upc.edu.gessi.repo.dto.ApplicationDTO;
+import upc.edu.gessi.repo.dto.ApplicationDataDTO;
+import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.service.impl.ApplicationServiceImpl;
@@ -40,6 +41,11 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
     public void ping() {
     }
 
+    @ExceptionHandler(ApplicationNotFoundException.class)
+    public ResponseEntity<String> handleApplicationNotFoundException(ApplicationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @Override
     public List<Object> getAllApplications(
             final boolean paginated,
@@ -55,13 +61,13 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
     }
 
     @Override
-    public ApplicationDTO getApplicationData(@PathVariable final String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return applicationServiceImpl.findByName(appName.toLowerCase());
+    public ApplicationDataDTO getApplicationData(@PathVariable final String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return applicationServiceImpl.findByName(appName);
     }
 
     @Override
-    public ResponseEntity<String> insertJSONData(@RequestBody List<ApplicationDTO> applicationDTOS) {
-        applicationServiceImpl.insertApps(applicationDTOS);
+    public ResponseEntity<String> insertJSONData(@RequestBody List<CompleteApplicationDataDTO> completeApplicationDataDTOS) {
+        applicationServiceImpl.insertApps(completeApplicationDataDTOS);
         return new ResponseEntity<>("created", HttpStatus.CREATED);
     }
 

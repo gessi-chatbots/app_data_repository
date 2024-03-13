@@ -21,6 +21,7 @@ import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,31 +63,72 @@ public class ApplicationRepository <T> implements RdfRepository {
             applicationSimplifiedDTO.setName(
                     bindings.getBinding("name").getValue().stringValue());
         }
-        if (bindings.getBinding("authorName") != null
-                && bindings.getBinding("authorName").getValue() != null) {
-            applicationSimplifiedDTO.setAuthor(
-                    bindings.getBinding("authorName").getValue().stringValue());
+        if (bindings.getBinding("package") != null
+                && bindings.getBinding("package").getValue() != null) {
+            applicationSimplifiedDTO.setApplicationPackage(
+                    bindings.getBinding("package").getValue().stringValue());
         }
-        if (bindings.getBinding("reviewCount") != null
-                && bindings.getBinding("reviewCount").getValue() != null) {
-            applicationSimplifiedDTO.setReviewCount(
-                    Integer.valueOf(
-                                    bindings.getBinding("reviewCount").getValue().stringValue()
-                    )
-            );
-        }
-
         return applicationSimplifiedDTO;
     }
 
-    private ApplicationDTO bindingSetToApplicationDTO(final BindingSet bindings) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
-        if (bindings.getBinding("name") != null
-                && bindings.getBinding("name").getValue() != null) {
-            applicationDTO.setName(String.valueOf(bindings.getBinding("name").getValue()));
+    private ApplicationDataDTO bindingSetToApplicationDTO(final TupleQueryResult result) {
+        ApplicationDataDTO applicationDataDTO = new ApplicationDataDTO();
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if (existsPredicateAndObject(bindings)) {
+                String predicateValue = bindings.getBinding("predicate").getValue().stringValue();
+                String identifierIRI = schemaIRI.getIdentifierIRI().stringValue();
+                String authorIRI = schemaIRI.getAuthorIRI().stringValue();
+                String datePublishedIRI = schemaIRI.getDatePublishedIRI().stringValue();
+                String versionIRI = schemaIRI.getSoftwareVersionIRI().stringValue();
+                String categoryIRI = schemaIRI.getCategoryIRI().stringValue();
+                String reviewIRI = schemaIRI.getReviewIRIAux().stringValue();
+                String nameIRI = schemaIRI.getNameIRI().stringValue();
+                if (predicateValue.equals(identifierIRI)) {
+                    applicationDataDTO.setApplicationPackage(bindings
+                            .getBinding("object")
+                            .getValue()
+                            .stringValue());
+                } else if (predicateValue.equals(authorIRI)) {
+                    String auth = bindings
+                            .getBinding("object")
+                            .getValue()
+                            .stringValue()
+                            .split("https://schema.org/Organization/")[1];
+                    applicationDataDTO.setAuthor(auth);
+                } else if (predicateValue.equals(datePublishedIRI)) {
+                    String dateTimeString = bindings.getBinding("object").getValue().stringValue();
+                    String datePart = dateTimeString.substring(0, 10);
+                    Date sqlDate = Date.valueOf(datePart);
+                    applicationDataDTO.setReleaseDate(sqlDate);
+                } else if (predicateValue.equals(versionIRI)) {
+                    applicationDataDTO.setVersion(bindings.getBinding("object").getValue().stringValue());
+                } else if (predicateValue.equals(categoryIRI)) {
+                    applicationDataDTO.getCategories().add(bindings.getBinding("object").getValue().stringValue());
+                } else if (predicateValue.equals(reviewIRI)) {
+                    String reviewId = bindings
+                            .getBinding("object")
+                            .getValue()
+                            .stringValue()
+                            .split("https://schema.org/Review/")[1];
+                    applicationDataDTO.getReviews().add(reviewId);
+                } else if (predicateValue.equals(nameIRI)) {
+                    applicationDataDTO.setName(bindings.getBinding("object").getValue().stringValue());
+                }
+            }
         }
-        return applicationDTO;
+        return applicationDataDTO;
     }
+
+
+
+    private boolean existsPredicateAndObject(BindingSet bindings) {
+        return bindings.getBinding("predicate") != null
+                && bindings.getBinding("predicate").getValue() != null
+                && bindings.getBinding("object") != null
+                && bindings.getBinding("object").getValue() != null;
+    }
+
 
     private void commitChanges(final List<Statement> statements) {
         RepositoryConnection repoConnection = repository.getConnection();
@@ -95,71 +137,69 @@ public class ApplicationRepository <T> implements RdfRepository {
     }
 
     @Override
-    public List<ApplicationDTO> findAll() throws ApplicationNotFoundException {
+    public List<ApplicationDataDTO> findAll() throws ApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllQuery());
-        List<ApplicationDTO> applicationDTOS = new ArrayList<>();
+        List<ApplicationDataDTO> applicationDataDTOS = new ArrayList<>();
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
-        while (result.hasNext()) {
-            applicationDTOS.add(bindingSetToApplicationDTO(result.next()));
-        }
-        return applicationDTOS;
+        applicationDataDTOS.add(bindingSetToApplicationDTO(result));
+        return applicationDataDTOS;
     }
 
-    public void insertApp(ApplicationDTO applicationDTO) {
+    public void insertApp(CompleteApplicationDataDTO completeApplicationDataDTO) {
         List<Statement> statements = new ArrayList<>();
 
-        IRI devSubject = addDeveloperIntoStatements(applicationDTO, statements);
+        IRI devSubject = addDeveloperIntoStatements(completeApplicationDataDTO, statements);
 
-        IRI sub = factory.createIRI(schemaIRI.getAppIRI() + "/" + applicationDTO.getPackageName());
+        IRI sub = factory.createIRI(schemaIRI.getAppIRI() + "/" + completeApplicationDataDTO.getPackageName());
         statements.add(factory.createStatement(sub, schemaIRI.getTypeIRI(), schemaIRI.getAppIRI()));
         statements.add(factory.createStatement(sub, schemaIRI.getAuthorIRI(), devSubject));
 
-        if (applicationDTO.getCategoryId() != null) {
-            statements.add(factory.createStatement(sub, schemaIRI.getCategoryIRI(), factory.createLiteral(applicationDTO.getCategoryId())));
+        if (completeApplicationDataDTO.getCategoryId() != null) {
+            statements.add(factory.createStatement(sub, schemaIRI.getCategoryIRI(), factory.createLiteral(completeApplicationDataDTO.getCategoryId())));
         }
-        if (applicationDTO.getCategory() != null) {
-            statements.add(factory.createStatement(sub, schemaIRI.getCategoryIRI(), factory.createLiteral(applicationDTO.getCategory())));
+        if (completeApplicationDataDTO.getCategory() != null) {
+            statements.add(factory.createStatement(sub, schemaIRI.getCategoryIRI(), factory.createLiteral(completeApplicationDataDTO.getCategory())));
         }
-        for (String category : applicationDTO.getCategories()) {
+        for (String category : completeApplicationDataDTO.getCategories()) {
             statements.add(factory.createStatement(sub, schemaIRI.getCategoryIRI(), factory.createLiteral(category)));
         }
 
-        if (applicationDTO.getReleaseDate() != null) {
-            statements.add(factory.createStatement(sub, schemaIRI.getDatePublishedIRI(), factory.createLiteral(applicationDTO.getReleaseDate())));
+        if (completeApplicationDataDTO.getReleaseDate() != null) {
+            statements.add(factory.createStatement(sub, schemaIRI.getDatePublishedIRI(), factory.createLiteral(completeApplicationDataDTO.getReleaseDate())));
         }
 
-        if (applicationDTO.getCurrentVersionReleaseDate() != null) {
-            statements.add(factory.createStatement(sub, schemaIRI.getDateModifiedIRI(), factory.createLiteral(applicationDTO.getCurrentVersionReleaseDate())));
+        if (completeApplicationDataDTO.getCurrentVersionReleaseDate() != null) {
+            statements.add(factory.createStatement(sub, schemaIRI.getDateModifiedIRI(), factory.createLiteral(completeApplicationDataDTO.getCurrentVersionReleaseDate())));
         }
 
-        if (applicationDTO.getVersion() != null) {
-            statements.add(factory.createStatement(sub, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(applicationDTO.getVersion())));
+        if (completeApplicationDataDTO.getVersion() != null) {
+            statements.add(factory.createStatement(sub, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(completeApplicationDataDTO.getVersion())));
         }
 
-        if (applicationDTO.getName() != null) {
-            String sanitizedName = Utils.sanitizeString(applicationDTO.getName());
+        if (completeApplicationDataDTO.getName() != null) {
+            String sanitizedName = Utils.sanitizeString(completeApplicationDataDTO.getName());
             statements.add(factory.createStatement(sub, schemaIRI.getNameIRI(), factory.createLiteral(sanitizedName)));
         }
-        if (applicationDTO.getPackageName() != null) {
-            statements.add(factory.createStatement(sub, schemaIRI.getIdentifierIRI(), factory.createLiteral(applicationDTO.getPackageName())));
+        if (completeApplicationDataDTO.getPackageName() != null) {
+            statements.add(factory.createStatement(sub, schemaIRI.getIdentifierIRI(), factory.createLiteral(completeApplicationDataDTO.getPackageName())));
         }
 
-        if (applicationDTO.getDescription() != null) {
+        if (completeApplicationDataDTO.getDescription() != null) {
             addDigitalDocumentIntoStatements(
-                    applicationDTO.getPackageName(),
-                    applicationDTO.getDescription(),
+                    completeApplicationDataDTO.getPackageName(),
+                    completeApplicationDataDTO.getDescription(),
                     statements,
                     sub,
                     schemaIRI.getDescriptionIRI(),
                     DocumentType.DESCRIPTION);
             //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
         }
-        if (applicationDTO.getSummary() != null) {
+        if (completeApplicationDataDTO.getSummary() != null) {
             addDigitalDocumentIntoStatements(
-                    applicationDTO.getPackageName(),
-                    applicationDTO.getSummary(),
+                    completeApplicationDataDTO.getPackageName(),
+                    completeApplicationDataDTO.getSummary(),
                     statements,
                     sub,
                     schemaIRI.getSummaryIRI(),
@@ -167,10 +207,10 @@ public class ApplicationRepository <T> implements RdfRepository {
             //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
         }
 
-        if (applicationDTO.getChangelog() != null) {
+        if (completeApplicationDataDTO.getChangelog() != null) {
             addDigitalDocumentIntoStatements(
-                    applicationDTO.getPackageName(),
-                    applicationDTO.getChangelog(),
+                    completeApplicationDataDTO.getPackageName(),
+                    completeApplicationDataDTO.getChangelog(),
                     statements,
                     sub,
                     schemaIRI.getChangelogIRI(),
@@ -179,33 +219,33 @@ public class ApplicationRepository <T> implements RdfRepository {
         }
         //Adding reviewDocumentPlaceholder
         addDigitalDocumentIntoStatements(
-                applicationDTO.getPackageName(),
-                "Aggregated NL data for app " + applicationDTO.getName(),
+                completeApplicationDataDTO.getPackageName(),
+                "Aggregated NL data for app " + completeApplicationDataDTO.getName(),
                 statements,
                 sub,
                 schemaIRI.getReviewDocumentIRI(),
                 DocumentType.REVIEWS);
 
-        addReviews(applicationDTO, sub, statements);
+        addReviews(completeApplicationDataDTO, sub, statements);
 
-        addFeaturesToApplication(applicationDTO, sub, statements);
+        addFeaturesToApplication(completeApplicationDataDTO, sub, statements);
 
         commitChanges(statements);
     }
 
 
-    private IRI addDeveloperIntoStatements(final ApplicationDTO applicationDTO,
+    private IRI addDeveloperIntoStatements(final CompleteApplicationDataDTO completeApplicationDataDTO,
                                            final List<Statement> statements) {
-        String developerName = applicationDTO.getDeveloper().replace(" ","_");
+        String developerName = completeApplicationDataDTO.getDeveloper().replace(" ","_");
         IRI devSubject = factory.createIRI(schemaIRI.getDeveloperIRI()+"/"+developerName);
         statements.add(
                 factory.createStatement(
                         devSubject, schemaIRI.getIdentifierIRI(), factory.createLiteral(developerName)));
         statements.add(
                 factory.createStatement(
-                        devSubject, schemaIRI.getAuthorIRI(), factory.createLiteral(applicationDTO.getDeveloper())));
-        if (applicationDTO.getDeveloperSite() != null) {
-            statements.add(factory.createStatement(devSubject, schemaIRI.getSameAsIRI(), factory.createLiteral(applicationDTO.getDeveloperSite())));
+                        devSubject, schemaIRI.getAuthorIRI(), factory.createLiteral(completeApplicationDataDTO.getDeveloper())));
+        if (completeApplicationDataDTO.getDeveloperSite() != null) {
+            statements.add(factory.createStatement(devSubject, schemaIRI.getSameAsIRI(), factory.createLiteral(completeApplicationDataDTO.getDeveloperSite())));
         }
         statements.add(factory.createStatement(devSubject, schemaIRI.getTypeIRI(), schemaIRI.getDeveloperIRI()));
         return devSubject;
@@ -224,8 +264,8 @@ public class ApplicationRepository <T> implements RdfRepository {
         statements.add(factory.createStatement(sub, pred, appDescription));
         statements.add(factory.createStatement(appDescription, schemaIRI.getTypeIRI(), schemaIRI.getDigitalDocumentIRI()));
     }
-    private void addReviews(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
-        for (ReviewDTO r : applicationDTO.getReviewDTOS()) {
+    private void addReviews(CompleteApplicationDataDTO completeApplicationDataDTO, IRI sub, List<Statement> statements) {
+        for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
             IRI review = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
             //normalize the text to utf-8 encoding
             String reviewBody = r.getBody();
@@ -265,8 +305,8 @@ public class ApplicationRepository <T> implements RdfRepository {
         }
     }
 
-    public void addFeaturesToApplication(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
-        for (String feature : applicationDTO.getFeatures()) {
+    public void addFeaturesToApplication(CompleteApplicationDataDTO completeApplicationDataDTO, IRI sub, List<Statement> statements) {
+        for (String feature : completeApplicationDataDTO.getFeatures()) {
             String id = WordUtils.capitalize(feature).replace(" ", "").replaceAll("[^a-zA-Z0-9]", "");
             IRI featureIRI = factory.createIRI(schemaIRI.getDefinedTermIRI() + "/" + id);
             statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
@@ -303,18 +343,18 @@ public class ApplicationRepository <T> implements RdfRepository {
     }
 
 
-    public void insert(final ApplicationDTO applicationDTO) {
-        insertApp(applicationDTO);
+    public void insert(final CompleteApplicationDataDTO completeApplicationDataDTO) {
+        insertApp(completeApplicationDataDTO);
     }
 
     public void update(int daysFromLastUpdate) {
         List<GraphApp> apps = getAllApps();
         for (GraphApp app : apps) {
             //We send requests app per app
-            ApplicationDTO updatedApplicationDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
+            CompleteApplicationDataDTO updatedCompleteApplicationDataDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
 
-            if (updatedApplicationDTO != null) {
-                insertApp(updatedApplicationDTO);
+            if (updatedCompleteApplicationDataDTO != null) {
+                insertApp(updatedCompleteApplicationDataDTO);
             }
 
             //TODO remove reviews older than MAX_DAYS_REVIEWS
@@ -357,13 +397,12 @@ public class ApplicationRepository <T> implements RdfRepository {
         return applicationDTOS;
     }
 
-    public ApplicationDTO findByName(final String appName) throws ApplicationNotFoundException {
+    public ApplicationDataDTO findByName(final String appName) throws ApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findByNameQuery(appName));
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found with the given app name");
         }
-
-        return bindingSetToApplicationDTO(result.next());
+        return bindingSetToApplicationDTO(result);
     }
 
     public List<SimilarityApp> getTopKSimilarApps(String app, int k, DocumentType documentType) {

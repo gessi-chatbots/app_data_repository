@@ -5,7 +5,8 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.dto.ApplicationDTO;
+import upc.edu.gessi.repo.dto.ApplicationDataDTO;
+import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
@@ -35,13 +36,13 @@ public class ApplicationServiceImpl {
         return  (List<ApplicationSimplifiedDTO>) applicationRepository.findAllApplicationNames();
     }
 
-    public ApplicationDTO findByName(final String appName) throws ApplicationNotFoundException {
+    public ApplicationDataDTO findByName(final String appName) throws ApplicationNotFoundException {
         return applicationRepository.findByName(appName);
     }
 
-    public void insertApps(final List<ApplicationDTO> applicationDTOS) {
-        for (ApplicationDTO applicationDTO : applicationDTOS) {
-            applicationRepository.insertApp(applicationDTO);
+    public void insertApps(final List<CompleteApplicationDataDTO> completeApplicationDataDTOS) {
+        for (CompleteApplicationDataDTO completeApplicationDataDTO : completeApplicationDataDTOS) {
+            applicationRepository.insertApp(completeApplicationDataDTO);
         }
 
     }
@@ -50,10 +51,10 @@ public class ApplicationServiceImpl {
         return applicationRepository.getAllApps();
     }
 
-    public void addFeatures(final ApplicationDTO applicationDTO,
+    public void addFeatures(final CompleteApplicationDataDTO completeApplicationDataDTO,
                             final IRI sub,
                             final List<Statement> statements) {
-        applicationRepository.addFeaturesToApplication(applicationDTO, sub, statements);
+        applicationRepository.addFeaturesToApplication(completeApplicationDataDTO, sub, statements);
     }
     /*
     public List<String> getResultsContaining(String text) {
