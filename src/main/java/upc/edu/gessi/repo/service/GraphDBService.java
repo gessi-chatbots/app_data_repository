@@ -78,22 +78,6 @@ public class GraphDBService {
         repository = new HTTPRepository(url);
     }
 
-
-
-
-    private void addFeatures(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
-        /*
-        for (Feature feature : applicationDTO.getFeatures()) {
-            String id = WordUtils.capitalize(feature.getName()).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", "");
-            IRI featureIRI = factory.createIRI(definedTermIRI + "/" + id);
-            statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature.getName())));
-            statements.add(factory.createStatement(featureIRI, identifierIRI, factory.createLiteral(id)));
-            statements.add(factory.createStatement(sub, featuresIRI, featureIRI));
-            statements.add(factory.createStatement(featureIRI, typeIRI, definedTermIRI));
-        }
-         */
-    }
-
     /**
      * Deductive Methods
      */

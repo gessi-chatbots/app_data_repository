@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.repository.impl;
 
+import org.apache.commons.text.WordUtils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModelFactory;
@@ -33,40 +34,38 @@ public class ApplicationRepository <T> implements RdfRepository {
 
     private final AppDataScannerService appDataScannerService;
 
-    // Prefix
-    private final String prefix = "https://schema.org/";
     // Data types
-    private IRI typeIRI = factory.createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-    private IRI appIRI = factory.createIRI("https://schema.org/MobileApplication");
-    private IRI reviewIRI = factory.createIRI("https://schema.org/Review");
-    private IRI personIRI = factory.createIRI("https://schema.org/Person");
-    private IRI definedTermIRI = factory.createIRI("https://schema.org/DefinedTerm");
-    private IRI digitalDocumentIRI = factory.createIRI("https://schema.org/DigitalDocument");
-    private  IRI developerIRI = factory.createIRI("https://schema.org/Organization");
+    private final IRI typeIRI = factory.createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+    private final IRI appIRI = factory.createIRI("https://schema.org/MobileApplication");
+    private final IRI reviewIRI = factory.createIRI("https://schema.org/Review");
+    private final IRI definedTermIRI = factory.createIRI("https://schema.org/DefinedTerm");
+    private final IRI digitalDocumentIRI = factory.createIRI("https://schema.org/DigitalDocument");
+    private final IRI developerIRI = factory.createIRI("https://schema.org/Organization");
 
     //App objects
-    private IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
-    private IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
-    private IRI descriptionIRI = factory.createIRI("https://schema.org/description");
-    private IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
-    private IRI textIRI = factory.createIRI("https://schema.org/text");
-    private IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
-    private IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
-    private IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
-    private IRI reviewsIRI = factory.createIRI("https://schema.org/review");
-    private IRI reviewDocumentIRI = factory.createIRI("https://schema.org/featureList");
-    private IRI sameAsIRI = factory.createIRI("https://schema.org/sameAs");
-    private IRI softwareVersionIRI = factory.createIRI("https://schema.org/softwareVersion");
-    private IRI dateModifiedIRI = factory.createIRI("https://schema.org/dateModified");
+    private final IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
+    private final IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
+    private final IRI descriptionIRI = factory.createIRI("https://schema.org/description");
+    private final IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
+    private final IRI textIRI = factory.createIRI("https://schema.org/text");
+    private final IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
+    private final IRI featuresIRI = factory.createIRI("https://schema.org/keywords");
+
+    private final IRI changelogIRI = factory.createIRI("https://schema.org/releaseNotes");
+    private final IRI reviewsIRI = factory.createIRI("https://schema.org/review");
+    private final IRI reviewDocumentIRI = factory.createIRI("https://schema.org/featureList");
+    private final IRI sameAsIRI = factory.createIRI("https://schema.org/sameAs");
+    private final IRI softwareVersionIRI = factory.createIRI("https://schema.org/softwareVersion");
+    private final IRI dateModifiedIRI = factory.createIRI("https://schema.org/dateModified");
 
     //Review objects
-    private  IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
-    private  IRI datePublishedIRI = factory.createIRI("https://schema.org/datePublished");
-    private  IRI authorIRI = factory.createIRI("https://schema.org/author");
-    private  IRI reviewRatingIRI = factory.createIRI("https://schema.org/reviewRating");
+    private final IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");
+    private final IRI datePublishedIRI = factory.createIRI("https://schema.org/datePublished");
+    private final IRI authorIRI = factory.createIRI("https://schema.org/author");
+    private final IRI reviewRatingIRI = factory.createIRI("https://schema.org/reviewRating");
 
     //Person objects
-    private  IRI nameIRI = factory.createIRI("https://schema.org/name");
+    private final IRI nameIRI = factory.createIRI("https://schema.org/name");
 
     //Feature object
     private IRI synonymIRI = factory.createIRI("https://schema.org/sameAs");
@@ -233,7 +232,6 @@ public class ApplicationRepository <T> implements RdfRepository {
     }
 
     public void insertApp(ApplicationDTO applicationDTO) {
-
         List<Statement> statements = new ArrayList<>();
         Model model = createEmptyModel();
 
@@ -243,14 +241,15 @@ public class ApplicationRepository <T> implements RdfRepository {
         statements.add(factory.createStatement(sub, typeIRI, appIRI));
         statements.add(factory.createStatement(sub, authorIRI, devSubject));
 
-        //some fields are not populated, so we check them to avoid null pointers.
-        //for (AppCategory category : app.getCategories()) {
-        //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(String.valueOf(category))));
-        //}
-
-        //if (app.getCategory() != null) {
-        //    statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(app.getCategory())));
-        //}
+        if (applicationDTO.getCategoryId() != null) {
+            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(applicationDTO.getCategoryId())));
+        }
+        if (applicationDTO.getCategory() != null) {
+            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(applicationDTO.getCategory())));
+        }
+        for (String category : applicationDTO.getCategories()) {
+            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(category)));
+        }
 
         if (applicationDTO.getReleaseDate() != null) {
             statements.add(factory.createStatement(sub, datePublishedIRI, factory.createLiteral(applicationDTO.getReleaseDate())));
@@ -264,44 +263,63 @@ public class ApplicationRepository <T> implements RdfRepository {
             statements.add(factory.createStatement(sub, softwareVersionIRI, factory.createLiteral(applicationDTO.getVersion())));
         }
 
-        if (applicationDTO.getCategoryId() != null) {
-            statements.add(factory.createStatement(sub, categoryIRI, factory.createLiteral(applicationDTO.getCategoryId())));
-        }
-
         if (applicationDTO.getName() != null) {
             String sanitizedName = Utils.sanitizeString(applicationDTO.getName());
             statements.add(factory.createStatement(sub, nameIRI, factory.createLiteral(sanitizedName)));
         }
-        if (applicationDTO.getPackageName() != null) statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(applicationDTO.getPackageName())));
+        if (applicationDTO.getPackageName() != null) {
+            statements.add(factory.createStatement(sub, identifierIRI, factory.createLiteral(applicationDTO.getPackageName())));
+        }
 
         if (applicationDTO.getDescription() != null) {
-            addDigitalDocumentIntoStatements(applicationDTO.getPackageName(), applicationDTO.getDescription(), statements, sub, descriptionIRI, DocumentType.DESCRIPTION);
+            addDigitalDocumentIntoStatements(
+                    applicationDTO.getPackageName(),
+                    applicationDTO.getDescription(),
+                    statements,
+                    sub,
+                    descriptionIRI,
+                    DocumentType.DESCRIPTION);
             //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
         }
         if (applicationDTO.getSummary() != null) {
-            addDigitalDocumentIntoStatements(applicationDTO.getPackageName(), applicationDTO.getSummary(), statements, sub, summaryIRI, DocumentType.SUMMARY);
+            addDigitalDocumentIntoStatements(
+                    applicationDTO.getPackageName(),
+                    applicationDTO.getSummary(),
+                    statements,
+                    sub,
+                    summaryIRI,
+                    DocumentType.SUMMARY);
             //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
         }
-        /*
-        if (applicationDTO.getChangelog() != null) {
-            addDigitalDocument(applicationDTO.getPackageName(), applicationDTO.getChangelog(), statements, sub, changelogIRI, DocumentType.CHANGELOG);
-            //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
-        }*/
-        //Adding reviewDocumentPlaceholder
-        addDigitalDocumentIntoStatements(applicationDTO.getPackageName(), "Aggregated NL data for app " + applicationDTO.getName(), statements, sub, reviewDocumentIRI, DocumentType.REVIEWS);
 
-        //Adding all reviews
+        if (applicationDTO.getChangelog() != null) {
+            addDigitalDocumentIntoStatements(
+                    applicationDTO.getPackageName(),
+                    applicationDTO.getChangelog(),
+                    statements,
+                    sub,
+                    changelogIRI,
+                    DocumentType.CHANGELOG);
+            //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
+        }
+        //Adding reviewDocumentPlaceholder
+        addDigitalDocumentIntoStatements(
+                applicationDTO.getPackageName(),
+                "Aggregated NL data for app " + applicationDTO.getName(),
+                statements,
+                sub,
+                reviewDocumentIRI,
+                DocumentType.REVIEWS);
+
         addReviews(applicationDTO, sub, statements);
 
-        //EXTENDED KNOWLEDGE - Add features
         addFeatures(applicationDTO, sub, statements);
 
-        //Committing all changes
         commitChanges(model, statements);
     }
 
-    private void commitChanges(Model model, List<Statement> statements) {
-        //model.addAll(statements);
+    private void commitChanges(final Model model, final List<Statement> statements) {
+        // model.addAll(statements);
         RepositoryConnection repoConnection = repository.getConnection();
         repoConnection.add(statements);
         repoConnection.close();
@@ -375,16 +393,14 @@ public class ApplicationRepository <T> implements RdfRepository {
     }
 
     private void addFeatures(ApplicationDTO applicationDTO, IRI sub, List<Statement> statements) {
-        /*
-        for (Feature feature : applicationDTO.getFeatures()) {
-            String id = WordUtils.capitalize(feature.getName()).replaceAll(" ", "").replaceAll("[^a-zA-Z0-9]", "");
+        for (String feature : applicationDTO.getFeatures()) {
+            String id = WordUtils.capitalize(feature).replace(" ", "").replaceAll("[^a-zA-Z0-9]", "");
             IRI featureIRI = factory.createIRI(definedTermIRI + "/" + id);
-            statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature.getName())));
+            statements.add(factory.createStatement(featureIRI, nameIRI, factory.createLiteral(feature)));
             statements.add(factory.createStatement(featureIRI, identifierIRI, factory.createLiteral(id)));
             statements.add(factory.createStatement(sub, featuresIRI, featureIRI));
             statements.add(factory.createStatement(featureIRI, typeIRI, definedTermIRI));
         }
-         */
     }
 
     public List<GraphApp> getAllApps() {

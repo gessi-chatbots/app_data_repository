@@ -1,9 +1,6 @@
 package upc.edu.gessi.repo.service;
 
 
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.ApplicationDTO;
@@ -20,7 +17,7 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
 
     @Autowired
-    public ApplicationService(ApplicationRepository appRepository) {
+    public ApplicationService(final ApplicationRepository appRepository) {
         applicationRepository = appRepository;
     }
 

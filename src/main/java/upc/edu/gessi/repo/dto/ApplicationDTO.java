@@ -56,6 +56,7 @@ public class ApplicationDTO implements Serializable {
     private String packageName;
     private List<String> features;
     private List<String> tags;
+    private List<String> categories;
 
 
 
