@@ -2,7 +2,10 @@ package upc.edu.gessi.repo.service.impl;
 
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -11,13 +14,21 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
+import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.repository.impl.ReviewRepository;
+import upc.edu.gessi.repo.util.ReviewQueryBuilder;
+import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -25,15 +36,24 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final HTTPRepository repository;
+    private final ValueFactory factory = SimpleValueFactory.getInstance();
+
+    private final SchemaIRI schemaIRI;
+
+    private final ReviewQueryBuilder reviewQueryBuilder;
 
     @Autowired
     public ReviewService(final @org.springframework.beans.factory.annotation.Value("${db.url}") String url,
                          final @org.springframework.beans.factory.annotation.Value("${db.username}") String username,
                          final @org.springframework.beans.factory.annotation.Value("${db.password}") String password,
-                         final ReviewRepository reviewRep) {
+                         final ReviewRepository reviewRep,
+                         final SchemaIRI schIRI,
+                         final ReviewQueryBuilder reviewQB) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         reviewRepository = reviewRep;
+        schemaIRI = schIRI;
+        reviewQueryBuilder = reviewQB;
     }
 
     public List findAll(boolean simplified) throws ApplicationNotFoundException {
@@ -51,6 +71,19 @@ public class ReviewService {
         return reviewRepository.findByApplicationName(appName);
     }
 
+    private TupleQueryResult runSparqlQuery(final String query) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
+        return tupleQuery.evaluate();
+    }
+
+    public List<ReviewResponseDTO> getAllReviewsData(List<ReviewRequestDTO> reviews) {
+        List<String> reviewIds = reviews.stream()
+                .map(ReviewRequestDTO::getReviewId)
+                .collect(Collectors.toList());
+        TupleQueryResult result = runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
+        return null;
+    }
     public List<GraphReview> getReviews(String nodeId) {
         List<GraphReview> graphReviews = new ArrayList<>();
 
@@ -97,4 +130,58 @@ public class ReviewService {
         }
         return resultList;
     }
+
+    public void addReviewsToApplication(final CompleteApplicationDataDTO completeApplicationDataDTO,
+                                        final IRI sub,
+                                        final List<Statement> statements) {
+        for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
+            IRI review = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
+            //normalize the text to utf-8 encoding
+            String reviewBody = r.getBody();
+            if (reviewBody != null) {
+                byte[] reviewBytes = reviewBody.getBytes();
+                String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
+                statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), factory.createLiteral(encoded_string)));
+                if (r.getSentences() != null) {
+                    r.getSentences().forEach(sentenceDTO -> {
+                        if (sentenceDTO.getId() != null) {
+                            IRI sentence = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
+                            statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), sentence));
+                            statements.add(factory.createStatement(sentence, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentiment())));
+                            statements.add(factory.createStatement(sentence, schemaIRI.getFeaturesIRI(), factory.createLiteral(sentenceDTO.getFeature())));
+                        }
+                    });
+                }
+            }
+
+            //normalize the text to utf-8 encoding
+             /*String reviewAuthor = r.getUserName();
+             byte[] authorBytes = reviewAuthor.getBytes();
+             String  encoded_author = new String(authorBytes, StandardCharsets.UTF_8);
+             String  ascii_encoded_author = new String(authorBytes, StandardCharsets.US_ASCII);
+             String temp = ascii_encoded_author.replaceAll("[^a-zA-Z0-9]","");
+             IRI author;
+             if (temp.equals("")) {
+                 String new_user_name = "User_"+user_map.size();
+                 user_map.put(new_user_name,encoded_author);
+                 author = factory.createIRI(personIRI  + "/" +  new_user_name);
+             } else {
+                 author = factory.createIRI(personIRI + "/" + ascii_encoded_author.replaceAll("[^a-zA-Z0-9]", ""));
+
+             }
+             statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(encoded_author)));
+             statements.add(factory.createStatement(review, authorIRI, author));*/
+            //IRI rating = factory.createIRI(reviewRatingIRI)
+            statements.add(factory.createStatement(review, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
+            if (r.getPublished() != null) {
+                statements.add(factory.createStatement(review, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getPublished())));
+            }
+            statements.add(factory.createStatement(review, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));
+            statements.add(factory.createStatement(sub, schemaIRI.getReviewsIRI(), review));
+            statements.add(factory.createStatement(review, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
+            statements.add(factory.createStatement(review, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
+            //statements.add(factory.createStatement(author, typeIRI, personIRI));
+        }
+    }
+
 }

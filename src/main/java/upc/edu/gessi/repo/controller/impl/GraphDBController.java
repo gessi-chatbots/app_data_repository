@@ -14,9 +14,12 @@ import upc.edu.gessi.repo.controller.GraphDBApi;
 import upc.edu.gessi.repo.dto.ApplicationDataDTO;
 import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.service.impl.ApplicationServiceImpl;
 import upc.edu.gessi.repo.service.impl.GraphDBService;
+import upc.edu.gessi.repo.service.impl.ReviewService;
 
 import java.io.File;
 import java.util.List;
@@ -27,11 +30,15 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
 
     private final GraphDBService dbConnection;
     private final ApplicationServiceImpl applicationServiceImpl;
+
+    private final ReviewService reviewService;
     @Autowired
     public GraphDBController(final GraphDBService graphDBService,
-                             final ApplicationServiceImpl applicationServiceImpl) {
+                             final ApplicationServiceImpl applicationServiceImpl,
+                             final ReviewService reviewSv) {
         this.dbConnection = graphDBService;
         this.applicationServiceImpl = applicationServiceImpl;
+        reviewService = reviewSv;
     }
 
     @Value("${rml.path}")
@@ -128,4 +135,8 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
         logger.info("Repository updated");
     }
 
+    @Override
+    public List<ReviewResponseDTO> getReviews(List<ReviewRequestDTO> reviews) {
+        return reviewService.getAllReviewsData(reviews);
+    }
 }

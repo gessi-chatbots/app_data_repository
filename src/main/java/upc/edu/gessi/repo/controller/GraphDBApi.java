@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.dto.ApplicationDataDTO;
 import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 
 import java.util.List;
@@ -63,4 +65,8 @@ public interface GraphDBApi <T> {
 
     @PostMapping("updateRepository")
     void updateRepository(@RequestParam(value = "url") String url);
+
+    @GetMapping(value = "/reviews", produces = "application/json")
+    @ResponseBody
+    List<ReviewResponseDTO> getReviews(@RequestBody List<ReviewRequestDTO> reviews);
 }

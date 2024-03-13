@@ -41,6 +41,7 @@ public class SchemaIRI {
     private final IRI authorIRI = factory.createIRI("https://schema.org/author");
     private final IRI reviewRatingIRI = factory.createIRI("https://schema.org/reviewRating");
 
+    private final IRI reactActionIRI = factory.createIRI("https://schema.org/ReactAction");
     //Person objects
     private final IRI nameIRI = factory.createIRI("https://schema.org/name");
 

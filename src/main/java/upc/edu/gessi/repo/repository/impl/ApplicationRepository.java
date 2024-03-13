@@ -17,6 +17,7 @@ import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.repository.RdfRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerService;
+import upc.edu.gessi.repo.service.impl.ReviewService;
 import upc.edu.gessi.repo.util.ApplicationQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
@@ -38,17 +39,21 @@ public class ApplicationRepository <T> implements RdfRepository {
 
     private final ApplicationQueryBuilder applicationQueryBuilder;
 
+    private final ReviewService reviewService;
+
     @Autowired
     public ApplicationRepository(final @Value("${db.url}") String url,
                                  final @Value("${db.username}") String username,
                                  final @Value("${db.password}") String password,
                                  final AppDataScannerService appDataScannerServ,
                                  final SchemaIRI schema,
-                                 final ApplicationQueryBuilder appQB) {
+                                 final ApplicationQueryBuilder appQB,
+                                 final ReviewService reviewSv) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         appDataScannerService = appDataScannerServ;
         schemaIRI = schema;
+        reviewService = reviewSv;
         applicationQueryBuilder = appQB;
     }
 
@@ -227,7 +232,7 @@ public class ApplicationRepository <T> implements RdfRepository {
                 schemaIRI.getReviewDocumentIRI(),
                 DocumentType.REVIEWS);
 
-        addReviews(completeApplicationDataDTO, sub, statements);
+        reviewService.addReviewsToApplication(completeApplicationDataDTO, sub, statements);
 
         addFeaturesToApplication(completeApplicationDataDTO, sub, statements);
 
@@ -264,46 +269,6 @@ public class ApplicationRepository <T> implements RdfRepository {
         statements.add(factory.createStatement(appDescription, schemaIRI.getDisambiguatingDescriptionIRI(), factory.createLiteral(documentType.getName())));
         statements.add(factory.createStatement(sub, pred, appDescription));
         statements.add(factory.createStatement(appDescription, schemaIRI.getTypeIRI(), schemaIRI.getDigitalDocumentIRI()));
-    }
-    private void addReviews(CompleteApplicationDataDTO completeApplicationDataDTO, IRI sub, List<Statement> statements) {
-        for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
-            IRI review = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
-            //normalize the text to utf-8 encoding
-            String reviewBody = r.getBody();
-            if (reviewBody != null) {
-                byte[] reviewBytes = reviewBody.getBytes();
-                String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
-                statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), factory.createLiteral(encoded_string)));
-            }
-
-            //normalize the text to utf-8 encoding
-             /*String reviewAuthor = r.getUserName();
-             byte[] authorBytes = reviewAuthor.getBytes();
-             String  encoded_author = new String(authorBytes, StandardCharsets.UTF_8);
-             String  ascii_encoded_author = new String(authorBytes, StandardCharsets.US_ASCII);
-             String temp = ascii_encoded_author.replaceAll("[^a-zA-Z0-9]","");
-             IRI author;
-             if (temp.equals("")) {
-                 String new_user_name = "User_"+user_map.size();
-                 user_map.put(new_user_name,encoded_author);
-                 author = factory.createIRI(personIRI  + "/" +  new_user_name);
-             } else {
-                 author = factory.createIRI(personIRI + "/" + ascii_encoded_author.replaceAll("[^a-zA-Z0-9]", ""));
-
-             }
-             statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(encoded_author)));
-             statements.add(factory.createStatement(review, authorIRI, author));*/
-            //IRI rating = factory.createIRI(reviewRatingIRI)
-            statements.add(factory.createStatement(review, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
-            if (r.getPublished() != null) {
-                statements.add(factory.createStatement(review, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getPublished())));
-            }
-            statements.add(factory.createStatement(review, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));
-            statements.add(factory.createStatement(sub, schemaIRI.getReviewsIRI(), review));
-            statements.add(factory.createStatement(review, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-            statements.add(factory.createStatement(review, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
-            //statements.add(factory.createStatement(author, typeIRI, personIRI));
-        }
     }
 
     public void addFeaturesToApplication(CompleteApplicationDataDTO completeApplicationDataDTO, IRI sub, List<Statement> statements) {
