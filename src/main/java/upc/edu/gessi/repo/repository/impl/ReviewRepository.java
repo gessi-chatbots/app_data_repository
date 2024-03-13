@@ -1,7 +1,7 @@
 package upc.edu.gessi.repo.repository.impl;
 
 import org.springframework.stereotype.Repository;
-import upc.edu.gessi.repo.dto.ReviewDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.repository.RdfRepository;
 

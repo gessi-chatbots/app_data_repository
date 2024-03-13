@@ -1,4 +1,4 @@
-package upc.edu.gessi.repo.dto;
+package upc.edu.gessi.repo.dto.Review;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,6 +12,7 @@ import upc.edu.gessi.repo.dto.serializer.CustomDateSerializer;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -31,4 +32,5 @@ public class ReviewDTO implements Serializable {
     @JsonDeserialize(using = CustomDateDeserializer.class)
     @JsonProperty("at")
     private Date published;
+    private List<SentenceDTO> sentences;
 }
