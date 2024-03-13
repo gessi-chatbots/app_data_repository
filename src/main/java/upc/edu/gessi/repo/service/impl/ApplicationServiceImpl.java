@@ -1,43 +1,60 @@
-package upc.edu.gessi.repo.service;
+package upc.edu.gessi.repo.service.impl;
 
 
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.ApplicationDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
+import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.repository.impl.ApplicationRepository;
-import upc.edu.gessi.repo.repository.impl.ReviewRepository;
 
 import java.util.List;
 
 
 @Service
-public class ReviewService {
+public class ApplicationServiceImpl {
 
-    private final ReviewRepository reviewRepository;
+    private final ApplicationRepository applicationRepository;
 
     @Autowired
-    public ReviewService(ReviewRepository reviewRep) {
-        reviewRepository = reviewRep;
+    public ApplicationServiceImpl(final ApplicationRepository appRepository) {
+        applicationRepository = appRepository;
     }
 
     public List findAll(boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? reviewRepository.findAllSimplified() : reviewRepository.findAll();
+        return simplified ? applicationRepository.findAllSimplified() : applicationRepository.findAll();
     }
     public List findAllPaginated(final Integer page, final Integer size, final boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? reviewRepository.findAllSimplifiedPaginated(page, size) : reviewRepository.findAll();
+        return simplified ? applicationRepository.findAllSimplifiedPaginated(page, size) : applicationRepository.findAll();
     }
 
     public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
-        return  (List<ApplicationSimplifiedDTO>) reviewRepository.findAllReviewIDs();
+        return  (List<ApplicationSimplifiedDTO>) applicationRepository.findAllApplicationNames();
     }
 
-    public List findByName(final String appName) throws ApplicationNotFoundException {
-        return reviewRepository.findByApplicationName(appName);
+    public ApplicationDTO findByName(final String appName) throws ApplicationNotFoundException {
+        return applicationRepository.findByName(appName);
     }
 
+    public void insertApps(final List<ApplicationDTO> applicationDTOS) {
+        for (ApplicationDTO applicationDTO : applicationDTOS) {
+            applicationRepository.insertApp(applicationDTO);
+        }
 
+    }
+
+    public List<GraphApp> getAllApps() {
+        return applicationRepository.getAllApps();
+    }
+
+    public void addFeatures(final ApplicationDTO applicationDTO,
+                            final IRI sub,
+                            final List<Statement> statements) {
+        applicationRepository.addFeaturesToApplication(applicationDTO, sub, statements);
+    }
     /*
     public List<String> getResultsContaining(String text) {
         RepositoryConnection repoConnection = repository.getConnection();

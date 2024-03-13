@@ -1,4 +1,4 @@
-package upc.edu.gessi.repo.service;
+package upc.edu.gessi.repo.service.impl;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;

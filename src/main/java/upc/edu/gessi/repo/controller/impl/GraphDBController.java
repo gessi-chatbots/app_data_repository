@@ -14,8 +14,8 @@ import upc.edu.gessi.repo.controller.GraphDBApi;
 import upc.edu.gessi.repo.dto.ApplicationDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
-import upc.edu.gessi.repo.service.ApplicationService;
-import upc.edu.gessi.repo.service.GraphDBService;
+import upc.edu.gessi.repo.service.impl.ApplicationServiceImpl;
+import upc.edu.gessi.repo.service.impl.GraphDBService;
 
 import java.io.File;
 import java.util.List;
@@ -25,12 +25,12 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
     private final Logger logger = LoggerFactory.getLogger(GraphDBController.class);
 
     private final GraphDBService dbConnection;
-    private final ApplicationService applicationService;
+    private final ApplicationServiceImpl applicationServiceImpl;
     @Autowired
     public GraphDBController(final GraphDBService graphDBService,
-                             final ApplicationService applicationService) {
+                             final ApplicationServiceImpl applicationServiceImpl) {
         this.dbConnection = graphDBService;
-        this.applicationService = applicationService;
+        this.applicationServiceImpl = applicationServiceImpl;
     }
 
     @Value("${rml.path}")
@@ -46,22 +46,22 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
             final Integer page,
             final Integer size,
             final boolean simplified) throws ApplicationNotFoundException {
-        return (paginated) ? applicationService.findAllPaginated(page, size, simplified) : applicationService.findAll(simplified);
+        return (paginated) ? applicationServiceImpl.findAllPaginated(page, size, simplified) : applicationServiceImpl.findAll(simplified);
     }
 
     @Override
     public List<ApplicationSimplifiedDTO> getAllApplicationsNames() throws ApplicationNotFoundException {
-        return applicationService.findAllApplicationNames();
+        return applicationServiceImpl.findAllApplicationNames();
     }
 
     @Override
     public ApplicationDTO getApplicationData(@PathVariable final String appName) throws ApplicationNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return applicationService.findByName(appName.toLowerCase());
+        return applicationServiceImpl.findByName(appName.toLowerCase());
     }
 
     @Override
     public ResponseEntity<String> insertJSONData(@RequestBody List<ApplicationDTO> applicationDTOS) {
-        applicationService.insertApps(applicationDTOS);
+        applicationServiceImpl.insertApps(applicationDTOS);
         return new ResponseEntity<>("created", HttpStatus.CREATED);
     }
 

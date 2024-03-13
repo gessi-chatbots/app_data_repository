@@ -1,13 +1,12 @@
-package upc.edu.gessi.repo.service;
+package upc.edu.gessi.repo.service.impl;
 
-import org.eclipse.rdf4j.model.IRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.DocumentType;
-import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
 import upc.edu.gessi.repo.dto.SimilarityApp;
+import upc.edu.gessi.repo.repository.impl.ApplicationRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,7 +17,13 @@ public class SimilarityService {
     private Logger logger = LoggerFactory.getLogger(SimilarityService.class);
 
     @Autowired
+    ApplicationRepository applicationRepository;
+
+    @Autowired
     GraphDBService graphDBService;
+
+    @Autowired
+    FeatureService featureService;
 /*
     public void computeSimilarity(SimilarityAlgorithm algorithm) {
         graphDBService.getAppsWithFeatures();
@@ -33,9 +38,9 @@ public class SimilarityService {
         for (String app : apps) {
             List<SimilarityApp> similarApps;
             if (documentType.equals(DocumentType.ALL)) {
-                List<SimilarityApp> descriptionSimilarities = graphDBService.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
-                List<SimilarityApp> summarySimilarities = graphDBService.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
-                List<SimilarityApp> changelogSimilarities = graphDBService.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
+                List<SimilarityApp> descriptionSimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
+                List<SimilarityApp> summarySimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
+                List<SimilarityApp> changelogSimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
 
                 similarApps = descriptionSimilarities;
                 mergeSimilarities(similarApps, summarySimilarities, 2);
@@ -44,7 +49,7 @@ public class SimilarityService {
                         .collect(Collectors.toList()).subList(0, k);
 
             } else {
-                similarApps = graphDBService.getTopKSimilarApps(app, k, documentType);
+                similarApps = applicationRepository.getTopKSimilarApps(app, k, documentType);
             }
             res.put("https://schema.org/MobileApplication/" + app, similarApps);
         }
@@ -56,9 +61,9 @@ public class SimilarityService {
         for (String feature : features) {
             List<SimilarityApp> similarFeatures;
             if (documentType.equals(DocumentType.ALL)) {
-                List<SimilarityApp> descriptionSimilarities = graphDBService.getTopKAppsByFeature(feature, k, DocumentType.DESCRIPTION);
-                List<SimilarityApp> summarySimilarities = graphDBService.getTopKAppsByFeature(feature, k, DocumentType.SUMMARY);
-                List<SimilarityApp> changelogSimilarities = graphDBService.getTopKAppsByFeature(feature, k, DocumentType.CHANGELOG);
+                List<SimilarityApp> descriptionSimilarities = featureService.getTopKAppsByFeature(feature, k, DocumentType.DESCRIPTION);
+                List<SimilarityApp> summarySimilarities = featureService.getTopKAppsByFeature(feature, k, DocumentType.SUMMARY);
+                List<SimilarityApp> changelogSimilarities = featureService.getTopKAppsByFeature(feature, k, DocumentType.CHANGELOG);
 
                 similarFeatures = descriptionSimilarities;
                 mergeSimilarities(similarFeatures, summarySimilarities, 2);
@@ -67,7 +72,7 @@ public class SimilarityService {
                         .collect(Collectors.toList()).subList(0, k);
 
             } else {
-                similarFeatures = graphDBService.getTopKAppsByFeature(feature, k, documentType);
+                similarFeatures = featureService.getTopKAppsByFeature(feature, k, documentType);
             }
             res.put("https://schema.org/DefinedTerm/" + feature.replace(" ", ""), similarFeatures);
         }

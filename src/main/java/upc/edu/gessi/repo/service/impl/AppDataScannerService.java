@@ -1,4 +1,4 @@
-package upc.edu.gessi.repo.service;
+package upc.edu.gessi.repo.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

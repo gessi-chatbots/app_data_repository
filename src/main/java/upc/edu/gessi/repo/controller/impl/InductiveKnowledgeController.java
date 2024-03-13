@@ -8,8 +8,8 @@ import upc.edu.gessi.repo.controller.InductiveKnowledgeAPI;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
 import upc.edu.gessi.repo.dto.SimilarityApp;
-import upc.edu.gessi.repo.service.GraphDBService;
-import upc.edu.gessi.repo.service.SimilarityService;
+import upc.edu.gessi.repo.service.impl.GraphDBService;
+import upc.edu.gessi.repo.service.impl.SimilarityService;
 
 import java.util.List;
 import java.util.Map;
