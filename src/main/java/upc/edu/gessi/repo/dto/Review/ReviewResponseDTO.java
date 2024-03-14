@@ -13,10 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewResponseDTO implements Serializable {
-    @JsonProperty("reviewId")
-    private String id;
-    @JsonProperty("review")
-    private String body;
-    private String applicationIdentifier;
+    private String reviewId;
+    private String review;
+    private String applicationId;
     private List<SentenceDTO> sentences;
 }

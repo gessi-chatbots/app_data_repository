@@ -94,9 +94,9 @@ public class ReviewService {
                 String appIdentifier = bindings.getBinding("app_identifier").getValue().stringValue();
                 String idValue = bindings.getBinding("id").getValue().stringValue();
                 String textValue = bindings.getBinding("text").getValue().stringValue();
-                reviewResponseDTO.setApplicationIdentifier(appIdentifier);
-                reviewResponseDTO.setId(idValue);
-                reviewResponseDTO.setBody(textValue);
+                reviewResponseDTO.setApplicationId(appIdentifier);
+                reviewResponseDTO.setReviewId(idValue);
+                reviewResponseDTO.setReview(textValue);
             }
             reviewResponseDTOs.add(reviewResponseDTO);
         }
@@ -202,6 +202,40 @@ public class ReviewService {
         }
     }
 
+    public void addReviews(final List<ReviewResponseDTO> reviewResponseDTOList) {
+        List<Statement> statements = new ArrayList<>();
+        for (ReviewResponseDTO r : reviewResponseDTOList) {
+            IRI review = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getReviewId());
+            //normalize the text to utf-8 encoding
+            String reviewBody = r.getReview();
+            if (reviewBody != null) {
+                byte[] reviewBytes = reviewBody.getBytes();
+                String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
+                statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), factory.createLiteral(encoded_string)));
+                if (r.getSentences() != null) {
+                    r.getSentences().forEach(sentenceDTO -> {
+                        if (sentenceDTO.getId() != null) {
+                            IRI sentence = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
+                            statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), sentence));
+                            if (sentenceDTO.getSentiment() != null) {
+                                statements.add(factory.createStatement(sentence, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentiment())));
+                            }
+                            if (sentenceDTO.getFeature() != null) {
+                                statements.add(factory.createStatement(sentence, schemaIRI.getFeaturesIRI(), factory.createLiteral(sentenceDTO.getFeature())));
+                            }
+                        }
+                    });
+                }
+            }
+        }
+        commitChanges(statements);
+    }
+
+    private void commitChanges(final List<Statement> statements) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        repoConnection.add(statements);
+        repoConnection.close();
+    }
     private boolean existsIdAndText(BindingSet bindings) {
         return bindings.getBinding("id") != null
                 && bindings.getBinding("id").getValue() != null

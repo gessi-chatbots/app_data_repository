@@ -74,6 +74,5 @@ public interface GraphDBApi <T> {
     @PostMapping(value = "/reviews", produces = "application/json")
     @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of review entities into the GraphDB. The " +
             "data is sent in JSON format through the request body.")
-    @ResponseBody
-    ResponseEntity<String> insertJSONReviewData(@RequestBody List<CompleteApplicationDataDTO> completeApplicationDataDTOS);
+    ResponseEntity<String> insertJSONReviewData(@RequestBody List<ReviewResponseDTO> completeApplicationDataDTOS);
 }
