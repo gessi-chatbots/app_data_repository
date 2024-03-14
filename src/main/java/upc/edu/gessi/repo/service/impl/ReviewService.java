@@ -20,6 +20,7 @@ import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 import upc.edu.gessi.repo.repository.impl.ReviewRepository;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
@@ -77,12 +78,28 @@ public class ReviewService {
         return tupleQuery.evaluate();
     }
 
-    public List<ReviewResponseDTO> getAllReviewsData(List<ReviewRequestDTO> reviews) {
+    public List<ReviewResponseDTO> getAllReviewsData(List<ReviewRequestDTO> reviews) throws NoReviewsFoundException {
         List<String> reviewIds = reviews.stream()
                 .map(ReviewRequestDTO::getReviewId)
                 .collect(Collectors.toList());
         TupleQueryResult result = runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
-        return null;
+        if (!result.hasNext()) {
+            throw new NoReviewsFoundException("Any review was found");
+        }
+        List<ReviewResponseDTO> reviewResponseDTOs = new ArrayList<>();
+        while (result.hasNext()) {
+            ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO();
+            BindingSet bindings = result.next();
+            if (existsIdAndText(bindings)) {
+                String idValue = bindings.getBinding("id").getValue().stringValue();
+                String textValue = bindings.getBinding("text").getValue().stringValue();
+                String reactionIRI = schemaIRI.getReactActionIRI().stringValue();
+                reviewResponseDTO.setId(idValue);
+                reviewResponseDTO.setBody(textValue);
+            }
+            reviewResponseDTOs.add(reviewResponseDTO);
+        }
+        return reviewResponseDTOs;
     }
     public List<GraphReview> getReviews(String nodeId) {
         List<GraphReview> graphReviews = new ArrayList<>();
@@ -183,5 +200,17 @@ public class ReviewService {
             //statements.add(factory.createStatement(author, typeIRI, personIRI));
         }
     }
+
+    private boolean existsIdAndText(BindingSet bindings) {
+        return bindings.getBinding("id") != null
+                && bindings.getBinding("id").getValue() != null
+                && bindings.getBinding("text") != null
+                && bindings.getBinding("text").getValue() != null;
+    }
+
+    // TODO finish review extension
+
+
+
 
 }

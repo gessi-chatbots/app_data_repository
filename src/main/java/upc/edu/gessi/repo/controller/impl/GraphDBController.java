@@ -17,6 +17,8 @@ import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.NoReviewsFoundException;
+import upc.edu.gessi.repo.exception.ReviewNotFoundException;
 import upc.edu.gessi.repo.service.impl.ApplicationServiceImpl;
 import upc.edu.gessi.repo.service.impl.GraphDBService;
 import upc.edu.gessi.repo.service.impl.ReviewService;
@@ -50,6 +52,16 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
 
     @ExceptionHandler(ApplicationNotFoundException.class)
     public ResponseEntity<String> handleApplicationNotFoundException(ApplicationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<String> handleReviewNotFoundException(ReviewNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NoReviewsFoundException.class)
+    public ResponseEntity<String> handleNoReviewsFoundException(NoReviewsFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
@@ -136,7 +148,7 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
     }
 
     @Override
-    public List<ReviewResponseDTO> getReviews(List<ReviewRequestDTO> reviews) {
+    public List<ReviewResponseDTO> getReviews(List<ReviewRequestDTO> reviews) throws NoReviewsFoundException {
         return reviewService.getAllReviewsData(reviews);
     }
 }

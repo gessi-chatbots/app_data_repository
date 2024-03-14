@@ -11,6 +11,7 @@ import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 
 import java.util.List;
 
@@ -68,5 +69,5 @@ public interface GraphDBApi <T> {
 
     @GetMapping(value = "/reviews", produces = "application/json")
     @ResponseBody
-    List<ReviewResponseDTO> getReviews(@RequestBody List<ReviewRequestDTO> reviews);
+    List<ReviewResponseDTO> getReviews(@RequestBody List<ReviewRequestDTO> reviews) throws NoReviewsFoundException;
 }
