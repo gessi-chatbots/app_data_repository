@@ -91,9 +91,10 @@ public class ReviewService {
             ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO();
             BindingSet bindings = result.next();
             if (existsIdAndText(bindings)) {
+                String appIdentifier = bindings.getBinding("app_identifier").getValue().stringValue();
                 String idValue = bindings.getBinding("id").getValue().stringValue();
                 String textValue = bindings.getBinding("text").getValue().stringValue();
-                String reactionIRI = schemaIRI.getReactActionIRI().stringValue();
+                reviewResponseDTO.setApplicationIdentifier(appIdentifier);
                 reviewResponseDTO.setId(idValue);
                 reviewResponseDTO.setBody(textValue);
             }

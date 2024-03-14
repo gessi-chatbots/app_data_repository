@@ -70,4 +70,10 @@ public interface GraphDBApi <T> {
     @GetMapping(value = "/reviews", produces = "application/json")
     @ResponseBody
     List<ReviewResponseDTO> getReviews(@RequestBody List<ReviewRequestDTO> reviews) throws NoReviewsFoundException;
+
+    @PostMapping(value = "/reviews", produces = "application/json")
+    @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of review entities into the GraphDB. The " +
+            "data is sent in JSON format through the request body.")
+    @ResponseBody
+    ResponseEntity<String> insertJSONReviewData(@RequestBody List<CompleteApplicationDataDTO> completeApplicationDataDTOS);
 }

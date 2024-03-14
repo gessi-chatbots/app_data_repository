@@ -17,5 +17,6 @@ public class ReviewResponseDTO implements Serializable {
     private String id;
     @JsonProperty("review")
     private String body;
+    private String applicationIdentifier;
     private List<SentenceDTO> sentences;
 }

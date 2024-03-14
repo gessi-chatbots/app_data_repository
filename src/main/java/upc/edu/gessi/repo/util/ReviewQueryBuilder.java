@@ -12,7 +12,7 @@ public class ReviewQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?id ?text\n");
+        queryBuilder.append("SELECT ?app_identifier ?id ?text\n");
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  VALUES ?id {\n");
         for (String id : ids) {
@@ -22,7 +22,11 @@ public class ReviewQueryBuilder
         queryBuilder.append("  ?review rdf:type schema:Review;\n");
         queryBuilder.append("          schema:identifier ?id ;\n");
         queryBuilder.append("          schema:reviewBody ?text .\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:review ?review ;\n");
+        queryBuilder.append("       schema:identifier ?app_identifier\n");
         queryBuilder.append("}\n");
         return queryBuilder.toString();
     }
+
 }
