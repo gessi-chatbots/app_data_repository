@@ -153,6 +153,11 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
     }
 
     @Override
+    public ReviewResponseDTO getReviewData(String reviewId) throws NoReviewsFoundException {
+        return reviewService.getReviewData(reviewId);
+    }
+
+    @Override
     public ResponseEntity<String> insertJSONReviewData(List<ReviewResponseDTO> reviewResponseDTOList) {
         reviewService.addReviews(reviewResponseDTOList);
         return new ResponseEntity<>("Reviews inserted successfully", HttpStatus.CREATED);

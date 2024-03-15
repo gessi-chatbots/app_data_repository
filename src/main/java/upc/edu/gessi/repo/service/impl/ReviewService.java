@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.Str;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +81,7 @@ public class ReviewService {
         return tupleQuery.evaluate();
     }
 
-    public List<ReviewResponseDTO> getAllReviewsData(List<ReviewRequestDTO> reviews) throws NoReviewsFoundException {
+    public List<ReviewResponseDTO> getAllReviewsData(final List<ReviewRequestDTO> reviews) throws NoReviewsFoundException {
         List<String> reviewIds = reviews
                 .stream()
                 .map(ReviewRequestDTO::getReviewId)
@@ -88,6 +89,11 @@ public class ReviewService {
         return getReviewDTOList(reviewIds);
     }
 
+    public ReviewResponseDTO getReviewData(final String reviewId) throws NoReviewsFoundException {
+        List<String> reviewIds = new ArrayList<>();
+        reviewIds.add(reviewId);
+        return getReviewDTOList(reviewIds).get(0);
+    }
 
     // TODO Improve efficiency
     private List<ReviewResponseDTO> getReviewDTOList(final List<String> reviewIds) throws NoReviewsFoundException {
