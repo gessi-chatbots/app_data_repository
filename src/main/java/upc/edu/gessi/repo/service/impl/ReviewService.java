@@ -18,6 +18,7 @@ import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
+import upc.edu.gessi.repo.dto.Review.SentenceDTO;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
@@ -28,6 +29,7 @@ import upc.edu.gessi.repo.util.Utils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,30 +81,80 @@ public class ReviewService {
     }
 
     public List<ReviewResponseDTO> getAllReviewsData(List<ReviewRequestDTO> reviews) throws NoReviewsFoundException {
-        List<String> reviewIds = reviews.stream()
+        List<String> reviewIds = reviews
+                .stream()
                 .map(ReviewRequestDTO::getReviewId)
-                .collect(Collectors.toList());
-        TupleQueryResult result = runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
-        if (!result.hasNext()) {
+                .toList();
+        return getReviewDTOList(reviewIds);
+    }
+
+
+    // TODO Improve efficiency
+    private List<ReviewResponseDTO> getReviewDTOList(final List<String> reviewIds) throws NoReviewsFoundException {
+        TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
+        if (!reviewsResult.hasNext()) {
             throw new NoReviewsFoundException("Any review was found");
         }
         List<ReviewResponseDTO> reviewResponseDTOs = new ArrayList<>();
-        while (result.hasNext()) {
-            ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO();
-            BindingSet bindings = result.next();
-            if (existsIdAndText(bindings)) {
-                String appIdentifier = bindings.getBinding("app_identifier").getValue().stringValue();
-                String idValue = bindings.getBinding("id").getValue().stringValue();
-                String textValue = bindings.getBinding("text").getValue().stringValue();
-                reviewResponseDTO.setApplicationId(appIdentifier);
-                reviewResponseDTO.setReviewId(idValue);
-                reviewResponseDTO.setReview(textValue);
-            }
+        while (reviewsResult.hasNext()) {
+            ReviewResponseDTO reviewResponseDTO = getReviewDTO(reviewsResult);
             reviewResponseDTOs.add(reviewResponseDTO);
         }
         return reviewResponseDTOs;
     }
-    public List<GraphReview> getReviews(String nodeId) {
+
+    private ReviewResponseDTO getReviewDTO(final TupleQueryResult result) {
+        ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO();
+        BindingSet bindings = result.next();
+        if (existsReviewBinding(bindings)) {
+            String appIdentifier = bindings.getBinding("app_identifier").getValue().stringValue();
+            String idValue = bindings.getBinding("id").getValue().stringValue();
+            String textValue = bindings.getBinding("text").getValue().stringValue();
+            reviewResponseDTO.setApplicationId(appIdentifier);
+            reviewResponseDTO.setReviewId(idValue);
+            reviewResponseDTO.setReview(textValue);
+        }
+        reviewResponseDTO.setSentences(new ArrayList<>());
+        TupleQueryResult sentencesResult =
+                runSparqlQuery(reviewQueryBuilder.findReviewSentencesEmotions(new ArrayList<>(Collections.singleton(reviewResponseDTO.getReviewId()))));
+        while (sentencesResult.hasNext()) {
+            reviewResponseDTO
+                    .getSentences()
+                    .add(getSentenceDTO(sentencesResult));
+        }
+        return reviewResponseDTO;
+    }
+
+    private SentenceDTO getSentenceDTO(final TupleQueryResult result) {
+        SentenceDTO sentenceDTO = new SentenceDTO();
+        BindingSet bindings = result.next();
+        if (bindings.getBinding("sentence_id") != null) {
+            String sentenceId = bindings.getBinding("sentence_id").getValue().stringValue();
+            sentenceDTO.setId(sentenceId);
+        }
+        if (bindings.getBinding("emotion") != null) {
+            String emotion = bindings.getBinding("emotion").getValue().stringValue();
+            sentenceDTO.setSentiment(emotion);
+        }
+        if (bindings.getBinding("feature") != null) {
+            String feature = bindings.getBinding("feature").getValue().stringValue();
+            sentenceDTO.setFeature(feature);
+        }
+        return sentenceDTO;
+    }
+
+    private boolean existsReviewBinding(BindingSet bindings) {
+        return bindings.getBinding("id") != null
+                && bindings.getBinding("id").getValue() != null
+                && bindings.getBinding("text") != null
+                && bindings.getBinding("text").getValue() != null
+                && bindings.getBinding("app_identifier") != null
+                && bindings.getBinding("app_identifier").getValue() != null;
+    }
+
+
+
+    public List<GraphReview> getReviews(final String nodeId) {
         List<GraphReview> graphReviews = new ArrayList<>();
 
         String query = "PREFIX schema: <https://schema.org/>\n" +
@@ -217,6 +269,7 @@ public class ReviewService {
                         if (sentenceDTO.getId() != null) {
                             IRI sentence = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
                             statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), sentence));
+                            statements.add(factory.createStatement(sentence, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
                             if (sentenceDTO.getSentiment() != null) {
                                 statements.add(factory.createStatement(sentence, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentiment())));
                             }
@@ -236,12 +289,7 @@ public class ReviewService {
         repoConnection.add(statements);
         repoConnection.close();
     }
-    private boolean existsIdAndText(BindingSet bindings) {
-        return bindings.getBinding("id") != null
-                && bindings.getBinding("id").getValue() != null
-                && bindings.getBinding("text") != null
-                && bindings.getBinding("text").getValue() != null;
-    }
+
 
     // TODO finish review extension
 
