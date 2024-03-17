@@ -12,8 +12,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SentenceDTO implements Serializable {
+public class FeatureDTO implements Serializable {
     private String id;
-    private SentimentDTO sentimentDTO;
-    private FeatureDTO featureDTO;
+    private String feature;
 }

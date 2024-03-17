@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.repository.RdfRepository;
@@ -117,7 +118,9 @@ public class ApplicationRepository <T> implements RdfRepository {
                             .getValue()
                             .stringValue()
                             .split("https://schema.org/Review/")[1];
-                    applicationDataDTO.getReviews().add(reviewId);
+                    ReviewRequestDTO reviewDTO = new ReviewRequestDTO();
+                    reviewDTO.setReviewId(reviewId);
+                    applicationDataDTO.getReviews().add(reviewDTO);
                 } else if (predicateValue.equals(nameIRI)) {
                     applicationDataDTO.setName(bindings.getBinding("object").getValue().stringValue());
                 }
