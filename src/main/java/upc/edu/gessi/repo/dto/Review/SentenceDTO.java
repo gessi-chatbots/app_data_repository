@@ -14,6 +14,6 @@ import java.io.Serializable;
 @Builder
 public class SentenceDTO implements Serializable {
     private String id;
-    private SentimentDTO sentimentDTO;
-    private FeatureDTO featureDTO;
+    private SentimentDTO sentimentData;
+    private FeatureDTO featureData;
 }

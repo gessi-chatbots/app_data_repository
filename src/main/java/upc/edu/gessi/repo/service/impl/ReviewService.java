@@ -222,17 +222,17 @@ public class ReviewService {
                             IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
                             statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), sentenceIRI));
                             statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
-                            if (sentenceDTO.getSentimentDTO() != null && sentenceDTO.getSentimentDTO().getId() != null) {
-                                IRI sentimentIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getSentimentDTO().getId());
+                            if (sentenceDTO.getSentimentData() != null && sentenceDTO.getSentimentData().getId() != null) {
+                                IRI sentimentIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getSentimentData().getId());
                                 statements.add(factory.createStatement(sentenceIRI, schemaIRI.getReactActionIRI(), sentimentIRI));
-                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentDTO().getId())));
-                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentimentDTO().getSentiment())));
+                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getId())));
+                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
                             }
-                            if (sentenceDTO.getFeatureDTO() != null && sentenceDTO.getFeatureDTO().getId() != null) {
-                                IRI featureIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getFeatureDTO().getId());
-                                statements.add(factory.createStatement(sentenceIRI, schemaIRI.getReactActionIRI(), featureIRI));
-                                statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getFeatureDTO().getId())));
-                                statements.add(factory.createStatement(featureIRI, schemaIRI.getFeaturesIRI(), factory.createLiteral(sentenceDTO.getFeatureDTO().getFeature())));
+                            if (sentenceDTO.getFeatureData() != null && sentenceDTO.getFeatureData().getId() != null) {
+                                IRI featureIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getFeatureData().getId());
+                                statements.add(factory.createStatement(sentenceIRI, schemaIRI.getFeaturesIRI(), featureIRI));
+                                statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getFeatureData().getId())));
+                                statements.add(factory.createStatement(featureIRI, schemaIRI.getFeaturesIRI(), factory.createLiteral(sentenceDTO.getFeatureData().getFeature())));
                             }
                         }
                     });
@@ -285,17 +285,17 @@ public class ReviewService {
                             IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
                             statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), sentenceIRI));
                             statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
-                            if (sentenceDTO.getSentimentDTO() != null && sentenceDTO.getSentimentDTO().getId() != null) {
-                                IRI sentimentIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getSentimentDTO().getId());
+                            if (sentenceDTO.getSentimentData() != null && sentenceDTO.getSentimentData().getId() != null) {
+                                IRI sentimentIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getSentimentData().getId());
                                 statements.add(factory.createStatement(sentenceIRI, schemaIRI.getReactActionIRI(), sentimentIRI));
-                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentDTO().getId())));
-                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentimentDTO().getSentiment())));
+                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getId())));
+                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
                             }
-                            if (sentenceDTO.getFeatureDTO() != null && sentenceDTO.getFeatureDTO().getId() != null) {
-                                IRI featureIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getFeatureDTO().getId());
-                                statements.add(factory.createStatement(sentenceIRI, schemaIRI.getReactActionIRI(), featureIRI));
-                                statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getFeatureDTO().getId())));
-                                statements.add(factory.createStatement(featureIRI, schemaIRI.getFeaturesIRI(), factory.createLiteral(sentenceDTO.getFeatureDTO().getFeature())));
+                            if (sentenceDTO.getFeatureData() != null && sentenceDTO.getFeatureData().getId() != null) {
+                                IRI featureIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getFeatureData().getId());
+                                statements.add(factory.createStatement(sentenceIRI, schemaIRI.getFeaturesIRI(), featureIRI));
+                                statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getFeatureData().getId())));
+                                statements.add(factory.createStatement(featureIRI, schemaIRI.getFeaturesIRI(), factory.createLiteral(sentenceDTO.getFeatureData().getFeature())));
                             }
                         }
                     });
