@@ -15,10 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
-import upc.edu.gessi.repo.dto.Review.SentenceDTO;
+import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
@@ -121,28 +118,49 @@ public class ReviewService {
         reviewResponseDTO.setSentences(new ArrayList<>());
         TupleQueryResult sentencesResult =
                 runSparqlQuery(reviewQueryBuilder.findReviewSentencesEmotions(new ArrayList<>(Collections.singleton(reviewResponseDTO.getReviewId()))));
-        while (sentencesResult.hasNext()) {
-            reviewResponseDTO
-                    .getSentences()
-                    .add(getSentenceDTO(sentencesResult));
+        if (sentencesResult.hasNext()) {
+            while (sentencesResult.hasNext()) {
+                reviewResponseDTO
+                        .getSentences()
+                        .add(getSentenceDTO(sentencesResult));
+            }
+        } else {
+            reviewResponseDTO.setSentences(new ArrayList<>());
         }
+
         return reviewResponseDTO;
     }
 
-    private SentenceDTO getSentenceDTO(final TupleQueryResult result) {
+    public SentenceDTO getSentenceDTO(final TupleQueryResult result) {
         SentenceDTO sentenceDTO = new SentenceDTO();
         BindingSet bindings = result.next();
-        if (bindings.getBinding("sentence_id") != null) {
-            String sentenceId = bindings.getBinding("sentence_id").getValue().stringValue();
+        if (bindings.getBinding("sentenceId") != null) {
+            String sentenceId = bindings.getBinding("sentenceId").getValue().stringValue();
             sentenceDTO.setId(sentenceId);
         }
-        if (bindings.getBinding("emotion") != null) {
-            String emotion = bindings.getBinding("emotion").getValue().stringValue();
-            // sentenceDTO.setSentimentDTO(emotion);
+        if (bindings.getBinding("sentimentId") != null) {
+            String sentimentId = bindings.getBinding("sentimentId").getValue().stringValue();
+            if (bindings.getBinding("sentimentValue") != null) {
+                String sentimentValue = bindings.getBinding("sentimentValue").getValue().stringValue();
+                sentenceDTO.setSentimentData(
+                        SentimentDTO
+                                .builder()
+                                .id(sentimentId)
+                                .sentiment(sentimentValue)
+                                .build());
+            }
         }
-        if (bindings.getBinding("feature") != null) {
-            String feature = bindings.getBinding("feature").getValue().stringValue();
-            // sentenceDTO.setFeatureDTO(feature);
+        if (bindings.getBinding("featureId") != null) {
+            String featureId = bindings.getBinding("featureId").getValue().stringValue();
+            if (bindings.getBinding("featureValue") != null) {
+                String featureValue = bindings.getBinding("featureValue").getValue().stringValue();
+                sentenceDTO.setFeatureData(
+                        FeatureDTO
+                                .builder()
+                                .id(featureId)
+                                .feature(featureValue)
+                                .build());
+            }
         }
         return sentenceDTO;
     }

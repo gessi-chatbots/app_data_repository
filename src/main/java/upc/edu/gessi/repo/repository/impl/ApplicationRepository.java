@@ -14,18 +14,20 @@ import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.repository.RdfRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerService;
 import upc.edu.gessi.repo.service.impl.ReviewService;
 import upc.edu.gessi.repo.util.ApplicationQueryBuilder;
+import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -41,7 +43,7 @@ public class ApplicationRepository <T> implements RdfRepository {
     private final ApplicationQueryBuilder applicationQueryBuilder;
 
     private final ReviewService reviewService;
-
+    private final ReviewQueryBuilder reviewQueryBuilder;
     @Autowired
     public ApplicationRepository(final @Value("${db.url}") String url,
                                  final @Value("${db.username}") String username,
@@ -49,6 +51,7 @@ public class ApplicationRepository <T> implements RdfRepository {
                                  final AppDataScannerService appDataScannerServ,
                                  final SchemaIRI schema,
                                  final ApplicationQueryBuilder appQB,
+                                 final ReviewQueryBuilder reviewQB,
                                  final ReviewService reviewSv) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
@@ -56,6 +59,7 @@ public class ApplicationRepository <T> implements RdfRepository {
         schemaIRI = schema;
         reviewService = reviewSv;
         applicationQueryBuilder = appQB;
+        reviewQueryBuilder = reviewQB;
     }
 
     private TupleQueryResult runSparqlQuery(final String query) {
@@ -118,9 +122,29 @@ public class ApplicationRepository <T> implements RdfRepository {
                             .getValue()
                             .stringValue()
                             .split("https://schema.org/Review/")[1];
-                    ReviewRequestDTO reviewDTO = new ReviewRequestDTO();
-                    reviewDTO.setReviewId(reviewId);
-                    applicationDataDTO.getReviews().add(reviewDTO);
+                    ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO();
+                    reviewResponseDTO.setReviewId(reviewId);
+                    List<String> reviewIds = new ArrayList<>(Collections.singleton(reviewResponseDTO.getReviewId()));
+
+                    TupleQueryResult textResult =
+                            runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
+                    if (textResult.hasNext()) {
+                        BindingSet bindingSet = textResult.next();
+                        if (bindingSet.getBinding("text") != null
+                                && bindingSet.getBinding("text").getValue().stringValue() != null) {
+                            reviewResponseDTO.setReview(bindingSet.getBinding("text").getValue().stringValue());
+                        }
+                    }
+
+                    reviewResponseDTO.setSentences(new ArrayList<>());
+                    TupleQueryResult sentencesResult =
+                            runSparqlQuery(reviewQueryBuilder.findReviewSentencesEmotions(new ArrayList<>(Collections.singleton(reviewResponseDTO.getReviewId()))));
+                    while (sentencesResult.hasNext()) {
+                        reviewResponseDTO
+                                .getSentences()
+                                .add(reviewService.getSentenceDTO(sentencesResult));
+                    }
+                    applicationDataDTO.getReviews().add(reviewResponseDTO);
                 } else if (predicateValue.equals(nameIRI)) {
                     applicationDataDTO.setName(bindings.getBinding("object").getValue().stringValue());
                 }

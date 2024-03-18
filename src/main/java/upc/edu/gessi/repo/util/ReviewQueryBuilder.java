@@ -30,24 +30,41 @@ public class ReviewQueryBuilder
         return queryBuilder.toString();
     }
 
-    public String findReviewSentencesEmotions(final List<String> ids) {
+
+
+    public String findReviewSentencesEmotions(final List<String> reviewIds) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?review_id ?sentence_id ?emotion\n");
+        queryBuilder.append("SELECT ?reviewId ?sentenceId ?sentimentId ?sentimentValue ?featureId ?featureValue\n");
         queryBuilder.append("WHERE {\n");
-        queryBuilder.append("  VALUES ?review_id {\n");
-        for (String id : ids) {
-            queryBuilder.append("    \"" + id + "\"\n");
+        queryBuilder.append("  VALUES ?reviewId {\n");
+
+        for (String reviewId : reviewIds) {
+            queryBuilder.append("    \"" + reviewId + "\"\n");
         }
+
         queryBuilder.append("  }\n");
         queryBuilder.append("  ?review rdf:type schema:Review;\n");
-        queryBuilder.append("          schema:identifier ?review_id ;\n");
-        queryBuilder.append("          schema:reviewBody ?review_text .\n");
-        queryBuilder.append("  ?review_text schema:identifier ?sentence_id;\n");
-        queryBuilder.append("               schema:ReactAction ?emotion\n");
+        queryBuilder.append("          schema:identifier ?reviewId ;\n");
+        queryBuilder.append("          schema:reviewBody ?reviewBody .\n");
+        queryBuilder.append("  FILTER (!isLiteral(?reviewBody))\n");
+        queryBuilder.append("  ?reviewBody schema:identifier ?sentenceId .\n");
+        queryBuilder.append("  \n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewBody schema:ReactAction ?sentimentIDObject .\n");
+        queryBuilder.append("    ?sentimentIDObject schema:identifier ?sentimentId ;\n");
+        queryBuilder.append("                     schema:ReactAction ?sentimentValue .\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewBody schema:keywords ?featureSentenceObject .\n");
+        queryBuilder.append("    ?featureSentenceObject schema:identifier ?featureId ;\n");
+        queryBuilder.append("                           schema:keywords ?featureValue .\n");
+        queryBuilder.append("  }\n");
         queryBuilder.append("}\n");
+
         return queryBuilder.toString();
     }
+
 
 }

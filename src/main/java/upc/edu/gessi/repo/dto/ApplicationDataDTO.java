@@ -3,6 +3,7 @@ package upc.edu.gessi.repo.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,5 +23,5 @@ public class ApplicationDataDTO implements Serializable {
     private Date releaseDate;
     private String version;
     private List<String> categories = new ArrayList<>();
-    private List<ReviewRequestDTO> reviews = new ArrayList<>();
+    private List<ReviewResponseDTO> reviews = new ArrayList<>();
 }
