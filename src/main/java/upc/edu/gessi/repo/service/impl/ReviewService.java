@@ -108,10 +108,8 @@ public class ReviewService {
         ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO();
         BindingSet bindings = result.next();
         if (existsReviewBinding(bindings)) {
-            String appIdentifier = bindings.getBinding("app_identifier").getValue().stringValue();
             String idValue = bindings.getBinding("id").getValue().stringValue();
             String textValue = bindings.getBinding("text").getValue().stringValue();
-            reviewResponseDTO.setApplicationId(appIdentifier);
             reviewResponseDTO.setReviewId(idValue);
             reviewResponseDTO.setReview(textValue);
         }
