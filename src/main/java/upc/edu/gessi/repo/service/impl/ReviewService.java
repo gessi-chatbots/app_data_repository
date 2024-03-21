@@ -229,6 +229,7 @@ public class ReviewService {
             //normalize the text to utf-8 encoding
             String reviewBody = r.getBody();
             if (reviewBody != null) {
+                // TODO check if review has already sentences with features or sentiments and replace
                 byte[] reviewBytes = reviewBody.getBytes();
                 String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
                 statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), factory.createLiteral(encoded_string)));
