@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.service.impl;
 
 
+import org.apache.commons.text.WordUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
@@ -136,30 +137,24 @@ public class ReviewService {
             String sentenceId = bindings.getBinding("sentenceId").getValue().stringValue();
             sentenceDTO.setId(sentenceId);
         }
-        if (bindings.getBinding("sentimentId") != null) {
-            String sentimentId = bindings.getBinding("sentimentId").getValue().stringValue();
-            if (bindings.getBinding("sentimentValue") != null) {
+        if (bindings.getBinding("sentimentValue") != null) {
                 String sentimentValue = bindings.getBinding("sentimentValue").getValue().stringValue();
                 sentenceDTO.setSentimentData(
                         SentimentDTO
                                 .builder()
-                                .id(sentimentId)
                                 .sentiment(sentimentValue)
                                 .build());
-            }
+
         }
-        if (bindings.getBinding("featureId") != null) {
-            String featureId = bindings.getBinding("featureId").getValue().stringValue();
-            if (bindings.getBinding("featureValue") != null) {
-                String featureValue = bindings.getBinding("featureValue").getValue().stringValue();
-                sentenceDTO.setFeatureData(
-                        FeatureDTO
-                                .builder()
-                                .id(featureId)
-                                .feature(featureValue)
-                                .build());
-            }
+        if (bindings.getBinding("featureValue") != null) {
+            String featureValue = bindings.getBinding("featureValue").getValue().stringValue();
+            sentenceDTO.setFeatureData(
+                    FeatureDTO
+                            .builder()
+                            .feature(featureValue)
+                            .build());
         }
+
         return sentenceDTO;
     }
 
@@ -221,103 +216,110 @@ public class ReviewService {
         return resultList;
     }
 
-    public void addReviewsToApplication(final CompleteApplicationDataDTO completeApplicationDataDTO,
-                                        final IRI sub,
-                                        final List<Statement> statements) {
+    public void addCompleteReviewsToApplication(final CompleteApplicationDataDTO completeApplicationDataDTO,
+                                                final IRI applicationIRI,
+                                                final List<Statement> statements) {
         for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
-            IRI review = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
-            //normalize the text to utf-8 encoding
-            String reviewBody = r.getBody();
-            if (reviewBody != null) {
-                // TODO check if review has already sentences with features or sentiments and replace
-                byte[] reviewBytes = reviewBody.getBytes();
-                String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
-                statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), factory.createLiteral(encoded_string)));
-                if (r.getSentences() != null) {
-                    r.getSentences().forEach(sentenceDTO -> {
-                        if (sentenceDTO.getId() != null) {
-                            IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
-                            statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), sentenceIRI));
-                            statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
-                            if (sentenceDTO.getSentimentData() != null && sentenceDTO.getSentimentData().getId() != null) {
-                                IRI sentimentIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getSentimentData().getId());
-                                statements.add(factory.createStatement(sentenceIRI, schemaIRI.getReactActionIRI(), sentimentIRI));
-                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getId())));
-                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
-                            }
-                            if (sentenceDTO.getFeatureData() != null && sentenceDTO.getFeatureData().getId() != null) {
-                                IRI featureIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getFeatureData().getId());
-                                statements.add(factory.createStatement(sentenceIRI, schemaIRI.getFeaturesIRI(), featureIRI));
-                                statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getFeatureData().getId())));
-                                statements.add(factory.createStatement(featureIRI, schemaIRI.getFeaturesIRI(), factory.createLiteral(sentenceDTO.getFeatureData().getFeature())));
-                            }
-                        }
-                    });
-                }
+            IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
+            if (applicationIRI != null) {
+                statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
             }
-
-            //normalize the text to utf-8 encoding
-             /*String reviewAuthor = r.getUserName();
-             byte[] authorBytes = reviewAuthor.getBytes();
-             String  encoded_author = new String(authorBytes, StandardCharsets.UTF_8);
-             String  ascii_encoded_author = new String(authorBytes, StandardCharsets.US_ASCII);
-             String temp = ascii_encoded_author.replaceAll("[^a-zA-Z0-9]","");
-             IRI author;
-             if (temp.equals("")) {
-                 String new_user_name = "User_"+user_map.size();
-                 user_map.put(new_user_name,encoded_author);
-                 author = factory.createIRI(personIRI  + "/" +  new_user_name);
-             } else {
-                 author = factory.createIRI(personIRI + "/" + ascii_encoded_author.replaceAll("[^a-zA-Z0-9]", ""));
-
-             }
-             statements.add(factory.createStatement(author, nameIRI, factory.createLiteral(encoded_author)));
-             statements.add(factory.createStatement(review, authorIRI, author));*/
-            //IRI rating = factory.createIRI(reviewRatingIRI)
-            statements.add(factory.createStatement(review, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
+            statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
+            statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
             if (r.getPublished() != null) {
-                statements.add(factory.createStatement(review, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getPublished())));
+                statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getPublished())));
             }
-            statements.add(factory.createStatement(review, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));
-            statements.add(factory.createStatement(sub, schemaIRI.getReviewsIRI(), review));
-            statements.add(factory.createStatement(review, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-            statements.add(factory.createStatement(review, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
-            //statements.add(factory.createStatement(author, typeIRI, personIRI));
+            statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));
+            statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
+
+            String reviewBody = r.getBody();
+            createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
         }
     }
 
+    private void createReviewContent(final List<Statement> statements,
+                                     final IRI reviewIRI,
+                                     final String reviewBody,
+                                     final List<SentenceDTO> sentences) {
+        if (reviewBody != null) {
+            byte[] reviewBytes = reviewBody.getBytes();
+            String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
+            statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewBodyIRI(), factory.createLiteral(encoded_string)));
+            if (sentences != null) {
+                sentences.forEach(sentenceDTO -> {
+                    if (sentenceDTO.getId() != null) {
+                        addSentenceToReview(statements, sentenceDTO, reviewIRI);
+                    }
+                });
+            }
+        }
+    }
+    private void addSentenceToReview(final List<Statement> statements,
+                                     final SentenceDTO sentenceDTO,
+                                     final IRI reviewIRI) {
+        IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getTypeIRI(), schemaIRI.getCreativeWorkIRI()));
+        statements.add(factory.createStatement(reviewIRI, schemaIRI.getHasPartIRI(), sentenceIRI));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
+        String reviewId = String.valueOf(reviewIRI).split(schemaIRI.getReviewIRI().stringValue()+"/")[1];
+        if (sentenceDTO.getSentimentData() != null && sentenceDTO.getSentimentData().getSentiment() != null) {
+            /*
+            TODO CHECK REPO SETTINGS (Allow HTTP Delete To configure GraphDB to allow SPARQL UPDATE operations, including DELETE, you can follow these steps using the GraphDB Workbench
+            TupleQueryResult result = runSparqlQuery(reviewQueryBuilder.hasReviewSentiments(reviewId));
+            if (result.hasNext()) {
+                BindingSet set = result.next();
+                if (set.getBinding("hasSentiment") != null && set.getBinding("hasSentiment").getValue() != null) {
+                    Boolean hasSentiments = Boolean.valueOf(set.getBinding("hasSentiment").getValue().stringValue());
+                    if (hasSentiments) {
+                        runSparqlQuery(reviewQueryBuilder.deleteSentimentsFromReview(reviewId));
+                    }
+                }
+            }*/
+            addSentimentToSentence(statements, sentenceDTO, sentenceIRI);
+        }
+        if (sentenceDTO.getFeatureData() != null && sentenceDTO.getFeatureData().getFeature() != null) {
+            /*TupleQueryResult result = runSparqlQuery(reviewQueryBuilder.hasReviewFeatures(reviewId));
+            if (result.hasNext()) {
+                BindingSet set = result.next();
+                if (set.getBinding("hasKeyword") != null && set.getBinding("hasKeyword").getValue() != null) {
+                    Boolean hasFeatures = Boolean.valueOf(set.getBinding("hasKeyword").getValue().stringValue());
+                    if (hasFeatures) {
+                        runSparqlQuery(reviewQueryBuilder.deleteFeaturesFromReview(reviewId));
+                    }
+                }
+            }*/
+            addFeatureToSentence(statements, sentenceDTO, sentenceIRI);
+        }
+    }
+
+    private void addFeatureToSentence(final List<Statement> statements,
+                                      final SentenceDTO sentenceDTO,
+                                      final IRI sentenceIRI) {
+        String feature =  sentenceDTO.getFeatureData().getFeature();
+        feature = WordUtils.capitalize(feature).replace(" ", "").replaceAll("[^a-zA-Z0-9]", "");
+        IRI featureIRI = factory.createIRI(schemaIRI.getDefinedTermIRI() + "/" + feature);
+        statements.add(factory.createStatement(featureIRI, schemaIRI.getTypeIRI(), schemaIRI.getDefinedTermIRI()));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getKeywordIRI(), featureIRI));
+        statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(feature)));
+        statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
+        // statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
+    }
+
+    private void addSentimentToSentence(final List<Statement> statements,
+                                        final SentenceDTO sentenceDTO,
+                                        final IRI sentenceIRI) {
+        IRI sentimentIRI = factory.createIRI(schemaIRI.getReactActionIRI() + "/" + sentenceDTO.getSentimentData().getSentiment());
+        statements.add(factory.createStatement(sentimentIRI, schemaIRI.getTypeIRI(), schemaIRI.getReactActionIRI()));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getPotentialActionIRI(), sentimentIRI));
+        statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
+    }
     public void addReviews(final List<ReviewResponseDTO> reviewResponseDTOList) {
         List<Statement> statements = new ArrayList<>();
         for (ReviewResponseDTO r : reviewResponseDTOList) {
-            IRI review = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getReviewId());
-            //normalize the text to utf-8 encoding
+            IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getReviewId());
+            statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
             String reviewBody = r.getReview();
-            if (reviewBody != null) {
-                byte[] reviewBytes = reviewBody.getBytes();
-                String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
-                statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), factory.createLiteral(encoded_string)));
-                if (r.getSentences() != null) {
-                    r.getSentences().forEach(sentenceDTO -> {
-                        if (sentenceDTO.getId() != null) {
-                            IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
-                            statements.add(factory.createStatement(review, schemaIRI.getReviewBodyIRI(), sentenceIRI));
-                            statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
-                            if (sentenceDTO.getSentimentData() != null && sentenceDTO.getSentimentData().getId() != null) {
-                                IRI sentimentIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getSentimentData().getId());
-                                statements.add(factory.createStatement(sentenceIRI, schemaIRI.getReactActionIRI(), sentimentIRI));
-                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getId())));
-                                statements.add(factory.createStatement(sentimentIRI, schemaIRI.getReactActionIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
-                            }
-                            if (sentenceDTO.getFeatureData() != null && sentenceDTO.getFeatureData().getId() != null) {
-                                IRI featureIRI = factory.createIRI(sentenceIRI + "/" + sentenceDTO.getFeatureData().getId());
-                                statements.add(factory.createStatement(sentenceIRI, schemaIRI.getFeaturesIRI(), featureIRI));
-                                statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getFeatureData().getId())));
-                                statements.add(factory.createStatement(featureIRI, schemaIRI.getFeaturesIRI(), factory.createLiteral(sentenceDTO.getFeatureData().getFeature())));
-                            }
-                        }
-                    });
-                }
-            }
+            createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
         }
         commitChanges(statements);
     }
@@ -327,11 +329,5 @@ public class ReviewService {
         repoConnection.add(statements);
         repoConnection.close();
     }
-
-
-    // TODO finish review extension
-
-
-
 
 }

@@ -14,4 +14,5 @@ import java.io.Serializable;
 public class ApplicationSimplifiedDTO implements Serializable {
     private String name;
     private String applicationPackage;
+    private Integer reviewCount;
 }

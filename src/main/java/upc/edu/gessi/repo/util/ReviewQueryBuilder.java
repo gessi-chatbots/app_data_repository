@@ -70,34 +70,103 @@ public class ReviewQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?reviewId ?sentenceId ?sentimentId ?sentimentValue ?featureId ?featureValue\n");
+        queryBuilder.append("SELECT ?reviewId ?sentenceId ?sentimentValue ?featureValue\n");
         queryBuilder.append("WHERE {\n");
-
         queryBuilder.append("  VALUES ?reviewId {\n");
         for (String reviewId : reviewIds) {
             queryBuilder.append("    \"" + reviewId + "\"\n");
         }
         queryBuilder.append("  }\n");
-
         queryBuilder.append("  ?review rdf:type schema:Review;\n");
         queryBuilder.append("          schema:identifier ?reviewId ;\n");
-        queryBuilder.append("          schema:reviewBody ?reviewBody .\n");
-        queryBuilder.append("  FILTER (!isLiteral(?reviewBody))\n");
-        queryBuilder.append("  ?reviewBody schema:identifier ?sentenceId .\n");
-
+        queryBuilder.append("          schema:hasPart ?reviewPart .\n");
+        queryBuilder.append("  ?reviewPart schema:identifier ?sentenceId .\n");
         queryBuilder.append("  OPTIONAL {\n");
-        queryBuilder.append("    ?reviewBody schema:ReactAction ?sentimentIDObject .\n");
-        queryBuilder.append("    ?sentimentIDObject schema:identifier ?sentimentId ;\n");
-        queryBuilder.append("                     schema:ReactAction ?sentimentValue .\n");
+        queryBuilder.append("    ?reviewPart schema:potentialAction ?sentiment .\n");
+        queryBuilder.append("    ?sentiment schema:identifier ?sentimentValue .\n");
         queryBuilder.append("  }\n");
         queryBuilder.append("  OPTIONAL {\n");
-        queryBuilder.append("    ?reviewBody schema:keywords ?featureSentenceObject .\n");
-        queryBuilder.append("    ?featureSentenceObject schema:identifier ?featureId ;\n");
-        queryBuilder.append("                           schema:keywords ?featureValue .\n");
+        queryBuilder.append("    ?reviewPart schema:keywords ?feature .\n");
+        queryBuilder.append("    ?feature schema:identifier ?featureValue .\n");
         queryBuilder.append("  }\n");
         queryBuilder.append("}\n");
         return queryBuilder.toString();
     }
 
+    public String hasReviewSentiments(String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT (IF((COUNT(?sentiment) > 0), \"true\", \"false\") as ?hasSentiment)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?reviewId {\n");
+        queryBuilder.append("    \"" + reviewId + "\"\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:identifier ?reviewId ;\n");
+        queryBuilder.append("          schema:hasPart ?reviewPart .\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart schema:potentialAction ?sentiment .\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?review\n");
+        return queryBuilder.toString();
+    }
 
+    public String hasReviewFeatures(String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT (IF((COUNT(?keyword) > 0), \"true\", \"false\") as ?hasKeyword)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?reviewId {\n");
+        queryBuilder.append("    \"" + reviewId + "\"\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:identifier ?reviewId ;\n");
+        queryBuilder.append("          schema:hasPart ?reviewPart .\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart schema:keywords ?keyword .\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?review\n");
+        return queryBuilder.toString();
+    }
+    public String deleteSentimentsFromReview(String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("DELETE {\n");
+        queryBuilder.append("  ?reviewPart schema:potentialAction ?sentiment .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?reviewId {\n");
+        queryBuilder.append("    \"" + reviewId + "\"\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:identifier ?reviewId ;\n");
+        queryBuilder.append("          schema:hasPart ?reviewPart .\n");
+        queryBuilder.append("  ?reviewPart schema:potentialAction ?sentiment .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+
+    public String deleteFeaturesFromReview(String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("DELETE {\n");
+        queryBuilder.append("  ?reviewPart schema:keywords ?feature .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?reviewId {\n");
+        queryBuilder.append("    \"" + reviewId + "\"\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:identifier ?reviewId ;\n");
+        queryBuilder.append("          schema:hasPart ?reviewPart .\n");
+        queryBuilder.append("  ?reviewPart schema:keywords ?feature .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
 }

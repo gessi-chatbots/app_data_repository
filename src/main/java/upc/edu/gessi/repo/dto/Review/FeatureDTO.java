@@ -13,6 +13,5 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 public class FeatureDTO implements Serializable {
-    private String id;
     private String feature;
 }

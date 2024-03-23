@@ -13,6 +13,5 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 public class SentimentDTO implements Serializable {
-    private String id;
     private String sentiment;
 }
