@@ -263,31 +263,30 @@ public class ReviewService {
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
         String reviewId = String.valueOf(reviewIRI).split(schemaIRI.getReviewIRI().stringValue()+"/")[1];
         if (sentenceDTO.getSentimentData() != null && sentenceDTO.getSentimentData().getSentiment() != null) {
-            /*
-            TODO CHECK REPO SETTINGS (Allow HTTP Delete To configure GraphDB to allow SPARQL UPDATE operations, including DELETE, you can follow these steps using the GraphDB Workbench
-            TupleQueryResult result = runSparqlQuery(reviewQueryBuilder.hasReviewSentiments(reviewId));
+
+            TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), reviewQueryBuilder.hasReviewSentiments(reviewId));
             if (result.hasNext()) {
                 BindingSet set = result.next();
                 if (set.getBinding("hasSentiment") != null && set.getBinding("hasSentiment").getValue() != null) {
-                    Boolean hasSentiments = Boolean.valueOf(set.getBinding("hasSentiment").getValue().stringValue());
+                    boolean hasSentiments = Boolean.parseBoolean(set.getBinding("hasSentiment").getValue().stringValue());
                     if (hasSentiments) {
-                        runSparqlQuery(reviewQueryBuilder.deleteSentimentsFromReview(reviewId));
+                        // Utils.runSparqlQuery(repository.getConnection(), reviewQueryBuilder.deleteSentimentsFromReview(reviewId));
                     }
                 }
-            }*/
+            }
             addSentimentToSentence(statements, sentenceDTO, sentenceIRI);
         }
         if (sentenceDTO.getFeatureData() != null && sentenceDTO.getFeatureData().getFeature() != null) {
-            /*TupleQueryResult result = runSparqlQuery(reviewQueryBuilder.hasReviewFeatures(reviewId));
+            TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), reviewQueryBuilder.hasReviewFeatures(reviewId));
             if (result.hasNext()) {
                 BindingSet set = result.next();
                 if (set.getBinding("hasKeyword") != null && set.getBinding("hasKeyword").getValue() != null) {
-                    Boolean hasFeatures = Boolean.valueOf(set.getBinding("hasKeyword").getValue().stringValue());
+                    boolean hasFeatures = Boolean.parseBoolean(set.getBinding("hasKeyword").getValue().stringValue());
                     if (hasFeatures) {
-                        runSparqlQuery(reviewQueryBuilder.deleteFeaturesFromReview(reviewId));
+                        // Utils.runSparqlQuery(repository.getConnection(), reviewQueryBuilder.deleteFeaturesFromReview(reviewId));
                     }
                 }
-            }*/
+            }
             addFeatureToSentence(statements, sentenceDTO, sentenceIRI);
         }
     }
