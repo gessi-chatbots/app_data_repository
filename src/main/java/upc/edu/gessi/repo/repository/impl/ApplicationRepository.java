@@ -186,11 +186,13 @@ public class ApplicationRepository <T> implements RdfRepository {
     public void insertApp(CompleteApplicationDataDTO completeApplicationDataDTO) {
         List<Statement> statements = new ArrayList<>();
 
-        IRI devSubject = addDeveloperIntoStatements(completeApplicationDataDTO, statements);
-
         IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + completeApplicationDataDTO.getPackageName());
         statements.add(factory.createStatement(applicationIRI, schemaIRI.getTypeIRI(), schemaIRI.getAppIRI()));
-        statements.add(factory.createStatement(applicationIRI, schemaIRI.getAuthorIRI(), devSubject));
+
+        if (completeApplicationDataDTO.getDeveloper() != null) {
+            IRI devSubject = addDeveloperIntoStatements(completeApplicationDataDTO, statements);
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getAuthorIRI(), devSubject));
+        }
 
         if (completeApplicationDataDTO.getCategoryId() != null) {
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(completeApplicationDataDTO.getCategoryId())));
@@ -198,10 +200,11 @@ public class ApplicationRepository <T> implements RdfRepository {
         if (completeApplicationDataDTO.getCategory() != null) {
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(completeApplicationDataDTO.getCategory())));
         }
-        for (String category : completeApplicationDataDTO.getCategories()) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(category)));
+        if (completeApplicationDataDTO.getCategories() != null) {
+            for (String category : completeApplicationDataDTO.getCategories()) {
+                statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(category)));
+            }
         }
-
         if (completeApplicationDataDTO.getReleaseDate() != null) {
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(completeApplicationDataDTO.getReleaseDate())));
         }
@@ -264,7 +267,9 @@ public class ApplicationRepository <T> implements RdfRepository {
 
         reviewService.addCompleteReviewsToApplication(completeApplicationDataDTO, applicationIRI, statements);
 
-        addFeaturesToApplication(completeApplicationDataDTO, applicationIRI, statements);
+        if (completeApplicationDataDTO.getFeatures() != null) {
+            addFeaturesToApplication(completeApplicationDataDTO, applicationIRI, statements);
+        }
 
         commitChanges(statements);
     }
@@ -272,6 +277,7 @@ public class ApplicationRepository <T> implements RdfRepository {
 
     private IRI addDeveloperIntoStatements(final CompleteApplicationDataDTO completeApplicationDataDTO,
                                            final List<Statement> statements) {
+
         String developerName = completeApplicationDataDTO.getDeveloper().replace(" ","_");
         IRI devSubject = factory.createIRI(schemaIRI.getDeveloperIRI()+"/"+developerName);
         statements.add(

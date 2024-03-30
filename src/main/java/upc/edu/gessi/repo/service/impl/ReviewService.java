@@ -111,8 +111,10 @@ public class ReviewService {
         if (existsReviewBinding(bindings)) {
             String idValue = bindings.getBinding("id").getValue().stringValue();
             String textValue = bindings.getBinding("text").getValue().stringValue();
+            String appValue = bindings.getBinding("app_identifier").getValue().stringValue();
             reviewResponseDTO.setReviewId(idValue);
             reviewResponseDTO.setReview(textValue);
+            reviewResponseDTO.setApplicationId(appValue);
         }
         reviewResponseDTO.setSentences(new ArrayList<>());
         TupleQueryResult sentencesResult =
@@ -220,20 +222,29 @@ public class ReviewService {
                                                 final IRI applicationIRI,
                                                 final List<Statement> statements) {
         for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
-            IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
-            if (applicationIRI != null) {
-                statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
+            if (r.getId() != null) {
+                IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
+                if (applicationIRI != null) {
+                    statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
+                }
+                statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
+                if (r.getRating() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
+                }
+                if (r.getPublished() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getPublished())));
+                }
+                if (r.getAuthor() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));
+                }
+                if (r.getId() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
+                }
+                if (r.getBody() != null) {
+                    String reviewBody = r.getBody();
+                    createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
+                }
             }
-            statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-            statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
-            if (r.getPublished() != null) {
-                statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getPublished())));
-            }
-            statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));
-            statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
-
-            String reviewBody = r.getBody();
-            createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
         }
     }
 
