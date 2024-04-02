@@ -265,11 +265,12 @@ public class ApplicationRepository <T> implements RdfRepository {
                 schemaIRI.getReviewDocumentIRI(),
                 DocumentType.REVIEWS);
 
-        reviewService.addCompleteReviewsToApplication(completeApplicationDataDTO, applicationIRI, statements);
-
         if (completeApplicationDataDTO.getFeatures() != null) {
             addFeaturesToApplication(completeApplicationDataDTO, applicationIRI, statements);
         }
+        reviewService.addCompleteReviewsToApplication(completeApplicationDataDTO, applicationIRI, statements);
+
+
 
         commitChanges(statements);
     }

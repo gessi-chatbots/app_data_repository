@@ -18,6 +18,7 @@ import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
+import upc.edu.gessi.repo.dto.serializer.CustomDateDeserializer;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 import upc.edu.gessi.repo.repository.impl.ReviewRepository;
@@ -26,8 +27,11 @@ import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 
@@ -115,6 +119,14 @@ public class ReviewService {
             reviewResponseDTO.setReviewId(idValue);
             reviewResponseDTO.setReview(textValue);
             reviewResponseDTO.setApplicationId(appValue);
+            String dateString = bindings.getBinding("date").getValue().stringValue();
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                Date date = dateFormat.parse(dateString);
+                reviewResponseDTO.setDate(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
         reviewResponseDTO.setSentences(new ArrayList<>());
         TupleQueryResult sentencesResult =
@@ -231,8 +243,8 @@ public class ReviewService {
                 if (r.getRating() != null) {
                     statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
                 }
-                if (r.getPublished() != null) {
-                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getPublished())));
+                if (r.getDate() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getDate())));
                 }
                 if (r.getAuthor() != null) {
                     statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));

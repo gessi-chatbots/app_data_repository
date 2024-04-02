@@ -30,7 +30,7 @@ public class ReviewDTO implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
-    @JsonProperty("at")
-    private Date published;
+    @JsonProperty("date")
+    private Date date;
     private List<SentenceDTO> sentences;
 }
