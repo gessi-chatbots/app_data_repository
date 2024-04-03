@@ -18,5 +18,4 @@ public class ApplicationDayStatisticsDTO {
     private Date date;
     private List<SentimentOccurrenceDTO> sentimentOccurrences;
     private List<FeatureOccurrenceDTO> featureOccurrences;
-
 }
