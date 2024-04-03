@@ -5,12 +5,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
+import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
 import upc.edu.gessi.repo.dto.ApplicationDataDTO;
 import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MissingBodyException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 
 import java.util.List;
@@ -80,4 +83,13 @@ public interface GraphDBApi <T> {
     @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of review entities into the GraphDB. The " +
             "data is sent in JSON format through the request body.")
     ResponseEntity<String> insertJSONReviewData(@RequestBody List<ReviewResponseDTO> completeApplicationDataDTOS);
+
+
+    @PostMapping(value = "/analysis/top-sentiments", produces = "application/json")
+    @ResponseBody
+    TopSentimentsDTO getTopSentimentsByAppNames(@RequestBody List<String> appNames) throws MissingBodyException;
+
+    @PostMapping(value = "/analysis/top-features", produces = "application/json")
+    @ResponseBody
+    TopFeaturesDTO getTopFeaturesByAppNames(@RequestBody List<String> appNames) throws MissingBodyException;
 }

@@ -1,0 +1,74 @@
+package upc.edu.gessi.repo.util;
+
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+public class AnalyisisQueryBuilder
+{
+
+
+    public String findTopSentimentsByAppNamesQuery(List<String> appNames) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT ?sentiment (COUNT(?sentiment) AS ?count)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?appName {\n");
+
+        // Append each appName from the list
+        for (String appName : appNames) {
+            queryBuilder.append("    \"" + appName + "\"\n");
+        }
+
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:hasPart ?part .\n");
+        queryBuilder.append("  ?part rdf:type schema:CreativeWork;\n");
+        queryBuilder.append("        schema:potentialAction ?potentialAction.\n");
+        queryBuilder.append("  ?potentialAction rdf:type schema:ReactAction; \n");
+        queryBuilder.append("                   schema:identifier ?sentiment.\n");
+        queryBuilder.append("  FILTER (?sentiment IN (\"happiness\", \"sadness\", \"anger\", \"surprise\", \"fear\", \"disgust\"))\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?sentiment\n");
+
+        return queryBuilder.toString();
+    }
+
+    public String findTopFeaturesByAppNamesQuery(List<String> appNames) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT ?feature (COUNT(?feature) AS ?count)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?appName {\n");
+
+        // Append each appName from the list
+        for (String appName : appNames) {
+            queryBuilder.append("    \"" + appName + "\"\n");
+        }
+
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:hasPart ?part .\n");
+        queryBuilder.append("  ?part rdf:type schema:CreativeWork;\n");
+        queryBuilder.append("        schema:keywords ?keyword.\n");
+        queryBuilder.append("  ?keyword rdf:type schema:DefinedTerm; \n");
+        queryBuilder.append("           schema:identifier ?feature.\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?feature\n");
+        queryBuilder.append("ORDER BY DESC(?count)\n");
+        queryBuilder.append("LIMIT 5\n");
+
+        return queryBuilder.toString();
+    }
+
+
+}
