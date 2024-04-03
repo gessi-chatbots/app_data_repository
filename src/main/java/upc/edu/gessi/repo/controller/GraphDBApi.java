@@ -1,10 +1,12 @@
 package upc.edu.gessi.repo.controller;
 
 import io.swagger.annotations.ApiOperation;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
 import upc.edu.gessi.repo.dto.ApplicationDataDTO;
@@ -16,6 +18,7 @@ import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MissingBodyException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -92,4 +95,16 @@ public interface GraphDBApi <T> {
     @PostMapping(value = "/analysis/top-features", produces = "application/json")
     @ResponseBody
     TopFeaturesDTO getTopFeaturesByAppNames(@RequestBody List<String> appNames) throws MissingBodyException;
+
+    @GetMapping(value = "/applications/{appName}/features", produces = "application/json")
+    @ResponseBody
+    ResponseEntity<List<String>> getApplicationFeatures(@PathVariable String appName);
+
+
+    @GetMapping(value = "/applications/{appName}/statistics", produces = "application/json")
+    @ResponseBody
+     List<ApplicationDayStatisticsDTO> getApplicationStatistics(
+            @PathVariable String appName,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "startDate", defaultValue = "2020-01-01") Date startDate,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "endDate", required = false) Date endDate);
 }

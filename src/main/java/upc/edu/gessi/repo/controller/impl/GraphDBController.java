@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.controller.GraphDBApi;
+import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
 import upc.edu.gessi.repo.dto.ApplicationDataDTO;
@@ -29,6 +30,8 @@ import upc.edu.gessi.repo.service.impl.AnalysisService;
 
 
 import java.io.File;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -191,5 +194,19 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
             throw new MissingBodyException("missing body");
         }
         return analysisService.findTopFeaturesByApps(appNames);
+    }
+
+    @Override
+    public ResponseEntity<List<String>> getApplicationFeatures(String appName) {
+        return new ResponseEntity<>(analysisService.findAppFeatures(appName), HttpStatus.OK);
+    }
+
+    @Override
+    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(String appName, Date startDate, Date endDate) {
+        if (endDate == null) {
+            endDate = Calendar.getInstance().getTime();
+        }
+
+        return analysisService.getApplicationStatistics(appName, startDate, endDate);
     }
 }
