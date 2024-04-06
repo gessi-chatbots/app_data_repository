@@ -10,7 +10,7 @@ RUN mvn clean
 
 RUN mvn package spring-boot:repackage
 
-EXPOSE 3001
+EXPOSE 3003
 
 ENTRYPOINT ["java"]
 
