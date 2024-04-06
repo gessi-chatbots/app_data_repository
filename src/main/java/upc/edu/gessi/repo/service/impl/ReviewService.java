@@ -161,7 +161,8 @@ public class ReviewService {
 
         }
         if (bindings.getBinding("featureValue") != null) {
-            String featureValue = bindings.getBinding("featureValue").getValue().stringValue();
+            String featureValue = bindings.getBinding("featureValue").getValue().stringValue().replace("_", " ");
+            featureValue = featureValue.replace("_", " ");
             sentenceDTO.setFeatureData(
                     FeatureDTO
                             .builder()
@@ -318,7 +319,7 @@ public class ReviewService {
                                       final SentenceDTO sentenceDTO,
                                       final IRI sentenceIRI) {
         String feature =  sentenceDTO.getFeatureData().getFeature();
-        feature = WordUtils.capitalize(feature).replace(" ", "").replaceAll("[^a-zA-Z0-9]", "");
+        feature = feature.replace(" ", "_");
         IRI featureIRI = factory.createIRI(schemaIRI.getDefinedTermIRI() + "/" + feature);
         statements.add(factory.createStatement(featureIRI, schemaIRI.getTypeIRI(), schemaIRI.getDefinedTermIRI()));
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getKeywordIRI(), featureIRI));
