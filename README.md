@@ -39,6 +39,13 @@ To deploy the service in a Docker container, run the following commands from pro
 ```docker build -t {image-name}```
 ```docker run -d -p {port#}:{port#} {image-name}```
 
+
+## How to deploy
+1. 
+    `docker build -t knowledge_graph_repository:latest .`
+2. 
+    `docker run -d --name KG_Repository -p 3003:3003 knowledge_graph_repository:latest`
+
 ## Features
 
 The API of the App Data Repository is available here: http://localhost:8080/swagger-ui/. Below we provide a brief summarization of the main functionalities integrated in the last version of this service.
