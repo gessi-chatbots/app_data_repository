@@ -24,8 +24,10 @@ public class ReviewQueryBuilder
         queryBuilder.append("  }\n");
         queryBuilder.append("  ?review rdf:type schema:Review;\n");
         queryBuilder.append("          schema:identifier ?id ;\n");
-        queryBuilder.append("          schema:reviewBody ?text ;\n");
-        queryBuilder.append("          schema:datePublished ?date.\n");
+        queryBuilder.append("          schema:reviewBody ?text .\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?review schema:datePublished ?date .\n");
+        queryBuilder.append("  }\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
         queryBuilder.append("       schema:review ?review ;\n");
         queryBuilder.append("       schema:name ?app_identifier.\n");
@@ -34,6 +36,7 @@ public class ReviewQueryBuilder
 
         return queryBuilder.toString();
     }
+
 
 
 

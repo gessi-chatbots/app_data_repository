@@ -119,13 +119,15 @@ public class ReviewService {
             reviewResponseDTO.setReviewId(idValue);
             reviewResponseDTO.setReview(textValue);
             reviewResponseDTO.setApplicationId(appValue);
-            String dateString = bindings.getBinding("date").getValue().stringValue();
-            try {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                Date date = dateFormat.parse(dateString);
-                reviewResponseDTO.setDate(date);
-            } catch (ParseException e) {
-                e.printStackTrace();
+            if (bindings.getBinding("date") != null && bindings.getBinding("date").getValue() != null) {
+                String dateString = bindings.getBinding("date").getValue().stringValue();
+                try {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    Date date = dateFormat.parse(dateString);
+                    reviewResponseDTO.setDate(date);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
         }
         reviewResponseDTO.setSentences(new ArrayList<>());
