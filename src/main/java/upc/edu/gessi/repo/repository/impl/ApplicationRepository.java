@@ -329,7 +329,7 @@ public class ApplicationRepository <T> implements RdfRepository {
                 "         schema:name ?name ;\n" +
                 "         schema:applicationCategory ?applicationCategory\n" +
                 "} group by ?app ?identifier ?name";
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
 
         while (result.hasNext()) {
             BindingSet bindings = result.next();
@@ -422,7 +422,7 @@ public class ApplicationRepository <T> implements RdfRepository {
                 "            :score ?score.\n" +
                 "    ?documentID <https://schema.org/applicationCategory> ?category\n" +
                 "} GROUP BY ?documentID ?score";
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
 
         List<SimilarityApp> similarApps = new ArrayList<>();
         while (result.hasNext()) {

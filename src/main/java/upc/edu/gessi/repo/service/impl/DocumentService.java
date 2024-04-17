@@ -37,7 +37,7 @@ public class DocumentService {
                 "    ?document schema:text ?text ;\n" +
                 "              schema:disambiguatingDescription ?disDescription \n" +
                 "} ";
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
 
         while (result.hasNext()) {
             BindingSet bindings = result.next();

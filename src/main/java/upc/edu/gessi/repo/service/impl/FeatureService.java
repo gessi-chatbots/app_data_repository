@@ -57,7 +57,7 @@ public class FeatureService {
     }
     private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
         Integer count;
-        TupleQueryResult result = Utils.runSparqlQuery(repoConnection, query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repoConnection, query);
 
         List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
         List<IRI> source = new ArrayList<>();
@@ -159,7 +159,7 @@ public class FeatureService {
                 "    ?feature schema:name ?name\n" +
                 "} ";
 
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
 
         while (result.hasNext()) {
             BindingSet bindings = result.next();
@@ -181,7 +181,7 @@ public class FeatureService {
                 "    ?app (schema:description | schema:abstract | schema:releaseNotes | schema:featureList) ?documentID .\n" +
                 "    ?documentID schema:keywords ?documentText\n" +
                 "}";
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
         List<IRI> features = new ArrayList<>();
         while (result.hasNext()) {
             BindingSet bindings = result.next();
@@ -203,7 +203,7 @@ public class FeatureService {
                 "    ?result :value ?documentID ;\n" +
                 "            :score ?score.\n" +
                 "}\n";
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
 
         List<IRI> connectedFeatures = new ArrayList<>();
 
@@ -243,7 +243,7 @@ public class FeatureService {
                 "            :score ?score.\n" +
                 "    ?documentID <https://schema.org/applicationCategory> ?category\n" +
                 "} GROUP BY ?documentID ?score";
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
 
         List<SimilarityApp> similarApps = new ArrayList<>();
         while (result.hasNext()) {

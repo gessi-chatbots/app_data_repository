@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.google.gson.Gson;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.json.JSONObject;
 import upc.edu.gessi.repo.dto.graph.Graph;
@@ -18,9 +19,14 @@ import java.util.List;
 
 public class Utils {
 
-    public static TupleQueryResult runSparqlQuery(RepositoryConnection repositoryConnection, String query) {
+    public static TupleQueryResult runSparqlSelectQuery(RepositoryConnection repositoryConnection, String query) {
         TupleQuery tupleQuery = repositoryConnection.prepareTupleQuery(query);
         return tupleQuery.evaluate();
+    }
+
+    public static void runSparqlUpdateQuery(RepositoryConnection repositoryConnection, String query) {
+        Update update = repositoryConnection.prepareUpdate(query);
+        update.execute();
     }
 
     public static String sanitizeString(String name) {

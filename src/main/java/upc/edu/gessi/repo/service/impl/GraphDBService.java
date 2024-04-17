@@ -55,7 +55,7 @@ public class GraphDBService {
         String query = "delete where { \n" +
                 "    ?x <https://schema.org/sameAs> ?z .\n" +
                 "}";
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
 
         int counter = 0;
         while (result.next() != null) ++counter;

@@ -1,7 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
 
-import org.apache.commons.text.WordUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
@@ -18,7 +17,6 @@ import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
-import upc.edu.gessi.repo.dto.serializer.CustomDateDeserializer;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 import upc.edu.gessi.repo.repository.impl.ReviewRepository;
@@ -197,7 +195,7 @@ public class ReviewService {
                 "            schema:reviewBody ?reviewBody\n" +
                 "} ";
 
-        TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), query);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
 
         while (result.hasNext()) {
             BindingSet bindings = result.next();
@@ -289,32 +287,46 @@ public class ReviewService {
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
         String reviewId = String.valueOf(reviewIRI).split(schemaIRI.getReviewIRI().stringValue()+"/")[1];
         if (sentenceDTO.getSentimentData() != null && sentenceDTO.getSentimentData().getSentiment() != null) {
-
-            TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), reviewQueryBuilder.hasReviewSentiments(reviewId));
-            if (result.hasNext()) {
-                BindingSet set = result.next();
-                if (set.getBinding("hasSentiment") != null && set.getBinding("hasSentiment").getValue() != null) {
-                    boolean hasSentiments = Boolean.parseBoolean(set.getBinding("hasSentiment").getValue().stringValue());
-                    if (hasSentiments) {
-                        // Utils.runSparqlQuery(repository.getConnection(), reviewQueryBuilder.deleteSentimentsFromReview(reviewId));
-                    }
-                }
-            }
-            addSentimentToSentence(statements, sentenceDTO, sentenceIRI);
+            updateSentenceSentiments(statements, sentenceDTO, sentenceIRI, reviewId);
         }
         if (sentenceDTO.getFeatureData() != null && sentenceDTO.getFeatureData().getFeature() != null) {
-            TupleQueryResult result = Utils.runSparqlQuery(repository.getConnection(), reviewQueryBuilder.hasReviewFeatures(reviewId));
-            if (result.hasNext()) {
-                BindingSet set = result.next();
-                if (set.getBinding("hasKeyword") != null && set.getBinding("hasKeyword").getValue() != null) {
-                    boolean hasFeatures = Boolean.parseBoolean(set.getBinding("hasKeyword").getValue().stringValue());
-                    if (hasFeatures) {
-                        // Utils.runSparqlQuery(repository.getConnection(), reviewQueryBuilder.deleteFeaturesFromReview(reviewId));
-                    }
+            updateSentenceFeatures(statements, sentenceDTO, sentenceIRI, reviewId);
+        }
+    }
+
+    private void updateSentenceFeatures(final List<Statement> statements,
+                                        final SentenceDTO sentenceDTO,
+                                        final IRI sentenceIRI,
+                                        final String reviewId) {
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), reviewQueryBuilder.hasReviewFeatures(reviewId));
+        if (result.hasNext()) {
+            BindingSet set = result.next();
+            if (set.getBinding("hasKeyword") != null && set.getBinding("hasKeyword").getValue() != null) {
+                boolean hasFeatures = Boolean.parseBoolean(set.getBinding("hasKeyword").getValue().stringValue());
+                if (hasFeatures) {
+                    Utils.runSparqlUpdateQuery(repository.getConnection(), reviewQueryBuilder.deleteFeaturesFromReview(reviewId));
                 }
             }
-            addFeatureToSentence(statements, sentenceDTO, sentenceIRI);
         }
+        addFeatureToSentence(statements, sentenceDTO, sentenceIRI);
+    }
+
+    private void updateSentenceSentiments(final List<Statement> statements,
+                                          final SentenceDTO sentenceDTO,
+                                          final IRI sentenceIRI,
+                                          final String reviewId) {
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), reviewQueryBuilder.hasReviewSentiments(reviewId));
+        if (result.hasNext()) {
+            BindingSet set = result.next();
+            if (set.getBinding("hasSentiment") != null && set.getBinding("hasSentiment").getValue() != null) {
+                boolean hasSentiments = Boolean.parseBoolean(set.getBinding("hasSentiment").getValue().stringValue());
+                if (hasSentiments) {
+                    Utils.runSparqlUpdateQuery(repository.getConnection(),
+                            reviewQueryBuilder.deleteSentimentsFromReview(reviewId));
+                }
+            }
+        }
+        addSentimentToSentence(statements, sentenceDTO, sentenceIRI);
     }
 
     private void addFeatureToSentence(final List<Statement> statements,
