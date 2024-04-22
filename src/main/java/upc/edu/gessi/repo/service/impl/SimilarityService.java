@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
+import org.eclipse.rdf4j.model.IRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,17 +121,17 @@ public class SimilarityService {
             }
         }
     }
-/*
+
     public void computeFeatureSimilarity(double synonymThreshold) {
-        List<IRI> features = graphDBService.getAllFeatures();
+        List<IRI> features = featureService.getAllFeatures();
         int count = 0;
         for (IRI feature : features) {
-            graphDBService.connectFeatureWithSynonyms(feature, synonymThreshold);
+            featureService.connectFeatureWithSynonyms(feature, synonymThreshold);
             ++count;
             if (count % 100 == 0) logger.info(count + " apps out of " + features.size());
         }
     }
-*/
+
     public void deleteFeatureSimilarities() {
         graphDBService.deleteSameAsRelations();
     }

@@ -3,7 +3,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
 ### GraphBD ###
 graphdb-data/logs/*
 graphdb-data/graphdb-import/*
@@ -42,3 +41,4 @@ build/
 
 ### VS Code ###
 .vscode/
+src/main/resources/application.properties

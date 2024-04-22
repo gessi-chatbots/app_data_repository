@@ -26,7 +26,10 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     private final Logger logger = LoggerFactory.getLogger(InductiveKnowledgeController.class);
 
     @Override
-    @GetMapping("/getLastReview")
+    public void ping() {
+    }
+
+    @Override
     public int getLastReview() {
         return dbConnection.getCount();
     }
@@ -68,7 +71,7 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     @Override
     @PostMapping("computeFeatureSimilarity")
     public void computeFeatureSimilarity(@RequestParam(defaultValue = "0.5", name = "threshold") double synonymThreshold) {
-        //similarityService.computeFeatureSimilarity(synonymThreshold);
+        similarityService.computeFeatureSimilarity(synonymThreshold);
     }
 
     @Override

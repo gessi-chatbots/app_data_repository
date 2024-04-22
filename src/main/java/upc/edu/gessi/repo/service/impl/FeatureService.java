@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.graph.*;
+import upc.edu.gessi.repo.util.FeatureQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
@@ -35,6 +36,9 @@ public class FeatureService {
     private final NLFeatureService nlFeatureService;
     private final ValueFactory factory = SimpleValueFactory.getInstance();
     private final DocumentService documentService;
+
+    private final FeatureQueryBuilder featureQueryBuilder;
+
     @Autowired
     public FeatureService(
             final @Value("${db.url}") String url,
@@ -45,7 +49,8 @@ public class FeatureService {
             final ApplicationServiceImpl applicationSv,
             final DocumentService documentSv,
             final InductiveKnowledgeService iks,
-            final ReviewService revSv) {
+            final ReviewService revSv,
+            final FeatureQueryBuilder ftQueryBuilder) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         schemaIRI = schema;
@@ -54,6 +59,7 @@ public class FeatureService {
         documentService = documentSv;
         inductiveKnowledgeService = iks;
         reviewService = revSv;
+        featureQueryBuilder = ftQueryBuilder;
     }
     private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
         Integer count;
@@ -175,12 +181,7 @@ public class FeatureService {
     }
 
     public List<IRI> getAllFeatures() {
-        String query = "PREFIX schema: <https://schema.org/>\n" +
-                "\n" +
-                "SELECT distinct ?documentText WHERE {\n" +
-                "    ?app (schema:description | schema:abstract | schema:releaseNotes | schema:featureList) ?documentID .\n" +
-                "    ?documentID schema:keywords ?documentText\n" +
-                "}";
+        String query = featureQueryBuilder.findAllFeaturesQuery();
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
         List<IRI> features = new ArrayList<>();
         while (result.hasNext()) {
