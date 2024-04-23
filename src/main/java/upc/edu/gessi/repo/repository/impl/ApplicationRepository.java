@@ -226,7 +226,7 @@ public class ApplicationRepository <T> implements RdfRepository {
         }
 
         if (completeApplicationDataDTO.getDescription() != null) {
-            addDigitalDocumentIntoStatements(
+                addDigitalDocumentIntoStatements(
                     completeApplicationDataDTO.getPackageName(),
                     completeApplicationDataDTO.getDescription(),
                     statements,
@@ -256,7 +256,7 @@ public class ApplicationRepository <T> implements RdfRepository {
                     DocumentType.CHANGELOG);
             //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
         }
-        //Adding reviewDocumentPlaceholder
+
         addDigitalDocumentIntoStatements(
                 completeApplicationDataDTO.getPackageName(),
                 "Aggregated NL data for app " + completeApplicationDataDTO.getName(),
@@ -308,7 +308,9 @@ public class ApplicationRepository <T> implements RdfRepository {
         statements.add(factory.createStatement(appDescription, schemaIRI.getTypeIRI(), schemaIRI.getDigitalDocumentIRI()));
     }
 
-    public void addFeaturesToApplication(CompleteApplicationDataDTO completeApplicationDataDTO, IRI sub, List<Statement> statements) {
+    public void addFeaturesToApplication(final CompleteApplicationDataDTO completeApplicationDataDTO,
+                                         final IRI sub,
+                                         final List<Statement> statements) {
         for (String feature : completeApplicationDataDTO.getFeatures()) {
             String id = WordUtils.capitalize(feature).replace(" ", "").replaceAll("[^a-zA-Z0-9]", "");
             IRI featureIRI = factory.createIRI(schemaIRI.getDefinedTermIRI() + "/" + id);

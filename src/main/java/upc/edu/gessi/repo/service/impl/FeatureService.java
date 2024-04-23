@@ -143,9 +143,17 @@ public class FeatureService {
             for (String fs : featureString) {
                 featureList.add(new Feature(appIRI.toString(), fs));
             }
-            // applicationDTO.setFeatures(featureList);
+            completeApplicationDataDTO.setFeatures(
+                    featureList
+                            .stream()
+                            .map(Feature::getName)
+                            .toList());
             try {
-                applicationService.addFeatures(completeApplicationDataDTO, source.get(i), statements);
+                applicationService
+                        .addFeatures(
+                                completeApplicationDataDTO,
+                                source.get(i),
+                                statements);
             } catch (Exception e) {
                 logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
             }

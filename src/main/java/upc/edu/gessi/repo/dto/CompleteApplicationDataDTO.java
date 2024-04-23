@@ -58,10 +58,4 @@ public class CompleteApplicationDataDTO implements Serializable {
     private List<String> features;
     private List<String> tags;
     private List<String> categories;
-
-
-
-
-
-
 }
