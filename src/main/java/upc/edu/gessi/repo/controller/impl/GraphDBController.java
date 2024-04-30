@@ -11,12 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.controller.GraphDBApi;
+import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
-import upc.edu.gessi.repo.dto.ApplicationDataDTO;
-import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
-import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
@@ -208,5 +206,15 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
         }
 
         return analysisService.getApplicationStatistics(appName, startDate, endDate);
+    }
+
+    @Override
+    public ResponseEntity<String> insertSoftwareApplicationJSONData(List<SoftwareApplicationDTO> softwareApplicationDTOS) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<String> insertDigitalDocumentsJSONData(List<DigitalDocumentDTO> digitalDocumentDTOS) {
+        return null;
     }
 }

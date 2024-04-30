@@ -6,12 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
-import upc.edu.gessi.repo.dto.ApplicationDataDTO;
-import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
-import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
@@ -107,4 +105,17 @@ public interface GraphDBApi <T> {
             @PathVariable String appName,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "startDate", defaultValue = "2020-01-01") Date startDate,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "endDate", required = false) Date endDate);
+
+    @PostMapping(value = "/software-applications", produces = "application/json")
+    @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of App entities into the GraphDB. The " +
+            "data is sent in JSON format through the request body.")
+    @ResponseBody
+    ResponseEntity<String> insertSoftwareApplicationJSONData(@RequestBody List<SoftwareApplicationDTO> softwareApplicationDTOS);
+
+    @PostMapping(value = "/digital-documents", produces = "application/json")
+    @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of Digital Documents into the GraphDB. The " +
+            "data is sent in JSON format through the request body.")
+    @ResponseBody
+    ResponseEntity<String> insertDigitalDocumentsJSONData(@RequestBody List<DigitalDocumentDTO> digitalDocumentDTOS);
+
 }
