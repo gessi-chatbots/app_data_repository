@@ -137,14 +137,6 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
         }
     }
 
-    /*
-
-    @Override
-    @PostMapping("/update")
-    public int update(@RequestParam(value = "daysFromLastUpdate") int daysFromLastUpdate) {
-        dbConnection.updateApps(daysFromLastUpdate);
-        return 1;
-    }*/
 
     @Override
     @GetMapping("/export")
