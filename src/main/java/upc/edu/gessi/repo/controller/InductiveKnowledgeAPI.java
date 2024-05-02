@@ -10,12 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/inductive-knowledge-api")
-public interface InductiveKnowledgeAPI {
-
-    @PostMapping("/ping")
-    @ResponseStatus(HttpStatus.OK)
-    void ping();
+@RequestMapping("/inductive-knowledge")
+public interface InductiveKnowledgeAPI extends BaseAPI {
 
     @GetMapping("/lastReview")
     int getLastReview();

@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@RequestMapping("/graph-db-api")
+@RequestMapping("/software-applications")
 
-public interface SoftwareApplicationsAPI<T>  {
+public interface SoftwareApplicationsAPI extends BaseAPI {
     @PostMapping("/ping")
     @ResponseStatus(HttpStatus.OK)
     void ping();

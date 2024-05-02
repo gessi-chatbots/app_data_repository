@@ -81,25 +81,12 @@ public interface GraphDBApi <T> extends BaseAPI {
     ResponseEntity<String> insertJSONReviewData(@RequestBody List<ReviewResponseDTO> completeApplicationDataDTOS);
 
 
-    @PostMapping(value = "/analysis/top-sentiments", produces = "application/json")
-    @ResponseBody
-    TopSentimentsDTO getTopSentimentsByAppNames(@RequestBody List<String> appNames) throws MissingBodyException;
-
-    @PostMapping(value = "/analysis/top-features", produces = "application/json")
-    @ResponseBody
-    TopFeaturesDTO getTopFeaturesByAppNames(@RequestBody List<String> appNames) throws MissingBodyException;
 
     @GetMapping(value = "/applications/{appName}/features", produces = "application/json")
     @ResponseBody
     ResponseEntity<List<String>> getApplicationFeatures(@PathVariable String appName);
 
 
-    @GetMapping(value = "/applications/{appName}/statistics", produces = "application/json")
-    @ResponseBody
-     List<ApplicationDayStatisticsDTO> getApplicationStatistics(
-            @PathVariable String appName,
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "startDate", defaultValue = "2020-01-01") Date startDate,
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "endDate", required = false) Date endDate);
 
     @PostMapping(value = "/software-applications", produces = "application/json")
     @ApiOperation(value = "Insert Data (JSON format)", notes = "Inserts a list of App entities into the GraphDB. The " +

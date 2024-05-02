@@ -11,21 +11,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.controller.GraphDBApi;
-import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
+import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.Review.ReviewRequestDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewResponseDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MissingBodyException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 import upc.edu.gessi.repo.exception.ReviewNotFoundException;
+import upc.edu.gessi.repo.service.impl.AnalysisService;
 import upc.edu.gessi.repo.service.impl.ApplicationServiceImpl;
 import upc.edu.gessi.repo.service.impl.GraphDBService;
 import upc.edu.gessi.repo.service.impl.ReviewService;
-import upc.edu.gessi.repo.service.impl.AnalysisService;
-
 
 import java.io.File;
 import java.util.Calendar;
@@ -33,8 +32,8 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-public class GraphDBController <T> implements GraphDBApi<Object> {
-    private final Logger logger = LoggerFactory.getLogger(GraphDBController.class);
+public class SoftwareApplicationsController<T> implements GraphDBApi<Object> {
+    private final Logger logger = LoggerFactory.getLogger(SoftwareApplicationsController.class);
 
     private final GraphDBService dbConnection;
     private final ApplicationServiceImpl applicationServiceImpl;
@@ -43,10 +42,10 @@ public class GraphDBController <T> implements GraphDBApi<Object> {
 
     private final AnalysisService analysisService;
     @Autowired
-    public GraphDBController(final GraphDBService graphDBService,
-                             final ApplicationServiceImpl applicationServiceImpl,
-                             final ReviewService reviewSv,
-                             final AnalysisService analysisSv) {
+    public SoftwareApplicationsController(final GraphDBService graphDBService,
+                                          final ApplicationServiceImpl applicationServiceImpl,
+                                          final ReviewService reviewSv,
+                                          final AnalysisService analysisSv) {
         this.dbConnection = graphDBService;
         this.applicationServiceImpl = applicationServiceImpl;
         reviewService = reviewSv;
