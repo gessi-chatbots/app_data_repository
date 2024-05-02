@@ -10,7 +10,7 @@ import java.util.List;
 public interface CrudAPI<T> extends BaseAPI {
 
     @PostMapping("/")
-    ResponseEntity<T> create(@RequestBody List<T> entity);
+    ResponseEntity<List<T>> create(@RequestBody List<T> entity);
 
     @GetMapping("/{id}")
     ResponseEntity<T> get(@PathVariable String id) throws ObjectNotFoundException;
@@ -23,8 +23,7 @@ public interface CrudAPI<T> extends BaseAPI {
     ResponseEntity<List<T>> getAllPaginated(
             @RequestParam(value = "paginated", defaultValue = "false", required = false) boolean paginated,
             @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,
-            @RequestParam(value = "size", defaultValue = "20", required = false) Integer size,
-            @RequestParam(value = "simplified", defaultValue = "true") boolean simplified)
+            @RequestParam(value = "size", defaultValue = "20", required = false) Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
 
     @GetMapping("/all")

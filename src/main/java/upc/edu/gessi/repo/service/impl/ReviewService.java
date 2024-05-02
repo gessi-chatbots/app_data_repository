@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
-import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
+import upc.edu.gessi.repo.dto.MobileApplicationDTO;
 import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
@@ -231,7 +231,7 @@ public class ReviewService {
         return resultList;
     }
 
-    public void addCompleteReviewsToApplication(final CompleteApplicationDataDTO completeApplicationDataDTO,
+    public void addCompleteReviewsToApplication(final MobileApplicationDTO completeApplicationDataDTO,
                                                 final IRI applicationIRI,
                                                 final List<Statement> statements) {
         for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
@@ -350,15 +350,18 @@ public class ReviewService {
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getPotentialActionIRI(), sentimentIRI));
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
     }
-    public void addReviews(final List<ReviewDTO> ReviewDTOList) {
+    public List<ReviewDTO> addReviews(final List<ReviewDTO> ReviewDTOList) {
+        List<ReviewDTO> insertedReviews = new ArrayList<>();
         List<Statement> statements = new ArrayList<>();
         for (ReviewDTO r : ReviewDTOList) {
             IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
             statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
             String reviewBody = r.getReviewText();
             createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
+            insertedReviews.add(r);
         }
         commitChanges(statements);
+        return insertedReviews;
     }
 
     private void commitChanges(final List<Statement> statements) {

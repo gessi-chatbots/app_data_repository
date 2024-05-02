@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Repository
-public class ApplicationRepository <T> implements RdfRepository {
+public class MobileApplicationRepository<T> implements RdfRepository {
 
     private final HTTPRepository repository;
 
@@ -44,14 +44,14 @@ public class ApplicationRepository <T> implements RdfRepository {
     private final ReviewService reviewService;
     private final ReviewQueryBuilder reviewQueryBuilder;
     @Autowired
-    public ApplicationRepository(final @Value("${db.url}") String url,
-                                 final @Value("${db.username}") String username,
-                                 final @Value("${db.password}") String password,
-                                 final AppDataScannerService appDataScannerServ,
-                                 final SchemaIRI schema,
-                                 final ApplicationQueryBuilder appQB,
-                                 final ReviewQueryBuilder reviewQB,
-                                 final ReviewService reviewSv) {
+    public MobileApplicationRepository(final @Value("${db.url}") String url,
+                                       final @Value("${db.username}") String username,
+                                       final @Value("${db.password}") String password,
+                                       final AppDataScannerService appDataScannerServ,
+                                       final SchemaIRI schema,
+                                       final ApplicationQueryBuilder appQB,
+                                       final ReviewQueryBuilder reviewQB,
+                                       final ReviewService reviewSv) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         appDataScannerService = appDataScannerServ;
@@ -100,7 +100,7 @@ public class ApplicationRepository <T> implements RdfRepository {
                 String reviewIRI = schemaIRI.getReviewsIRI().stringValue();
                 String nameIRI = schemaIRI.getNameIRI().stringValue();
                 if (predicateValue.equals(identifierIRI)) {
-                    mobileApplicationDTO.setApplicationPackage(bindings
+                    mobileApplicationDTO.setPackageName(bindings
                             .getBinding("object")
                             .getValue()
                             .stringValue());
@@ -110,7 +110,7 @@ public class ApplicationRepository <T> implements RdfRepository {
                             .getValue()
                             .stringValue()
                             .split("https://schema.org/Organization/")[1];
-                    mobileApplicationDTO.setAuthor(auth);
+                    mobileApplicationDTO.setDeveloper(auth);
                 } else if (predicateValue.equals(datePublishedIRI)) {
                     String dateTimeString = bindings.getBinding("object").getValue().stringValue();
                     String datePart = dateTimeString.substring(0, 10);
@@ -148,9 +148,9 @@ public class ApplicationRepository <T> implements RdfRepository {
                                 .getSentences()
                                 .add(reviewService.getSentenceDTO(sentencesResult));
                     }
-                    mobileApplicationDTO.getReviews().add(reviewResponseDTO);
+                    mobileApplicationDTO.getReviewDTOS().add(reviewResponseDTO);
                 } else if (predicateValue.equals(nameIRI)) {
-                    mobileApplicationDTO.setName(bindings.getBinding("object").getValue().stringValue());
+                    mobileApplicationDTO.setAppName(bindings.getBinding("object").getValue().stringValue());
                 }
             }
         }
@@ -184,62 +184,62 @@ public class ApplicationRepository <T> implements RdfRepository {
         return mobileApplicationDTOS;
     }
 
-    public void insertApp(CompleteApplicationDataDTO completeApplicationDataDTO) {
+    public MobileApplicationDTO insertApp(MobileApplicationDTO mobileApplicationDTO) {
         List<Statement> statements = new ArrayList<>();
 
-        IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + completeApplicationDataDTO.getPackageName());
+        IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + mobileApplicationDTO.getPackageName());
         statements.add(factory.createStatement(applicationIRI, schemaIRI.getTypeIRI(), schemaIRI.getAppIRI()));
 
-        if (completeApplicationDataDTO.getDeveloper() != null) {
-            IRI devSubject = addDeveloperIntoStatements(completeApplicationDataDTO, statements);
+        if (mobileApplicationDTO.getDeveloper() != null) {
+            IRI devSubject = addDeveloperIntoStatements(mobileApplicationDTO, statements);
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getAuthorIRI(), devSubject));
         }
 
-        if (completeApplicationDataDTO.getCategoryId() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(completeApplicationDataDTO.getCategoryId())));
+        if (mobileApplicationDTO.getCategoryId() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(mobileApplicationDTO.getCategoryId())));
         }
-        if (completeApplicationDataDTO.getCategory() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(completeApplicationDataDTO.getCategory())));
+        if (mobileApplicationDTO.getCategory() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(mobileApplicationDTO.getCategory())));
         }
-        if (completeApplicationDataDTO.getCategories() != null) {
-            for (String category : completeApplicationDataDTO.getCategories()) {
+        if (mobileApplicationDTO.getCategories() != null) {
+            for (String category : mobileApplicationDTO.getCategories()) {
                 statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(category)));
             }
         }
-        if (completeApplicationDataDTO.getReleaseDate() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(completeApplicationDataDTO.getReleaseDate())));
+        if (mobileApplicationDTO.getReleaseDate() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(mobileApplicationDTO.getReleaseDate())));
         }
 
-        if (completeApplicationDataDTO.getCurrentVersionReleaseDate() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDateModifiedIRI(), factory.createLiteral(completeApplicationDataDTO.getCurrentVersionReleaseDate())));
+        if (mobileApplicationDTO.getCurrentVersionReleaseDate() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDateModifiedIRI(), factory.createLiteral(mobileApplicationDTO.getCurrentVersionReleaseDate())));
         }
 
-        if (completeApplicationDataDTO.getVersion() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(completeApplicationDataDTO.getVersion())));
+        if (mobileApplicationDTO.getVersion() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(mobileApplicationDTO.getVersion())));
         }
 
-        if (completeApplicationDataDTO.getName() != null) {
-            String sanitizedName = Utils.sanitizeString(completeApplicationDataDTO.getName());
+        if (mobileApplicationDTO.getAppName() != null) {
+            String sanitizedName = Utils.sanitizeString(mobileApplicationDTO.getAppName());
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getNameIRI(), factory.createLiteral(sanitizedName)));
         }
-        if (completeApplicationDataDTO.getPackageName() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(completeApplicationDataDTO.getPackageName())));
+        if (mobileApplicationDTO.getPackageName() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(mobileApplicationDTO.getPackageName())));
         }
 
-        if (completeApplicationDataDTO.getDescription() != null) {
+        if (mobileApplicationDTO.getDescription() != null) {
                 addDigitalDocumentIntoStatements(
-                    completeApplicationDataDTO.getPackageName(),
-                    completeApplicationDataDTO.getDescription(),
+                    mobileApplicationDTO.getPackageName(),
+                    mobileApplicationDTO.getDescription(),
                     statements,
                     applicationIRI,
                     schemaIRI.getDescriptionIRI(),
                     DocumentType.DESCRIPTION);
             //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
         }
-        if (completeApplicationDataDTO.getSummary() != null) {
+        if (mobileApplicationDTO.getSummary() != null) {
             addDigitalDocumentIntoStatements(
-                    completeApplicationDataDTO.getPackageName(),
-                    completeApplicationDataDTO.getSummary(),
+                    mobileApplicationDTO.getPackageName(),
+                    mobileApplicationDTO.getSummary(),
                     statements,
                     applicationIRI,
                     schemaIRI.getSummaryIRI(),
@@ -247,10 +247,10 @@ public class ApplicationRepository <T> implements RdfRepository {
             //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
         }
 
-        if (completeApplicationDataDTO.getChangelog() != null) {
+        if (mobileApplicationDTO.getChangelog() != null) {
             addDigitalDocumentIntoStatements(
-                    completeApplicationDataDTO.getPackageName(),
-                    completeApplicationDataDTO.getChangelog(),
+                    mobileApplicationDTO.getPackageName(),
+                    mobileApplicationDTO.getChangelog(),
                     statements,
                     applicationIRI,
                     schemaIRI.getChangelogIRI(),
@@ -259,25 +259,25 @@ public class ApplicationRepository <T> implements RdfRepository {
         }
 
         addDigitalDocumentIntoStatements(
-                completeApplicationDataDTO.getPackageName(),
-                "Aggregated NL data for app " + completeApplicationDataDTO.getName(),
+                mobileApplicationDTO.getPackageName(),
+                "Aggregated NL data for app " + mobileApplicationDTO.getAppName(),
                 statements,
                 applicationIRI,
                 schemaIRI.getReviewDocumentIRI(),
                 DocumentType.REVIEWS);
 
-        if (completeApplicationDataDTO.getFeatures() != null) {
-            addFeaturesToApplication(completeApplicationDataDTO, applicationIRI, statements);
+        if (mobileApplicationDTO.getFeatures() != null) {
+            addFeaturesToApplication(mobileApplicationDTO, applicationIRI, statements);
         }
-        reviewService.addCompleteReviewsToApplication(completeApplicationDataDTO, applicationIRI, statements);
-
-
+        reviewService.addCompleteReviewsToApplication(mobileApplicationDTO, applicationIRI, statements);
 
         commitChanges(statements);
+
+        return mobileApplicationDTO;
     }
 
 
-    private IRI addDeveloperIntoStatements(final CompleteApplicationDataDTO completeApplicationDataDTO,
+    private IRI addDeveloperIntoStatements(final MobileApplicationDTO completeApplicationDataDTO,
                                            final List<Statement> statements) {
 
         String developerName = completeApplicationDataDTO.getDeveloper().replace(" ","_");
@@ -309,7 +309,7 @@ public class ApplicationRepository <T> implements RdfRepository {
         statements.add(factory.createStatement(appDescription, schemaIRI.getTypeIRI(), schemaIRI.getDigitalDocumentIRI()));
     }
 
-    public void addFeaturesToApplication(final CompleteApplicationDataDTO completeApplicationDataDTO,
+    public void addFeaturesToApplication(final MobileApplicationDTO completeApplicationDataDTO,
                                          final IRI sub,
                                          final List<Statement> statements) {
         for (String feature : completeApplicationDataDTO.getFeatures()) {
@@ -349,7 +349,7 @@ public class ApplicationRepository <T> implements RdfRepository {
     }
 
 
-    public void insert(final CompleteApplicationDataDTO completeApplicationDataDTO) {
+    public void insert(final MobileApplicationDTO completeApplicationDataDTO) {
         insertApp(completeApplicationDataDTO);
     }
 
@@ -357,7 +357,7 @@ public class ApplicationRepository <T> implements RdfRepository {
         List<GraphApp> apps = getAllApps();
         for (GraphApp app : apps) {
             //We send requests app per app
-            CompleteApplicationDataDTO updatedCompleteApplicationDataDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
+            MobileApplicationDTO updatedCompleteApplicationDataDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
 
             if (updatedCompleteApplicationDataDTO != null) {
                 insertApp(updatedCompleteApplicationDataDTO);

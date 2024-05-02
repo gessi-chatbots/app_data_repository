@@ -14,7 +14,7 @@ import upc.edu.gessi.repo.controller.MobileApplicationsAPI;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.exception.*;
 import upc.edu.gessi.repo.service.impl.AnalysisService;
-import upc.edu.gessi.repo.service.impl.ApplicationServiceImpl;
+import upc.edu.gessi.repo.service.impl.MobileApplicationServiceImpl;
 import upc.edu.gessi.repo.service.impl.GraphDBService;
 
 import java.io.File;
@@ -25,7 +25,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     private final Logger logger = LoggerFactory.getLogger(MobileApplicationsController.class);
 
     private final GraphDBService dbConnection;
-    private final ApplicationServiceImpl applicationServiceImpl;
+    private final MobileApplicationServiceImpl mobileApplicationServiceImpl;
 
     private final ExceptionHandlers exceptionHandlers;
 
@@ -33,11 +33,11 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     private final AnalysisService analysisService;
     @Autowired
     public MobileApplicationsController(final GraphDBService graphDBService,
-                                        final ApplicationServiceImpl applicationServiceImpl,
+                                        final MobileApplicationServiceImpl mobileApplicationServiceImpl,
                                         final AnalysisService analysisSv,
                                         final ExceptionHandlers exceptionHandl) {
         this.dbConnection = graphDBService;
-        this.applicationServiceImpl = applicationServiceImpl;
+        this.mobileApplicationServiceImpl = mobileApplicationServiceImpl;
         this.analysisService = analysisSv;
         this.exceptionHandlers = exceptionHandl;
     }
@@ -50,10 +50,8 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<MobileApplicationDTO> create(List<MobileApplicationDTO> mobileApplications) {
-        // applicationServiceImpl.insertApps(MobileApplicationDTO);
-        // return new ResponseEntity<>(applicationServiceImpl.insertApps(MobileApplicationDTO), HttpStatus.CREATED);
-        return null;
+    public ResponseEntity<List<MobileApplicationDTO>> create(List<MobileApplicationDTO> mobileApplications) {
+        return new ResponseEntity<>(mobileApplicationServiceImpl.insertApps(mobileApplications), HttpStatus.CREATED);
     }
 
     @Override
@@ -81,8 +79,8 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> getAllPaginated(boolean paginated, Integer page, Integer size, boolean simplified) throws ObjectNotFoundException {
-        return new ResponseEntity<>((paginated) ? applicationServiceImpl.findAllPaginated(page, size, simplified) : applicationServiceImpl.findAll(simplified), HttpStatus.OK);
+    public ResponseEntity<List<MobileApplicationDTO>> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException {
+        return new ResponseEntity<>(mobileApplicationServiceImpl.findAllPaginated(page, size), HttpStatus.OK);
 
     }
 
@@ -105,7 +103,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
     @Override
     public ResponseEntity<List<ApplicationSimplifiedDTO>> getAllApplicationsNames() throws ApplicationNotFoundException {
-        return new ResponseEntity<>(applicationServiceImpl.findAllApplicationNames(), HttpStatus.OK);
+        return new ResponseEntity<>(mobileApplicationServiceImpl.findAllApplicationNames(), HttpStatus.OK);
     }
 
     @Override

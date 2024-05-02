@@ -23,7 +23,7 @@ public class DigitalDocumentsController implements DigitalDocumentsAPI {
 
 
     @Override
-    public ResponseEntity<DigitalDocumentDTO> create(List<DigitalDocumentDTO> entities) {
+    public ResponseEntity<List<DigitalDocumentDTO>> create(List<DigitalDocumentDTO> entities) {
         return ResponseEntity.ok(null);
     }
 
@@ -43,7 +43,7 @@ public class DigitalDocumentsController implements DigitalDocumentsAPI {
     }
 
     @Override
-    public ResponseEntity<List<DigitalDocumentDTO>> getAllPaginated(boolean paginated, Integer page, Integer size, boolean simplified)
+    public ResponseEntity<List<DigitalDocumentDTO>> getAllPaginated(boolean paginated, Integer page, Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return ResponseEntity.ok(null);
     }

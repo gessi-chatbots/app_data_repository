@@ -32,7 +32,7 @@ public class FeatureService {
     private final InductiveKnowledgeService inductiveKnowledgeService;
     private final ReviewService reviewService;
 
-    private final ApplicationServiceImpl applicationService;
+    private final MobileApplicationServiceImpl applicationService;
     private final NLFeatureService nlFeatureService;
     private final ValueFactory factory = SimpleValueFactory.getInstance();
     private final DocumentService documentService;
@@ -46,7 +46,7 @@ public class FeatureService {
             final @Value("${db.password}") String password,
             final SchemaIRI schema,
             final NLFeatureService nlFeatureService,
-            final ApplicationServiceImpl applicationSv,
+            final MobileApplicationServiceImpl applicationSv,
             final DocumentService documentSv,
             final InductiveKnowledgeService iks,
             final ReviewService revSv,
@@ -55,7 +55,7 @@ public class FeatureService {
         repository.setUsernameAndPassword(username, password);
         schemaIRI = schema;
         this.nlFeatureService = nlFeatureService;
-        applicationService = (ApplicationServiceImpl) applicationSv;
+        applicationService = (MobileApplicationServiceImpl) applicationSv;
         documentService = documentSv;
         inductiveKnowledgeService = iks;
         reviewService = revSv;
@@ -137,7 +137,7 @@ public class FeatureService {
         List<Statement> statements = new ArrayList<>();
 
         for (int i = 0; i < features.size(); ++i) {
-            CompleteApplicationDataDTO completeApplicationDataDTO = new CompleteApplicationDataDTO();
+            MobileApplicationDTO completeApplicationDataDTO = new MobileApplicationDTO();
             List<String> featureString = features.get(i).getFeatures();
             List<Feature> featureList = new ArrayList<>();
             for (String fs : featureString) {

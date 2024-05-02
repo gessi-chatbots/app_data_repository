@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
+import upc.edu.gessi.repo.dto.MobileApplicationDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 
 import java.io.InputStream;
@@ -31,8 +31,8 @@ public class AppDataScannerService {
     @Value("${scanner-service.url}")
     private String url;
 
-    public CompleteApplicationDataDTO scanApp(GraphApp app, int daysFromLastUpdate) {
-        List<CompleteApplicationDataDTO> updatedCompleteApplicationDataDTOS = new ArrayList<>();
+    public MobileApplicationDTO scanApp(GraphApp app, int daysFromLastUpdate) {
+        List<MobileApplicationDTO> updatedCompleteApplicationDataDTOS = new ArrayList<>();
         try {
             JSONArray array = new JSONArray();
             array.put(app);
@@ -48,7 +48,7 @@ public class AppDataScannerService {
 
             try {
                 InputStream inputStream = request(uri, stringEntity).getEntity().getContent();
-                updatedCompleteApplicationDataDTOS = new ObjectMapper().readValue(inputStream, new TypeReference<List<CompleteApplicationDataDTO>>() {});
+                updatedCompleteApplicationDataDTOS = new ObjectMapper().readValue(inputStream, new TypeReference<List<MobileApplicationDTO>>() {});
             } catch (Exception e) {
                 e.printStackTrace();
             }

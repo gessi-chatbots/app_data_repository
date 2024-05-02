@@ -27,7 +27,7 @@ public class SoftwareApplicationsController implements SoftwareApplicationsAPI {
 
 
     @Override
-    public ResponseEntity<SoftwareApplicationDTO> create(List entity) {
+    public ResponseEntity<List<SoftwareApplicationDTO>> create(List entity) {
         return null;
     }
 
@@ -42,7 +42,7 @@ public class SoftwareApplicationsController implements SoftwareApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<SoftwareApplicationDTO>> getAllPaginated(boolean paginated, Integer page, Integer size, boolean simplified)
+    public ResponseEntity<List<SoftwareApplicationDTO>> getAllPaginated(boolean paginated, Integer page, Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return null;
     }

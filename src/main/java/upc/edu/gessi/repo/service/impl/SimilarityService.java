@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityApp;
-import upc.edu.gessi.repo.repository.impl.ApplicationRepository;
+import upc.edu.gessi.repo.repository.impl.MobileApplicationRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ public class SimilarityService {
     private Logger logger = LoggerFactory.getLogger(SimilarityService.class);
 
     @Autowired
-    ApplicationRepository applicationRepository;
+    MobileApplicationRepository mobileApplicationRepository;
 
     @Autowired
     GraphDBService graphDBService;
@@ -39,9 +39,9 @@ public class SimilarityService {
         for (String app : apps) {
             List<SimilarityApp> similarApps;
             if (documentType.equals(DocumentType.ALL)) {
-                List<SimilarityApp> descriptionSimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
-                List<SimilarityApp> summarySimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
-                List<SimilarityApp> changelogSimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
+                List<SimilarityApp> descriptionSimilarities = mobileApplicationRepository.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
+                List<SimilarityApp> summarySimilarities = mobileApplicationRepository.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
+                List<SimilarityApp> changelogSimilarities = mobileApplicationRepository.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
 
                 similarApps = descriptionSimilarities;
                 mergeSimilarities(similarApps, summarySimilarities, 2);
@@ -50,7 +50,7 @@ public class SimilarityService {
                         .collect(Collectors.toList()).subList(0, k);
 
             } else {
-                similarApps = applicationRepository.getTopKSimilarApps(app, k, documentType);
+                similarApps = mobileApplicationRepository.getTopKSimilarApps(app, k, documentType);
             }
             res.put("https://schema.org/MobileApplication/" + app, similarApps);
         }

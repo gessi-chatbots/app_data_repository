@@ -42,8 +42,8 @@ public class ReviewsController implements ReviewsAPI {
 
 
     @Override
-    public ResponseEntity<ReviewDTO> create(List<ReviewDTO> entity) {
-        return null;
+    public ResponseEntity<List<ReviewDTO>> create(List<ReviewDTO> reviewDTOList) {
+        return new ResponseEntity<>(reviewService.addReviews(reviewDTOList), HttpStatus.CREATED);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<List<ReviewDTO>> getAllPaginated(boolean paginated, Integer page, Integer size, boolean simplified)
+    public ResponseEntity<List<ReviewDTO>> getAllPaginated(boolean paginated, Integer page, Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return null;
     }
@@ -67,11 +67,5 @@ public class ReviewsController implements ReviewsAPI {
         return null;
     }
 
-
-    @Override
-    public ResponseEntity<String> insertJSONReviewData(List<ReviewDTO> reviewResponseDTOList) {
-        reviewService.addReviews(reviewResponseDTOList);
-        return new ResponseEntity<>("Reviews inserted successfully", HttpStatus.CREATED);
-    }
 
 }

@@ -6,52 +6,54 @@ import org.eclipse.rdf4j.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplicationDTO;
-import upc.edu.gessi.repo.dto.CompleteApplicationDataDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
-import upc.edu.gessi.repo.repository.impl.ApplicationRepository;
+import upc.edu.gessi.repo.repository.impl.MobileApplicationRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
-public class ApplicationServiceImpl {
+public class MobileApplicationServiceImpl {
 
-    private final ApplicationRepository applicationRepository;
+    private final MobileApplicationRepository mobileApplicationRepository;
 
     @Autowired
-    public ApplicationServiceImpl(final ApplicationRepository appRepository) {
-        applicationRepository = appRepository;
+    public MobileApplicationServiceImpl(final MobileApplicationRepository appRepository) {
+        mobileApplicationRepository = appRepository;
     }
     public List findAll(boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? applicationRepository.findAllSimplified() : applicationRepository.findAll();
+        return simplified ? mobileApplicationRepository.findAllSimplified() : mobileApplicationRepository.findAll();
     }
-    public List findAllPaginated(final Integer page, final Integer size, final boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? applicationRepository.findAllSimplifiedPaginated(page, size) : applicationRepository.findAll();
+    public List findAllPaginated(final Integer page, final Integer size) throws ApplicationNotFoundException {
+        return mobileApplicationRepository.findAllSimplifiedPaginated(page, size);
     }
     public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
-        return  (List<ApplicationSimplifiedDTO>) applicationRepository.findAllApplicationNames();
+        return  (List<ApplicationSimplifiedDTO>) mobileApplicationRepository.findAllApplicationNames();
     }
     public MobileApplicationDTO findByName(final String appName) throws ObjectNotFoundException {
-        return applicationRepository.findByName(appName);
+        return mobileApplicationRepository.findByName(appName);
     }
 
-    public void insertApps(final List<MobileApplicationDTO> completeApplicationDataDTOS) {
-        for (MobileApplicationDTO completeApplicationDataDTO : completeApplicationDataDTOS) {
-            // applicationRepository.insertApp(completeApplicationDataDTO);
+    public List<MobileApplicationDTO> insertApps(final List<MobileApplicationDTO> mobileApplicationDTOS) {
+        List<MobileApplicationDTO> insertedApps = new ArrayList<>();
+        for (MobileApplicationDTO mobileApplicationDTO : mobileApplicationDTOS) {
+            insertedApps.add(mobileApplicationRepository.insertApp(mobileApplicationDTO));
         }
+        return insertedApps;
     }
 
     public List<GraphApp> getAllApps() {
-        return applicationRepository.getAllApps();
+        return mobileApplicationRepository.getAllApps();
     }
 
-    public void addFeatures(final CompleteApplicationDataDTO completeApplicationDataDTO,
+    public void addFeatures(final MobileApplicationDTO mobileApplicationDTO,
                             final IRI sub,
                             final List<Statement> statements) {
-        applicationRepository.addFeaturesToApplication(completeApplicationDataDTO, sub, statements);
+        mobileApplicationRepository.addFeaturesToApplication(mobileApplicationDTO, sub, statements);
     }
 
     /*
