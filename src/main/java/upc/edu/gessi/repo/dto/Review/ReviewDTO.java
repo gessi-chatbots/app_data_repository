@@ -1,6 +1,8 @@
 package upc.edu.gessi.repo.dto.Review;
 
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -17,20 +19,31 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ReviewDTO implements Serializable {
+
     @JsonProperty("reviewId")
     private String id;
+
     @JsonProperty("review")
-    private String body;
-    @JsonProperty("userName")
+    private String reviewText;
+
+    @JsonProperty("author")
     private String author;
+
+    @JsonProperty("applicationId")
+    private String applicationId;
+
     @JsonProperty("score")
     private Integer rating;
+
     private String source;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     @JsonProperty("date")
     private Date date;
+
     private List<SentenceDTO> sentences;
 }

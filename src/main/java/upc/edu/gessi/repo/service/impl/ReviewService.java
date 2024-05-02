@@ -79,7 +79,7 @@ public class ReviewService {
         return tupleQuery.evaluate();
     }
 
-    public List<ReviewResponseDTO> getAllReviewsData(final List<ReviewRequestDTO> reviews) throws NoReviewsFoundException {
+    public List<ReviewDTO> getAllReviewsData(final List<ReviewRequestDTO> reviews) throws NoReviewsFoundException {
         List<String> reviewIds = reviews
                 .stream()
                 .map(ReviewRequestDTO::getReviewId)
@@ -87,61 +87,61 @@ public class ReviewService {
         return getReviewDTOList(reviewIds);
     }
 
-    public ReviewResponseDTO getReviewData(final String reviewId) throws NoReviewsFoundException {
+    public ReviewDTO getReviewData(final String reviewId) throws NoReviewsFoundException {
         List<String> reviewIds = new ArrayList<>();
         reviewIds.add(reviewId);
         return getReviewDTOList(reviewIds).get(0);
     }
 
     // TODO Improve efficiency
-    private List<ReviewResponseDTO> getReviewDTOList(final List<String> reviewIds) throws NoReviewsFoundException {
+    private List<ReviewDTO> getReviewDTOList(final List<String> reviewIds) throws NoReviewsFoundException {
         TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
         if (!reviewsResult.hasNext()) {
             throw new NoReviewsFoundException("Any review was found");
         }
-        List<ReviewResponseDTO> reviewResponseDTOs = new ArrayList<>();
+        List<ReviewDTO> ReviewDTOs = new ArrayList<>();
         while (reviewsResult.hasNext()) {
-            ReviewResponseDTO reviewResponseDTO = getReviewDTO(reviewsResult);
-            reviewResponseDTOs.add(reviewResponseDTO);
+            ReviewDTO ReviewDTO = getReviewDTO(reviewsResult);
+            ReviewDTOs.add(ReviewDTO);
         }
-        return reviewResponseDTOs;
+        return ReviewDTOs;
     }
 
-    private ReviewResponseDTO getReviewDTO(final TupleQueryResult result) {
-        ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO();
+    private ReviewDTO getReviewDTO(final TupleQueryResult result) {
+        ReviewDTO ReviewDTO = new ReviewDTO();
         BindingSet bindings = result.next();
         if (existsReviewBinding(bindings)) {
             String idValue = bindings.getBinding("id").getValue().stringValue();
             String textValue = bindings.getBinding("text").getValue().stringValue();
             String appValue = bindings.getBinding("app_identifier").getValue().stringValue();
-            reviewResponseDTO.setReviewId(idValue);
-            reviewResponseDTO.setReview(textValue);
-            reviewResponseDTO.setApplicationId(appValue);
+            ReviewDTO.setId(idValue);
+            ReviewDTO.setReviewText(textValue);
+            ReviewDTO.setApplicationId(appValue);
             if (bindings.getBinding("date") != null && bindings.getBinding("date").getValue() != null) {
                 String dateString = bindings.getBinding("date").getValue().stringValue();
                 try {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     Date date = dateFormat.parse(dateString);
-                    reviewResponseDTO.setDate(date);
+                    ReviewDTO.setDate(date);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
             }
         }
-        reviewResponseDTO.setSentences(new ArrayList<>());
+        ReviewDTO.setSentences(new ArrayList<>());
         TupleQueryResult sentencesResult =
-                runSparqlQuery(reviewQueryBuilder.findReviewSentencesEmotions(new ArrayList<>(Collections.singleton(reviewResponseDTO.getReviewId()))));
+                runSparqlQuery(reviewQueryBuilder.findReviewSentencesEmotions(new ArrayList<>(Collections.singleton(ReviewDTO.getId()))));
         if (sentencesResult.hasNext()) {
             while (sentencesResult.hasNext()) {
-                reviewResponseDTO
+                ReviewDTO
                         .getSentences()
                         .add(getSentenceDTO(sentencesResult));
             }
         } else {
-            reviewResponseDTO.setSentences(new ArrayList<>());
+            ReviewDTO.setSentences(new ArrayList<>());
         }
 
-        return reviewResponseDTO;
+        return ReviewDTO;
     }
 
     public SentenceDTO getSentenceDTO(final TupleQueryResult result) {
@@ -253,8 +253,8 @@ public class ReviewService {
                 if (r.getId() != null) {
                     statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
                 }
-                if (r.getBody() != null) {
-                    String reviewBody = r.getBody();
+                if (r.getReviewText() != null) {
+                    String reviewBody = r.getReviewText();
                     createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
                 }
             }
@@ -350,12 +350,12 @@ public class ReviewService {
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getPotentialActionIRI(), sentimentIRI));
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
     }
-    public void addReviews(final List<ReviewResponseDTO> reviewResponseDTOList) {
+    public void addReviews(final List<ReviewDTO> ReviewDTOList) {
         List<Statement> statements = new ArrayList<>();
-        for (ReviewResponseDTO r : reviewResponseDTOList) {
-            IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getReviewId());
+        for (ReviewDTO r : ReviewDTOList) {
+            IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
             statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-            String reviewBody = r.getReview();
+            String reviewBody = r.getReviewText();
             createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
         }
         commitChanges(statements);
