@@ -34,6 +34,30 @@ public class SimilarityService {
 
     }
 */
+    private void mergeSimilarities(List<SimilarityApp> similarApps, List<SimilarityApp> summarySimilarities, int i) {
+        for (SimilarityApp app1 : summarySimilarities) {
+            SimilarityApp foundApp = null;
+            double score = 0.;
+            for (SimilarityApp app2 : similarApps) {
+                if (app1.getDocumentID().equals(app2.getDocumentID())) {
+                    foundApp = app2;
+                    score = app1.getScore();
+                }
+            }
+            if (foundApp != null) {
+                //TODO fix workaround to deal with 3-d documents
+                if (i == 2)
+                    foundApp.setScore((foundApp.getScore() + score) / 2);
+                else if (i == 3) {
+                    foundApp.setScore(foundApp.getScore() * 2 / 3 + score / 3);
+                }
+            }
+            else {
+                similarApps.add(app1);
+            }
+        }
+    }
+
     public Map<String, List<SimilarityApp>> getTopKSimilarApps(List<String> apps, int k, DocumentType documentType) {
         Map<String, List<SimilarityApp>> res = new HashMap<>();
         for (String app : apps) {
@@ -79,7 +103,6 @@ public class SimilarityService {
         }
         return res;
     }
-
     public List<SimilarityApp> findAppsByFeatures(List<String> features, Integer k, DocumentType documentType) {
         Map<String, List<SimilarityApp>> res = findAppsByFeature(features, k, documentType);
         List<SimilarityApp> similarityApps = new ArrayList<>();
@@ -96,30 +119,6 @@ public class SimilarityService {
             }
         }
         return similarityApps;
-    }
-
-    private void mergeSimilarities(List<SimilarityApp> similarApps, List<SimilarityApp> summarySimilarities, int i) {
-        for (SimilarityApp app1 : summarySimilarities) {
-            SimilarityApp foundApp = null;
-            double score = 0.;
-            for (SimilarityApp app2 : similarApps) {
-                if (app1.getDocumentID().equals(app2.getDocumentID())) {
-                    foundApp = app2;
-                    score = app1.getScore();
-                }
-            }
-            if (foundApp != null) {
-                //TODO fix workaround to deal with 3-d documents
-                if (i == 2)
-                    foundApp.setScore((foundApp.getScore() + score) / 2);
-                else if (i == 3) {
-                    foundApp.setScore(foundApp.getScore() * 2 / 3 + score / 3);
-                }
-            }
-            else {
-                similarApps.add(app1);
-            }
-        }
     }
 
     public void computeFeatureSimilarity(double synonymThreshold) {

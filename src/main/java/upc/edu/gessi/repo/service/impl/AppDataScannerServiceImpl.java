@@ -24,12 +24,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AppDataScannerService {
+public class AppDataScannerServiceImpl {
 
     private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeService.class);
 
     @Value("${scanner-service.url}")
     private String url;
+    private HttpResponse request(URI uri, StringEntity entity) {
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        try {
+            HttpPost request = new HttpPost(uri);
+            request.addHeader("Content-Type", "application/json");
+
+            request.setEntity(entity);
+            HttpResponse response = httpClient.execute(request);
+
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                logger.error("Error occurred. HTTP Status Code: {}", statusCode);
+                return null; // Or throw an exception if appropriate
+            }
+
+            return response;
+            //String jsonResponse = EntityUtils.toString(response.getEntity());
+            //return new JSONArray(jsonResponse);
+
+        } catch (Exception ex) {
+            logger.error("Error occurred", ex);
+            return null; // Or throw an exception if appropriate
+        }
+    }
 
     public MobileApplicationDTO scanApp(GraphApp app, int daysFromLastUpdate) {
         List<MobileApplicationDTO> updatedCompleteApplicationDataDTOS = new ArrayList<>();
@@ -59,29 +83,5 @@ public class AppDataScannerService {
         return updatedCompleteApplicationDataDTOS.size() > 0 ? updatedCompleteApplicationDataDTOS.get(0) : null;
     }
 
-    private HttpResponse request(URI uri, StringEntity entity) {
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        try {
-            HttpPost request = new HttpPost(uri);
-            request.addHeader("Content-Type", "application/json");
-
-            request.setEntity(entity);
-            HttpResponse response = httpClient.execute(request);
-
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                logger.error("Error occurred. HTTP Status Code: {}", statusCode);
-                return null; // Or throw an exception if appropriate
-            }
-
-            return response;
-            //String jsonResponse = EntityUtils.toString(response.getEntity());
-            //return new JSONArray(jsonResponse);
-
-        } catch (Exception ex) {
-            logger.error("Error occurred", ex);
-            return null; // Or throw an exception if appropriate
-        }
-    }
 
 }

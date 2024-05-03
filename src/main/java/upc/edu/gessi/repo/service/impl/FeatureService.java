@@ -61,6 +61,65 @@ public class FeatureService {
         reviewService = revSv;
         featureQueryBuilder = ftQueryBuilder;
     }
+
+    private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
+        List<AnalyzedDocument> features = nlFeatureService.getNLFeatures(analyzedDocuments);
+        List<Statement> statements = new ArrayList<>();
+
+        for (int i = 0; i < features.size(); ++i) {
+            MobileApplicationDTO completeApplicationDataDTO = new MobileApplicationDTO();
+            List<String> featureString = features.get(i).getFeatures();
+            List<Feature> featureList = new ArrayList<>();
+            for (String fs : featureString) {
+                featureList.add(new Feature(appIRI.toString(), fs));
+            }
+            completeApplicationDataDTO.setFeatures(
+                    featureList
+                            .stream()
+                            .map(Feature::getName)
+                            .toList());
+            try {
+                applicationService
+                        .addFeatures(
+                                completeApplicationDataDTO,
+                                source.get(i),
+                                statements);
+            } catch (Exception e) {
+                logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
+            }
+        }
+        commitChanges(statements);
+        logger.info(count + " documents already processed. Keep going...");
+    }
+    private List<GraphFeature> getFeatures(String nodeId) {
+        List<GraphFeature> features = new ArrayList<>();
+
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "select ?feature ?name where {\n" +
+                "    <"+ nodeId +"> schema:feature ?keywords .\n" +
+                "    ?feature schema:name ?name\n" +
+                "} ";
+
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+            IRI feature = (IRI) bindings.getValue("feature");
+            String name = bindings.getValue("name").stringValue();
+
+            GraphFeature graphFeature = new GraphFeature(feature.toString(), name);
+            features.add(graphFeature);
+        }
+
+        return features;
+    }
+    private void commitChanges(final List<Statement> statements) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        repoConnection.add(statements);
+        repoConnection.close();
+    }
     private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
         Integer count;
         TupleQueryResult result = Utils.runSparqlSelectQuery(repoConnection, query);
@@ -131,63 +190,6 @@ public class FeatureService {
         return executeFeatureQuery(repository.getConnection(), query, batchSize, from);
     }
 
-
-    private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
-        List<AnalyzedDocument> features = nlFeatureService.getNLFeatures(analyzedDocuments);
-        List<Statement> statements = new ArrayList<>();
-
-        for (int i = 0; i < features.size(); ++i) {
-            MobileApplicationDTO completeApplicationDataDTO = new MobileApplicationDTO();
-            List<String> featureString = features.get(i).getFeatures();
-            List<Feature> featureList = new ArrayList<>();
-            for (String fs : featureString) {
-                featureList.add(new Feature(appIRI.toString(), fs));
-            }
-            completeApplicationDataDTO.setFeatures(
-                    featureList
-                            .stream()
-                            .map(Feature::getName)
-                            .toList());
-            try {
-                applicationService
-                        .addFeatures(
-                                completeApplicationDataDTO,
-                                source.get(i),
-                                statements);
-            } catch (Exception e) {
-                logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
-            }
-        }
-        commitChanges(statements);
-        logger.info(count + " documents already processed. Keep going...");
-    }
-
-
-    private List<GraphFeature> getFeatures(String nodeId) {
-        List<GraphFeature> features = new ArrayList<>();
-
-        String query = "PREFIX schema: <https://schema.org/>\n" +
-                "\n" +
-                "select ?feature ?name where {\n" +
-                "    <"+ nodeId +"> schema:feature ?keywords .\n" +
-                "    ?feature schema:name ?name\n" +
-                "} ";
-
-        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
-
-        while (result.hasNext()) {
-            BindingSet bindings = result.next();
-
-            IRI feature = (IRI) bindings.getValue("feature");
-            String name = bindings.getValue("name").stringValue();
-
-            GraphFeature graphFeature = new GraphFeature(feature.toString(), name);
-            features.add(graphFeature);
-        }
-
-        return features;
-    }
-
     public List<IRI> getAllFeatures() {
         String query = featureQueryBuilder.findAllFeaturesQuery();
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
@@ -229,13 +231,6 @@ public class FeatureService {
         }
         commitChanges(statements);
     }
-
-    private void commitChanges(final List<Statement> statements) {
-        RepositoryConnection repoConnection = repository.getConnection();
-        repoConnection.add(statements);
-        repoConnection.close();
-    }
-
 
     public List<SimilarityApp> getTopKAppsByFeature(String feature, Integer k, DocumentType documentType) {
         String query = "PREFIX :<http://www.ontotext.com/graphdb/similarity/>\n" +
@@ -313,7 +308,5 @@ public class FeatureService {
         }
         //return new Graph(nodes, edges);
     }
-
-
 
 }

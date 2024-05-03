@@ -17,7 +17,7 @@ import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.RdfRepository;
-import upc.edu.gessi.repo.service.impl.AppDataScannerService;
+import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
 import upc.edu.gessi.repo.service.impl.ReviewService;
 import upc.edu.gessi.repo.util.ApplicationQueryBuilder;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
@@ -37,7 +37,7 @@ public class MobileApplicationRepository<T> implements RdfRepository {
     private final ValueFactory factory = SimpleValueFactory.getInstance();
 
     private final SchemaIRI schemaIRI;
-    private final AppDataScannerService appDataScannerService;
+    private final AppDataScannerServiceImpl appDataScannerServiceImpl;
 
     private final ApplicationQueryBuilder applicationQueryBuilder;
 
@@ -47,14 +47,14 @@ public class MobileApplicationRepository<T> implements RdfRepository {
     public MobileApplicationRepository(final @Value("${db.url}") String url,
                                        final @Value("${db.username}") String username,
                                        final @Value("${db.password}") String password,
-                                       final AppDataScannerService appDataScannerServ,
+                                       final AppDataScannerServiceImpl appDataScannerServ,
                                        final SchemaIRI schema,
                                        final ApplicationQueryBuilder appQB,
                                        final ReviewQueryBuilder reviewQB,
                                        final ReviewService reviewSv) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
-        appDataScannerService = appDataScannerServ;
+        appDataScannerServiceImpl = appDataScannerServ;
         schemaIRI = schema;
         reviewService = reviewSv;
         applicationQueryBuilder = appQB;
@@ -357,7 +357,7 @@ public class MobileApplicationRepository<T> implements RdfRepository {
         List<GraphApp> apps = getAllApps();
         for (GraphApp app : apps) {
             //We send requests app per app
-            MobileApplicationDTO updatedCompleteApplicationDataDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
+            MobileApplicationDTO updatedCompleteApplicationDataDTO = appDataScannerServiceImpl.scanApp(app, daysFromLastUpdate);
 
             if (updatedCompleteApplicationDataDTO != null) {
                 insertApp(updatedCompleteApplicationDataDTO);

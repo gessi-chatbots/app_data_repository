@@ -3,18 +3,13 @@ package upc.edu.gessi.repo.controller.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.AnalysisAPI;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
-import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MissingBodyException;
-import upc.edu.gessi.repo.exception.NoReviewsFoundException;
-import upc.edu.gessi.repo.exception.ReviewNotFoundException;
-import upc.edu.gessi.repo.service.impl.AnalysisService;
+import upc.edu.gessi.repo.service.impl.AnalysisServiceImpl;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -23,11 +18,11 @@ import java.util.List;
 @RestController
 public class AnalysisController implements AnalysisAPI {
     private final Logger logger = LoggerFactory.getLogger(AnalysisController.class);
-    private final AnalysisService analysisService;
+    private final AnalysisServiceImpl analysisServiceImpl;
 
     @Autowired
-    public AnalysisController(final AnalysisService analysisSv) {
-        this.analysisService = analysisSv;
+    public AnalysisController(final AnalysisServiceImpl analysisSv) {
+        this.analysisServiceImpl = analysisSv;
     }
 
     @Override
@@ -42,13 +37,13 @@ public class AnalysisController implements AnalysisAPI {
     @Override
     public TopSentimentsDTO getTopSentimentsByAppNames(final List<String> appNames) throws MissingBodyException {
         validateAppNames(appNames);
-        return analysisService.findTopSentimentsByApps(appNames);
+        return analysisServiceImpl.findTopSentimentsByApps(appNames);
     }
 
     @Override
     public TopFeaturesDTO getTopFeaturesByAppNames(final List<String> appNames)  throws MissingBodyException {
         validateAppNames(appNames);
-        return analysisService.findTopFeaturesByApps(appNames);
+        return analysisServiceImpl.findTopFeaturesByApps(appNames);
     }
 
     @Override
@@ -61,7 +56,7 @@ public class AnalysisController implements AnalysisAPI {
             endDateAux = Calendar.getInstance().getTime();
         }
 
-        return analysisService.getApplicationStatistics(appName, startDate, endDateAux);
+        return analysisServiceImpl.getApplicationStatistics(appName, startDate, endDateAux);
     }
 
 }

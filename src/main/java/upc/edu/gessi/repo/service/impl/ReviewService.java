@@ -106,6 +106,15 @@ public class ReviewService {
         }
         return ReviewDTOs;
     }
+    private boolean existsReviewBinding(BindingSet bindings) {
+        return bindings.getBinding("id") != null
+                && bindings.getBinding("id").getValue() != null
+                && bindings.getBinding("text") != null
+                && bindings.getBinding("text").getValue() != null
+                && bindings.getBinding("app_identifier") != null
+                && bindings.getBinding("app_identifier").getValue() != null;
+    }
+
 
     private ReviewDTO getReviewDTO(final TupleQueryResult result) {
         ReviewDTO ReviewDTO = new ReviewDTO();
@@ -144,122 +153,6 @@ public class ReviewService {
         return ReviewDTO;
     }
 
-    public SentenceDTO getSentenceDTO(final TupleQueryResult result) {
-        SentenceDTO sentenceDTO = new SentenceDTO();
-        BindingSet bindings = result.next();
-        if (bindings.getBinding("sentenceId") != null) {
-            String sentenceId = bindings.getBinding("sentenceId").getValue().stringValue();
-            sentenceDTO.setId(sentenceId);
-        }
-        if (bindings.getBinding("sentimentValue") != null) {
-                String sentimentValue = bindings.getBinding("sentimentValue").getValue().stringValue();
-                sentenceDTO.setSentimentData(
-                        SentimentDTO
-                                .builder()
-                                .sentiment(sentimentValue)
-                                .build());
-
-        }
-        if (bindings.getBinding("featureValue") != null) {
-            String featureValue = bindings.getBinding("featureValue").getValue().stringValue().replace("_", " ");
-            featureValue = featureValue.replace("_", " ");
-            sentenceDTO.setFeatureData(
-                    FeatureDTO
-                            .builder()
-                            .feature(featureValue)
-                            .build());
-        }
-
-        return sentenceDTO;
-    }
-
-    private boolean existsReviewBinding(BindingSet bindings) {
-        return bindings.getBinding("id") != null
-                && bindings.getBinding("id").getValue() != null
-                && bindings.getBinding("text") != null
-                && bindings.getBinding("text").getValue() != null
-                && bindings.getBinding("app_identifier") != null
-                && bindings.getBinding("app_identifier").getValue() != null;
-    }
-
-
-
-    public List<GraphReview> getReviews(final String nodeId) {
-        List<GraphReview> graphReviews = new ArrayList<>();
-
-        String query = "PREFIX schema: <https://schema.org/>\n" +
-                "\n" +
-                "select ?review ?rating ?reviewBody where {\n" +
-                "    <" + nodeId + "> schema:review ?review .\n" +
-                "    ?review schema:reviewRating ?rating ;\n" +
-                "            schema:reviewBody ?reviewBody\n" +
-                "} ";
-
-        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
-
-        while (result.hasNext()) {
-            BindingSet bindings = result.next();
-
-            IRI review = (IRI) bindings.getValue("review");
-            Integer reviewRating = Integer.valueOf(bindings.getValue("rating").stringValue());
-            String reviewBody = bindings.getValue("reviewBody").stringValue();
-
-
-            GraphReview graphFeature = new GraphReview(review.toString(), reviewRating, reviewBody);
-            graphReviews.add(graphFeature);
-        }
-
-        return graphReviews;
-    }
-
-
-
-    public List<String> getResultsContaining(String text) {
-        RepositoryConnection repoConnection = repository.getConnection();
-        String query = "PREFIX gessi: <http://gessi.upc.edu/app/> SELECT ?x ?y ?z " +
-                                                                    "WHERE {?x ?y ?z .FILTER regex(str(?z), \""+text+"\")}" ;
-        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
-        List<String> resultList = new ArrayList<>();
-        TupleQueryResult result = tupleQuery.evaluate();
-        while (result.hasNext()) {  // iterate over the result
-            BindingSet bindingSet = result.next();
-            Value valueOfX = bindingSet.getValue("x");
-            Value valueOfY = bindingSet.getValue("y");
-            Value valueOfZ = bindingSet.getValue("z");
-            resultList.add(valueOfZ.stringValue());
-        }
-        return resultList;
-    }
-
-    public void addCompleteReviewsToApplication(final MobileApplicationDTO completeApplicationDataDTO,
-                                                final IRI applicationIRI,
-                                                final List<Statement> statements) {
-        for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
-            if (r.getId() != null) {
-                IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
-                if (applicationIRI != null) {
-                    statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
-                }
-                statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-                if (r.getRating() != null) {
-                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
-                }
-                if (r.getDate() != null) {
-                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getDate())));
-                }
-                if (r.getAuthor() != null) {
-                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));
-                }
-                if (r.getId() != null) {
-                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
-                }
-                if (r.getReviewText() != null) {
-                    String reviewBody = r.getReviewText();
-                    createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
-                }
-            }
-        }
-    }
 
     private void createReviewContent(final List<Statement> statements,
                                      final IRI reviewIRI,
@@ -350,6 +243,12 @@ public class ReviewService {
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getPotentialActionIRI(), sentimentIRI));
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
     }
+    private void commitChanges(final List<Statement> statements) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        repoConnection.add(statements);
+        repoConnection.close();
+    }
+
     public List<ReviewDTO> addReviews(final List<ReviewDTO> ReviewDTOList) {
         List<ReviewDTO> insertedReviews = new ArrayList<>();
         List<Statement> statements = new ArrayList<>();
@@ -364,10 +263,110 @@ public class ReviewService {
         return insertedReviews;
     }
 
-    private void commitChanges(final List<Statement> statements) {
+
+    public SentenceDTO getSentenceDTO(final TupleQueryResult result) {
+        SentenceDTO sentenceDTO = new SentenceDTO();
+        BindingSet bindings = result.next();
+        if (bindings.getBinding("sentenceId") != null) {
+            String sentenceId = bindings.getBinding("sentenceId").getValue().stringValue();
+            sentenceDTO.setId(sentenceId);
+        }
+        if (bindings.getBinding("sentimentValue") != null) {
+            String sentimentValue = bindings.getBinding("sentimentValue").getValue().stringValue();
+            sentenceDTO.setSentimentData(
+                    SentimentDTO
+                            .builder()
+                            .sentiment(sentimentValue)
+                            .build());
+
+        }
+        if (bindings.getBinding("featureValue") != null) {
+            String featureValue = bindings.getBinding("featureValue").getValue().stringValue().replace("_", " ");
+            featureValue = featureValue.replace("_", " ");
+            sentenceDTO.setFeatureData(
+                    FeatureDTO
+                            .builder()
+                            .feature(featureValue)
+                            .build());
+        }
+
+        return sentenceDTO;
+    }
+
+    public List<GraphReview> getReviews(final String nodeId) {
+        List<GraphReview> graphReviews = new ArrayList<>();
+
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "select ?review ?rating ?reviewBody where {\n" +
+                "    <" + nodeId + "> schema:review ?review .\n" +
+                "    ?review schema:reviewRating ?rating ;\n" +
+                "            schema:reviewBody ?reviewBody\n" +
+                "} ";
+
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+            IRI review = (IRI) bindings.getValue("review");
+            Integer reviewRating = Integer.valueOf(bindings.getValue("rating").stringValue());
+            String reviewBody = bindings.getValue("reviewBody").stringValue();
+
+
+            GraphReview graphFeature = new GraphReview(review.toString(), reviewRating, reviewBody);
+            graphReviews.add(graphFeature);
+        }
+
+        return graphReviews;
+    }
+
+
+    public List<String> getResultsContaining(String text) {
         RepositoryConnection repoConnection = repository.getConnection();
-        repoConnection.add(statements);
-        repoConnection.close();
+        String query = "PREFIX gessi: <http://gessi.upc.edu/app/> SELECT ?x ?y ?z " +
+                "WHERE {?x ?y ?z .FILTER regex(str(?z), \""+text+"\")}" ;
+        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
+        List<String> resultList = new ArrayList<>();
+        TupleQueryResult result = tupleQuery.evaluate();
+        while (result.hasNext()) {  // iterate over the result
+            BindingSet bindingSet = result.next();
+            Value valueOfX = bindingSet.getValue("x");
+            Value valueOfY = bindingSet.getValue("y");
+            Value valueOfZ = bindingSet.getValue("z");
+            resultList.add(valueOfZ.stringValue());
+        }
+        return resultList;
+    }
+
+    public void addCompleteReviewsToApplication(final MobileApplicationDTO completeApplicationDataDTO,
+                                                final IRI applicationIRI,
+                                                final List<Statement> statements) {
+        for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
+            if (r.getId() != null) {
+                IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
+                if (applicationIRI != null) {
+                    statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
+                }
+                statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
+                if (r.getRating() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(r.getRating())));
+                }
+                if (r.getDate() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(r.getDate())));
+                }
+                if (r.getAuthor() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(r.getAuthor())));
+                }
+                if (r.getId() != null) {
+                    statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(r.getId())));
+                }
+                if (r.getReviewText() != null) {
+                    String reviewBody = r.getReviewText();
+                    createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
+                }
+            }
+        }
     }
 
 }

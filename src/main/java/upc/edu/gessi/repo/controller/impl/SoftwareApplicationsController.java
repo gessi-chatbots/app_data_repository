@@ -21,10 +21,8 @@ public class SoftwareApplicationsController implements SoftwareApplicationsAPI {
     @Autowired
     public SoftwareApplicationsController() {}
 
-
     @Override
     public void ping() {}
-
 
     @Override
     public ResponseEntity<List<SoftwareApplicationDTO>> create(List entity) {

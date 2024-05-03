@@ -13,7 +13,7 @@ import upc.edu.gessi.repo.controller.ExceptionHandlers;
 import upc.edu.gessi.repo.controller.MobileApplicationsAPI;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.exception.*;
-import upc.edu.gessi.repo.service.impl.AnalysisService;
+import upc.edu.gessi.repo.service.impl.AnalysisServiceImpl;
 import upc.edu.gessi.repo.service.impl.MobileApplicationServiceImpl;
 import upc.edu.gessi.repo.service.impl.GraphDBService;
 
@@ -30,15 +30,15 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     private final ExceptionHandlers exceptionHandlers;
 
 
-    private final AnalysisService analysisService;
+    private final AnalysisServiceImpl analysisServiceImpl;
     @Autowired
     public MobileApplicationsController(final GraphDBService graphDBService,
                                         final MobileApplicationServiceImpl mobileApplicationServiceImpl,
-                                        final AnalysisService analysisSv,
+                                        final AnalysisServiceImpl analysisSv,
                                         final ExceptionHandlers exceptionHandl) {
         this.dbConnection = graphDBService;
         this.mobileApplicationServiceImpl = mobileApplicationServiceImpl;
-        this.analysisService = analysisSv;
+        this.analysisServiceImpl = analysisSv;
         this.exceptionHandlers = exceptionHandl;
     }
 
@@ -50,12 +50,12 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> create(List<MobileApplicationDTO> mobileApplications) {
+    public ResponseEntity<List<MobileApplicationDTO>> create(final List<MobileApplicationDTO> mobileApplications) {
         return new ResponseEntity<>(mobileApplicationServiceImpl.insertApps(mobileApplications), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<String> createViaRMLFormat(@RequestParam("jsonFolder") String jsonFolder) {
+    public ResponseEntity<String> createViaRMLFormat(final String jsonFolder) {
         try {
             File mappingFile = Utils.getFile(rmlPath);
             dbConnection.insertRML(jsonFolder, mappingFile);
@@ -66,7 +66,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<String> createViaRDFFormat(MultipartFile file) {
+    public ResponseEntity<String> createViaRDFFormat(final MultipartFile file) {
         try {
             if (file.isEmpty()) {
                 return new ResponseEntity<>("File is empty", HttpStatus.BAD_REQUEST);
@@ -79,7 +79,9 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException {
+    public ResponseEntity<List<MobileApplicationDTO>> getAllPaginated(final boolean paginated,
+                                                                      final Integer page,
+                                                                      final Integer size) throws ObjectNotFoundException {
         return new ResponseEntity<>(mobileApplicationServiceImpl.findAllPaginated(page, size), HttpStatus.OK);
 
     }
@@ -91,12 +93,12 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
 
     @Override
-    public ResponseEntity<MobileApplicationDTO> get(String id) throws ObjectNotFoundException {
+    public ResponseEntity<MobileApplicationDTO> get(final String id) throws ObjectNotFoundException {
         return null;
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> getListed(List<String> id) throws ObjectNotFoundException {
+    public ResponseEntity<List<MobileApplicationDTO>> getListed(final List<String> id) throws ObjectNotFoundException {
         return null;
     }
 
@@ -107,24 +109,24 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<String>> getApplicationFeatures(String appName) {
-        return new ResponseEntity<>(analysisService.findAppFeatures(appName), HttpStatus.OK);
+    public ResponseEntity<List<String>> getApplicationFeatures(final String appName) {
+        return new ResponseEntity<>(analysisServiceImpl.findAppFeatures(appName), HttpStatus.OK);
     }
 
     @Override
-    public void export(@RequestParam(value = "fileName") String fileName) throws Exception{
+    public void export(final String fileName) throws Exception{
         logger.info("Initializing export...");
         dbConnection.exportRepository(fileName);
         logger.info("Repository successfully exported at " + fileName);
     }
 
     @Override
-    public ResponseEntity<MobileApplicationDTO> update(MobileApplicationDTO entity) {
+    public ResponseEntity<MobileApplicationDTO> update(final MobileApplicationDTO entity) {
         return null;
     }
 
     @Override
-    public void updateRepository(@RequestParam(value = "url") String url) {
+    public void updateRepository(final String url) {
         logger.info("Updating repo");
         dbConnection.updateRepository(url);
         logger.info("Repository updated");

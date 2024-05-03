@@ -23,27 +23,29 @@ public class DigitalDocumentsController implements DigitalDocumentsAPI {
 
 
     @Override
-    public ResponseEntity<List<DigitalDocumentDTO>> create(List<DigitalDocumentDTO> entities) {
+    public ResponseEntity<List<DigitalDocumentDTO>> create(final List<DigitalDocumentDTO> entities) {
         return ResponseEntity.ok(null);
     }
 
     @Override
-    public ResponseEntity<String> insertDigitalDocumentsJSONData(List<DigitalDocumentDTO> digitalDocumentDTOS) {
+    public ResponseEntity<String> insertDigitalDocumentsJSONData(final List<DigitalDocumentDTO> digitalDocumentDTOS) {
         return new ResponseEntity<>("Digital documents inserted successfully", HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<DigitalDocumentDTO> get(String id) throws ObjectNotFoundException {
+    public ResponseEntity<DigitalDocumentDTO> get(final String id) throws ObjectNotFoundException {
         return ResponseEntity.ok(null);
     }
 
     @Override
-    public ResponseEntity<List<DigitalDocumentDTO>> getListed(List<String> id) throws ObjectNotFoundException {
+    public ResponseEntity<List<DigitalDocumentDTO>> getListed(final List<String> id) throws ObjectNotFoundException {
         return null;
     }
 
     @Override
-    public ResponseEntity<List<DigitalDocumentDTO>> getAllPaginated(boolean paginated, Integer page, Integer size)
+    public ResponseEntity<List<DigitalDocumentDTO>> getAllPaginated(final boolean paginated,
+                                                                    final Integer page,
+                                                                    final Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return ResponseEntity.ok(null);
     }
@@ -54,7 +56,7 @@ public class DigitalDocumentsController implements DigitalDocumentsAPI {
     }
 
     @Override
-    public ResponseEntity<DigitalDocumentDTO> update(DigitalDocumentDTO entity) {
+    public ResponseEntity<DigitalDocumentDTO> update(final DigitalDocumentDTO entity) {
         return ResponseEntity.ok(null);
     }
 

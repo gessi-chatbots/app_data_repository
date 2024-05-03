@@ -31,17 +31,6 @@ public class ReviewsController implements ReviewsAPI {
 
 
     @Override
-    public ResponseEntity<ReviewDTO> update(ReviewDTO entity) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Void> delete() {
-        return null;
-    }
-
-
-    @Override
     public ResponseEntity<List<ReviewDTO>> create(List<ReviewDTO> reviewDTOList) {
         return new ResponseEntity<>(reviewService.addReviews(reviewDTOList), HttpStatus.CREATED);
     }
@@ -67,5 +56,15 @@ public class ReviewsController implements ReviewsAPI {
         return null;
     }
 
+    @Override
+    public ResponseEntity<ReviewDTO> update(ReviewDTO entity) {
+        return null;
+    }
 
+
+
+    @Override
+    public ResponseEntity<Void> delete() {
+        return null;
+    }
 }

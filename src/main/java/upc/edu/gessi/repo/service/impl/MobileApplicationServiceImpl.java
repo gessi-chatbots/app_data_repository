@@ -25,6 +25,7 @@ public class MobileApplicationServiceImpl {
     public MobileApplicationServiceImpl(final MobileApplicationRepository appRepository) {
         mobileApplicationRepository = appRepository;
     }
+
     public List findAll(boolean simplified) throws ApplicationNotFoundException {
         return simplified ? mobileApplicationRepository.findAllSimplified() : mobileApplicationRepository.findAll();
     }

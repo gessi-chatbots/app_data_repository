@@ -1,8 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
 
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -11,9 +9,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.Analysis.*;
-import upc.edu.gessi.repo.repository.impl.ReviewRepository;
 import upc.edu.gessi.repo.util.AnalysisQueryBuilder;
-import upc.edu.gessi.repo.util.SchemaIRI;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,53 +20,23 @@ import java.util.List;
 
 
 @Service
-public class AnalysisService {
+public class AnalysisServiceImpl {
 
-    private final ReviewRepository reviewRepository;
     private final HTTPRepository repository;
-    private final ValueFactory factory = SimpleValueFactory.getInstance();
 
-    private final SchemaIRI schemaIRI;
 
     private final AnalysisQueryBuilder analysisQueryBuilder;
 
     @Autowired
-    public AnalysisService(final @org.springframework.beans.factory.annotation.Value("${db.url}") String url,
-                           final @org.springframework.beans.factory.annotation.Value("${db.username}") String username,
-                           final @org.springframework.beans.factory.annotation.Value("${db.password}") String password,
-                           final ReviewRepository reviewRep,
-                           final SchemaIRI schIRI,
-                           final AnalysisQueryBuilder analysisQB) {
+    public AnalysisServiceImpl(final @org.springframework.beans.factory.annotation.Value("${db.url}") String url,
+                               final @org.springframework.beans.factory.annotation.Value("${db.username}") String username,
+                               final @org.springframework.beans.factory.annotation.Value("${db.password}") String password,
+                               final AnalysisQueryBuilder analysisQB) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
-        reviewRepository = reviewRep;
-        schemaIRI = schIRI;
         analysisQueryBuilder = analysisQB;
     }
 
-    public TopFeaturesDTO findTopFeaturesByApps(final List<String> appNames) {
-        String query = analysisQueryBuilder.findTopFeaturesByAppNamesQuery(appNames);
-        TupleQueryResult result = runSparqlQuery(query);
-        TopFeaturesDTO topFeaturesDTO = new TopFeaturesDTO();
-        List<FeatureOccurrenceDTO> features = new ArrayList<>();
-        while (result.hasNext()) {
-            FeatureOccurrenceDTO featureOccurrenceDTO = getFeatureOccurrence(result);
-            features.add(featureOccurrenceDTO);
-        }
-        topFeaturesDTO.setTopFeatures(features);
-        return topFeaturesDTO;
-    }
-
-    public List<String> findAppFeatures(final String appName) {
-        String query = analysisQueryBuilder.findFeaturesByAppName(appName);
-        TupleQueryResult result = runSparqlQuery(query);
-        List<String> features = new ArrayList<>();
-        while (result.hasNext()) {
-            String feature = getFeature(result);
-            features.add(feature);
-        }
-        return features;
-    }
     private Date extractDate(BindingSet bindingSet) {
         if (bindingSet.getBinding("date") != null && bindingSet.getBinding("date").getValue() != null ) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
@@ -135,39 +101,6 @@ public class AnalysisService {
     }
 
 
-    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName, final Date startDate, final Date endDate) {
-        String query = analysisQueryBuilder.findStatisticBetweenDates(appName, startDate, endDate);
-        HashMap<Date, ApplicationDayStatisticsDTO> statisticsMap = new HashMap<>();
-        TupleQueryResult result = runSparqlQuery(query);
-        while (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            Date date = extractDate(bindingSet);
-            String sentiment = extractSentiment(bindingSet);
-            String feature = extractFeature(bindingSet);
-            ApplicationDayStatisticsDTO dayStatistics = statisticsMap.getOrDefault(date, createNewDayStatistics(date, statisticsMap));
-            if (sentiment != null) {
-                updateSentimentOccurrences(dayStatistics, sentiment);
-            }
-            if (feature != null) {
-                updateFeatureOccurrences(dayStatistics, feature);
-            }
-            statisticsMap.put(date, dayStatistics);
-        }
-        return new ArrayList<>(statisticsMap.values());
-    }
-
-    public TopSentimentsDTO findTopSentimentsByApps(final List<String> appNames){
-        String query = analysisQueryBuilder.findTopSentimentsByAppNamesQuery(appNames);
-        TupleQueryResult result = runSparqlQuery(query);
-        TopSentimentsDTO topSentimentsDTO = new TopSentimentsDTO();
-        List<SentimentOccurrenceDTO> sentiments = new ArrayList<>();
-        while (result.hasNext()) {
-            SentimentOccurrenceDTO sentimentOccurrenceDTO = getSentimentOccurrence(result);
-            sentiments.add(sentimentOccurrenceDTO);
-        }
-        topSentimentsDTO.setTopSentiments(sentiments);
-        return topSentimentsDTO;
-    }
     private boolean existsFeatureBinding(BindingSet bindings) {
         return bindings.getBinding("feature") != null
                 && bindings.getBinding("feature").getValue() != null
@@ -220,7 +153,63 @@ public class AnalysisService {
         return tupleQuery.evaluate();
     }
 
+    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName, final Date startDate, final Date endDate) {
+        String query = analysisQueryBuilder.findStatisticBetweenDates(appName, startDate, endDate);
+        HashMap<Date, ApplicationDayStatisticsDTO> statisticsMap = new HashMap<>();
+        TupleQueryResult result = runSparqlQuery(query);
+        while (result.hasNext()) {
+            BindingSet bindingSet = result.next();
+            Date date = extractDate(bindingSet);
+            String sentiment = extractSentiment(bindingSet);
+            String feature = extractFeature(bindingSet);
+            ApplicationDayStatisticsDTO dayStatistics = statisticsMap.getOrDefault(date, createNewDayStatistics(date, statisticsMap));
+            if (sentiment != null) {
+                updateSentimentOccurrences(dayStatistics, sentiment);
+            }
+            if (feature != null) {
+                updateFeatureOccurrences(dayStatistics, feature);
+            }
+            statisticsMap.put(date, dayStatistics);
+        }
+        return new ArrayList<>(statisticsMap.values());
+    }
 
+    public TopSentimentsDTO findTopSentimentsByApps(final List<String> appNames){
+        String query = analysisQueryBuilder.findTopSentimentsByAppNamesQuery(appNames);
+        TupleQueryResult result = runSparqlQuery(query);
+        TopSentimentsDTO topSentimentsDTO = new TopSentimentsDTO();
+        List<SentimentOccurrenceDTO> sentiments = new ArrayList<>();
+        while (result.hasNext()) {
+            SentimentOccurrenceDTO sentimentOccurrenceDTO = getSentimentOccurrence(result);
+            sentiments.add(sentimentOccurrenceDTO);
+        }
+        topSentimentsDTO.setTopSentiments(sentiments);
+        return topSentimentsDTO;
+    }
+
+    public TopFeaturesDTO findTopFeaturesByApps(final List<String> appNames) {
+        String query = analysisQueryBuilder.findTopFeaturesByAppNamesQuery(appNames);
+        TupleQueryResult result = runSparqlQuery(query);
+        TopFeaturesDTO topFeaturesDTO = new TopFeaturesDTO();
+        List<FeatureOccurrenceDTO> features = new ArrayList<>();
+        while (result.hasNext()) {
+            FeatureOccurrenceDTO featureOccurrenceDTO = getFeatureOccurrence(result);
+            features.add(featureOccurrenceDTO);
+        }
+        topFeaturesDTO.setTopFeatures(features);
+        return topFeaturesDTO;
+    }
+
+    public List<String> findAppFeatures(final String appName) {
+        String query = analysisQueryBuilder.findFeaturesByAppName(appName);
+        TupleQueryResult result = runSparqlQuery(query);
+        List<String> features = new ArrayList<>();
+        while (result.hasNext()) {
+            String feature = getFeature(result);
+            features.add(feature);
+        }
+        return features;
+    }
 
 
 }
