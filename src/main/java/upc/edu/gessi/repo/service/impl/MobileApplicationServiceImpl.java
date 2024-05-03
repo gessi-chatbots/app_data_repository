@@ -11,13 +11,14 @@ import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.impl.MobileApplicationRepository;
+import upc.edu.gessi.repo.service.MobileApplicationService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
-public class MobileApplicationServiceImpl {
+public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     private final MobileApplicationRepository mobileApplicationRepository;
 

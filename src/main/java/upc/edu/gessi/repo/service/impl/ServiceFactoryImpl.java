@@ -19,7 +19,7 @@ public class ServiceFactoryImpl implements ServiceFactory {
     private final AppDataScannerService appDataScannerService;
     private final DocumentService documentService;
     private final FeatureService featureService;
-    private final GraphDBService graphDBService;
+    private final GraphDBServiceImpl graphDBServiceImpl;
     private final InductiveKnowledgeService inductiveKnowledgeService;
     private final MobileApplicationService mobileApplicationService;
     private final NLFeatureService nlFeatureService;
@@ -31,7 +31,7 @@ public class ServiceFactoryImpl implements ServiceFactory {
                               AppDataScannerService appDataScannerService,
                               DocumentService documentService,
                               FeatureService featureService,
-                              GraphDBService graphDBService,
+                              GraphDBServiceImpl graphDBServiceImpl,
                               InductiveKnowledgeService inductiveKnowledgeService,
                               MobileApplicationService mobileApplicationService,
                               NLFeatureService nlFeatureService,
@@ -41,7 +41,7 @@ public class ServiceFactoryImpl implements ServiceFactory {
         this.appDataScannerService = appDataScannerService;
         this.documentService = documentService;
         this.featureService = featureService;
-        this.graphDBService = graphDBService;
+        this.graphDBServiceImpl = graphDBServiceImpl;
         this.inductiveKnowledgeService = inductiveKnowledgeService;
         this.mobileApplicationService = mobileApplicationService;
         this.nlFeatureService = nlFeatureService;
@@ -59,8 +59,8 @@ public class ServiceFactoryImpl implements ServiceFactory {
             return documentService;
         } else if (clazz == FeatureService.class) {
             return featureService;
-        } else if (clazz == GraphDBService.class) {
-            return graphDBService;
+        } else if (clazz == GraphDBServiceImpl.class) {
+            return graphDBServiceImpl;
         } else if (clazz == InductiveKnowledgeService.class) {
             return inductiveKnowledgeService;
         } else if (clazz == MobileApplicationService.class) {

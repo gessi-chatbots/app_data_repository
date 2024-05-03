@@ -15,7 +15,7 @@ import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.exception.*;
 import upc.edu.gessi.repo.service.impl.AnalysisServiceImpl;
 import upc.edu.gessi.repo.service.impl.MobileApplicationServiceImpl;
-import upc.edu.gessi.repo.service.impl.GraphDBService;
+import upc.edu.gessi.repo.service.impl.GraphDBServiceImpl;
 
 import java.io.File;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
 public class MobileApplicationsController implements MobileApplicationsAPI {
     private final Logger logger = LoggerFactory.getLogger(MobileApplicationsController.class);
 
-    private final GraphDBService dbConnection;
+    private final GraphDBServiceImpl dbConnection;
     private final MobileApplicationServiceImpl mobileApplicationServiceImpl;
 
     private final ExceptionHandlers exceptionHandlers;
@@ -32,11 +32,11 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
     private final AnalysisServiceImpl analysisServiceImpl;
     @Autowired
-    public MobileApplicationsController(final GraphDBService graphDBService,
+    public MobileApplicationsController(final GraphDBServiceImpl graphDBServiceImpl,
                                         final MobileApplicationServiceImpl mobileApplicationServiceImpl,
                                         final AnalysisServiceImpl analysisSv,
                                         final ExceptionHandlers exceptionHandl) {
-        this.dbConnection = graphDBService;
+        this.dbConnection = graphDBServiceImpl;
         this.mobileApplicationServiceImpl = mobileApplicationServiceImpl;
         this.analysisServiceImpl = analysisSv;
         this.exceptionHandlers = exceptionHandl;

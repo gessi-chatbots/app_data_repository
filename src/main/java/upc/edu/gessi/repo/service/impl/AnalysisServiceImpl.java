@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.Analysis.*;
+import upc.edu.gessi.repo.service.AnalysisService;
 import upc.edu.gessi.repo.util.AnalysisQueryBuilder;
 
 import java.text.ParseException;
@@ -20,7 +21,7 @@ import java.util.List;
 
 
 @Service
-public class AnalysisServiceImpl {
+public class AnalysisServiceImpl implements AnalysisService {
 
     private final HTTPRepository repository;
 

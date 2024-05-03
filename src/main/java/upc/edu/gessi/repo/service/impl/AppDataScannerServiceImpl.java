@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplicationDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
+import upc.edu.gessi.repo.service.AppDataScannerService;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -24,9 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AppDataScannerServiceImpl {
+public class AppDataScannerServiceImpl implements AppDataScannerService {
 
-    private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeService.class);
+    private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
 
     @Value("${scanner-service.url}")
     private String url;

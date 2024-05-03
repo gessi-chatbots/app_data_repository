@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.graph.*;
+import upc.edu.gessi.repo.service.FeatureService;
 import upc.edu.gessi.repo.util.FeatureQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
@@ -23,47 +24,47 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class FeatureService {
+public class FeatureServiceImpl implements FeatureService {
 
-    private Logger logger = LoggerFactory.getLogger(FeatureService.class);
+    private Logger logger = LoggerFactory.getLogger(FeatureServiceImpl.class);
 
     private final HTTPRepository repository;
     private final SchemaIRI schemaIRI;
-    private final InductiveKnowledgeService inductiveKnowledgeService;
-    private final ReviewService reviewService;
+    private final InductiveKnowledgeServiceImpl inductiveKnowledgeServiceImpl;
+    private final ReviewServiceImpl reviewServiceImpl;
 
     private final MobileApplicationServiceImpl applicationService;
-    private final NLFeatureService nlFeatureService;
+    private final NLFeatureServiceImpl nlFeatureServiceImpl;
     private final ValueFactory factory = SimpleValueFactory.getInstance();
-    private final DocumentService documentService;
+    private final DocumentServiceImpl documentServiceImpl;
 
     private final FeatureQueryBuilder featureQueryBuilder;
 
     @Autowired
-    public FeatureService(
+    public FeatureServiceImpl(
             final @Value("${db.url}") String url,
             final @Value("${db.username}") String username,
             final @Value("${db.password}") String password,
             final SchemaIRI schema,
-            final NLFeatureService nlFeatureService,
+            final NLFeatureServiceImpl nlFeatureServiceImpl,
             final MobileApplicationServiceImpl applicationSv,
-            final DocumentService documentSv,
-            final InductiveKnowledgeService iks,
-            final ReviewService revSv,
+            final DocumentServiceImpl documentSv,
+            final InductiveKnowledgeServiceImpl iks,
+            final ReviewServiceImpl revSv,
             final FeatureQueryBuilder ftQueryBuilder) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         schemaIRI = schema;
-        this.nlFeatureService = nlFeatureService;
+        this.nlFeatureServiceImpl = nlFeatureServiceImpl;
         applicationService = (MobileApplicationServiceImpl) applicationSv;
-        documentService = documentSv;
-        inductiveKnowledgeService = iks;
-        reviewService = revSv;
+        documentServiceImpl = documentSv;
+        inductiveKnowledgeServiceImpl = iks;
+        reviewServiceImpl = revSv;
         featureQueryBuilder = ftQueryBuilder;
     }
 
     private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
-        List<AnalyzedDocument> features = nlFeatureService.getNLFeatures(analyzedDocuments);
+        List<AnalyzedDocument> features = nlFeatureServiceImpl.getNLFeatures(analyzedDocuments);
         List<Statement> statements = new ArrayList<>();
 
         for (int i = 0; i < features.size(); ++i) {
@@ -272,7 +273,7 @@ public class FeatureService {
             ++count;
 
             //Add documents
-            List<GraphDocument> graphDocuments = documentService.getDocumentsByApp(app.getNodeId());
+            List<GraphDocument> graphDocuments = documentServiceImpl.getDocumentsByApp(app.getNodeId());
             nodes.addAll(graphDocuments);
             for (GraphDocument document : graphDocuments) {
                 edges.add(new GraphEdge(app.getNodeId(), document.getNodeId()));
@@ -292,7 +293,7 @@ public class FeatureService {
             }
 
             //Add reviews
-            List<GraphReview> graphReviews = reviewService.getReviews(app.getNodeId());
+            List<GraphReview> graphReviews = reviewServiceImpl.getReviews(app.getNodeId());
             nodes.addAll(graphReviews);
             for (GraphReview graphReview : graphReviews) {
                 edges.add(new GraphEdge(app.getNodeId(), graphReview.getNodeId()));
@@ -303,8 +304,8 @@ public class FeatureService {
                     edges.add(new GraphEdge(graphReview.getNodeId(), feature.getNodeId()));
                 }
             }
-            inductiveKnowledgeService.addNodes(nodes);
-            inductiveKnowledgeService.addEdges(edges);
+            inductiveKnowledgeServiceImpl.addNodes(nodes);
+            inductiveKnowledgeServiceImpl.addEdges(edges);
         }
         //return new Graph(nodes, edges);
     }

@@ -8,20 +8,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.graph.GraphDocument;
+import upc.edu.gessi.repo.service.DocumentService;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class DocumentService {
+public class DocumentServiceImpl implements DocumentService {
 
     private final HTTPRepository repository;
 
     @Autowired
-    public DocumentService(final @Value("${db.url}") String url,
-                                 final @Value("${db.username}") String username,
-                                 final @Value("${db.password}") String password) {
+    public DocumentServiceImpl(final @Value("${db.url}") String url,
+                               final @Value("${db.username}") String username,
+                               final @Value("${db.password}") String password) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
     }

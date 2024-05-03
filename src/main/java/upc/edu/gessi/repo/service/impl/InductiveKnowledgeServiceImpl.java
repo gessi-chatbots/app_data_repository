@@ -12,14 +12,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
+import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 @Service
-public class InductiveKnowledgeService {
+public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService {
 
-    private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeService.class);
+    private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
 
     @Value("${inductive-knowledge-service.url}")
     private String url;

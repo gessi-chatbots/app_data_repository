@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.ReviewsAPI;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.exception.*;
-import upc.edu.gessi.repo.service.impl.ReviewService;
+import upc.edu.gessi.repo.service.impl.ReviewServiceImpl;
 
 import java.util.List;
 
@@ -18,11 +18,11 @@ import java.util.List;
 public class ReviewsController implements ReviewsAPI {
     private final Logger logger = LoggerFactory.getLogger(ReviewsController.class);
 
-    private final ReviewService reviewService;
+    private final ReviewServiceImpl reviewServiceImpl;
 
     @Autowired
-    public ReviewsController(final ReviewService reviewSv) {
-        reviewService = reviewSv;
+    public ReviewsController(final ReviewServiceImpl reviewSv) {
+        reviewServiceImpl = reviewSv;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class ReviewsController implements ReviewsAPI {
 
     @Override
     public ResponseEntity<List<ReviewDTO>> create(List<ReviewDTO> reviewDTOList) {
-        return new ResponseEntity<>(reviewService.addReviews(reviewDTOList), HttpStatus.CREATED);
+        return new ResponseEntity<>(reviewServiceImpl.addReviews(reviewDTOList), HttpStatus.CREATED);
     }
 
     @Override

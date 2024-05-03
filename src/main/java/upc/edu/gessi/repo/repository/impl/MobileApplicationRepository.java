@@ -18,7 +18,7 @@ import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.RdfRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
-import upc.edu.gessi.repo.service.impl.ReviewService;
+import upc.edu.gessi.repo.service.impl.ReviewServiceImpl;
 import upc.edu.gessi.repo.util.ApplicationQueryBuilder;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
@@ -41,7 +41,7 @@ public class MobileApplicationRepository<T> implements RdfRepository {
 
     private final ApplicationQueryBuilder applicationQueryBuilder;
 
-    private final ReviewService reviewService;
+    private final ReviewServiceImpl reviewServiceImpl;
     private final ReviewQueryBuilder reviewQueryBuilder;
     @Autowired
     public MobileApplicationRepository(final @Value("${db.url}") String url,
@@ -51,12 +51,12 @@ public class MobileApplicationRepository<T> implements RdfRepository {
                                        final SchemaIRI schema,
                                        final ApplicationQueryBuilder appQB,
                                        final ReviewQueryBuilder reviewQB,
-                                       final ReviewService reviewSv) {
+                                       final ReviewServiceImpl reviewSv) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         appDataScannerServiceImpl = appDataScannerServ;
         schemaIRI = schema;
-        reviewService = reviewSv;
+        reviewServiceImpl = reviewSv;
         applicationQueryBuilder = appQB;
         reviewQueryBuilder = reviewQB;
     }
@@ -146,7 +146,7 @@ public class MobileApplicationRepository<T> implements RdfRepository {
                     while (sentencesResult.hasNext()) {
                         reviewResponseDTO
                                 .getSentences()
-                                .add(reviewService.getSentenceDTO(sentencesResult));
+                                .add(reviewServiceImpl.getSentenceDTO(sentencesResult));
                     }
                     mobileApplicationDTO.getReviewDTOS().add(reviewResponseDTO);
                 } else if (predicateValue.equals(nameIRI)) {
@@ -269,7 +269,7 @@ public class MobileApplicationRepository<T> implements RdfRepository {
         if (mobileApplicationDTO.getFeatures() != null) {
             addFeaturesToApplication(mobileApplicationDTO, applicationIRI, statements);
         }
-        reviewService.addCompleteReviewsToApplication(mobileApplicationDTO, applicationIRI, statements);
+        reviewServiceImpl.addCompleteReviewsToApplication(mobileApplicationDTO, applicationIRI, statements);
 
         commitChanges(statements);
 

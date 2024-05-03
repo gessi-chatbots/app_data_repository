@@ -8,8 +8,8 @@ import upc.edu.gessi.repo.controller.InductiveKnowledgeAPI;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
 import upc.edu.gessi.repo.dto.SimilarityApp;
-import upc.edu.gessi.repo.service.impl.GraphDBService;
-import upc.edu.gessi.repo.service.impl.SimilarityService;
+import upc.edu.gessi.repo.service.impl.GraphDBServiceImpl;
+import upc.edu.gessi.repo.service.impl.SimilarityServiceImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -18,10 +18,10 @@ import java.util.Map;
 public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
 
     @Autowired
-    private GraphDBService dbConnection;
+    private GraphDBServiceImpl dbConnection;
 
     @Autowired
-    private SimilarityService similarityService;
+    private SimilarityServiceImpl similarityServiceImpl;
 
     private final Logger logger = LoggerFactory.getLogger(InductiveKnowledgeController.class);
 
@@ -71,13 +71,13 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     @Override
     @PostMapping("computeFeatureSimilarity")
     public void computeFeatureSimilarity(@RequestParam(defaultValue = "0.5", name = "threshold") double synonymThreshold) {
-        similarityService.computeFeatureSimilarity(synonymThreshold);
+        similarityServiceImpl.computeFeatureSimilarity(synonymThreshold);
     }
 
     @Override
     @DeleteMapping("deleteFeatureSimilarities")
     public void deleteFeatureSimilarities() {
-        similarityService.deleteFeatureSimilarities();
+        similarityServiceImpl.deleteFeatureSimilarities();
     }
 
     /**
@@ -95,7 +95,7 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     public Map<String, List<SimilarityApp>> getTopKSimilarApps(@RequestBody List<String> apps,
                                                                @RequestParam Integer k,
                                                                @RequestParam DocumentType documentType) {
-        return similarityService.getTopKSimilarApps(apps, k, documentType);
+        return similarityServiceImpl.getTopKSimilarApps(apps, k, documentType);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     public Map<String, List<SimilarityApp>> findAppsByFeature(@RequestBody List<String> features,
                                                               @RequestParam Integer k,
                                                               @RequestParam DocumentType documentType) {
-        return similarityService.findAppsByFeature(features, k, documentType);
+        return similarityServiceImpl.findAppsByFeature(features, k, documentType);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     public List<SimilarityApp> findAppsByFeatures(@RequestBody List<String> features,
                                                   @RequestParam Integer k,
                                                   @RequestParam DocumentType documentType) {
-        return similarityService.findAppsByFeatures(features, k, documentType);
+        return similarityServiceImpl.findAppsByFeatures(features, k, documentType);
     }
 
 }

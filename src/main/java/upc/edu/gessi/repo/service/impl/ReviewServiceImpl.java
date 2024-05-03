@@ -20,6 +20,7 @@ import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 import upc.edu.gessi.repo.repository.impl.ReviewRepository;
+import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
@@ -34,7 +35,7 @@ import java.util.List;
 
 
 @Service
-public class ReviewService {
+public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final HTTPRepository repository;
@@ -45,12 +46,12 @@ public class ReviewService {
     private final ReviewQueryBuilder reviewQueryBuilder;
 
     @Autowired
-    public ReviewService(final @org.springframework.beans.factory.annotation.Value("${db.url}") String url,
-                         final @org.springframework.beans.factory.annotation.Value("${db.username}") String username,
-                         final @org.springframework.beans.factory.annotation.Value("${db.password}") String password,
-                         final ReviewRepository reviewRep,
-                         final SchemaIRI schIRI,
-                         final ReviewQueryBuilder reviewQB) {
+    public ReviewServiceImpl(final @org.springframework.beans.factory.annotation.Value("${db.url}") String url,
+                             final @org.springframework.beans.factory.annotation.Value("${db.username}") String username,
+                             final @org.springframework.beans.factory.annotation.Value("${db.password}") String password,
+                             final ReviewRepository reviewRep,
+                             final SchemaIRI schIRI,
+                             final ReviewQueryBuilder reviewQB) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         reviewRepository = reviewRep;

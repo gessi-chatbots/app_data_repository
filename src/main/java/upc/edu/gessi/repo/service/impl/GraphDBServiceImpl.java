@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import upc.edu.gessi.repo.service.GraphDBService;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.io.File;
@@ -30,15 +31,15 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 @Service
-public class GraphDBService {
+public class GraphDBServiceImpl implements GraphDBService {
 
-    private Logger logger = LoggerFactory.getLogger(GraphDBService.class);
+    private Logger logger = LoggerFactory.getLogger(GraphDBServiceImpl.class);
 
     private HTTPRepository repository;
 
-    public GraphDBService(@Value("${db.url}") String url,
-                          @Value("${db.username}") String username,
-                          @Value("${db.password}") String password) {
+    public GraphDBServiceImpl(@Value("${db.url}") String url,
+                              @Value("${db.username}") String username,
+                              @Value("${db.password}") String password) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
     }

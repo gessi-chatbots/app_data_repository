@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.AnalyzedDocument;
+import upc.edu.gessi.repo.service.NLFeatureService;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.io.IOException;
@@ -20,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class NLFeatureService {
+public class NLFeatureServiceImpl implements NLFeatureService {
 
-    private Logger logger = LoggerFactory.getLogger(NLFeatureService.class);
+    private Logger logger = LoggerFactory.getLogger(NLFeatureServiceImpl.class);
 
     @Value("${nl-feature-extraction.url}")
     private String nlFeatureExtractionEndpoint;
