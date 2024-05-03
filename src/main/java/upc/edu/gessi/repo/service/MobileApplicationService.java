@@ -10,7 +10,7 @@ import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
 
-public interface MobileApplicationService {
+public interface MobileApplicationService extends CrudService<MobileApplicationDTO>{
     List findAll(boolean simplified) throws ApplicationNotFoundException;
 
     List findAllPaginated(Integer page, Integer size) throws ApplicationNotFoundException;

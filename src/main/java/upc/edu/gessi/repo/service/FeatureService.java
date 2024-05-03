@@ -1,4 +1,6 @@
 package upc.edu.gessi.repo.service;
 
-public interface FeatureService {
+import upc.edu.gessi.repo.dto.Feature;
+
+public interface FeatureService extends CrudService<Feature> {
 }

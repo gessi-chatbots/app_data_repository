@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.graph.*;
+import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.service.FeatureService;
 import upc.edu.gessi.repo.util.FeatureQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
@@ -312,4 +313,38 @@ public class FeatureServiceImpl implements FeatureService {
         //return new Graph(nodes, edges);
     }
 
+    @Override
+    public List<Feature> create(List<Feature> entity) {
+        return null;
+    }
+
+    @Override
+    public Feature get(String id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Feature> getListed(List<String> id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Feature> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return null;
+    }
+
+    @Override
+    public List<Feature> getAll() {
+        return null;
+    }
+
+    @Override
+    public Feature update(Feature entity) {
+        return null;
+    }
+
+    @Override
+    public Void delete() {
+        return null;
+    }
 }

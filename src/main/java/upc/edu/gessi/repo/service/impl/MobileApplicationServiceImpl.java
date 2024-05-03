@@ -70,6 +70,41 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         mobileApplicationRepository.addFeaturesToApplication(mobileApplicationDTO, sub, statements);
     }
 
+    @Override
+    public List<MobileApplicationDTO> create(List<MobileApplicationDTO> entity) {
+        return null;
+    }
+
+    @Override
+    public MobileApplicationDTO get(String id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<MobileApplicationDTO> getListed(List<String> id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<MobileApplicationDTO> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return null;
+    }
+
+    @Override
+    public List<MobileApplicationDTO> getAll() {
+        return null;
+    }
+
+    @Override
+    public MobileApplicationDTO update(MobileApplicationDTO entity) {
+        return null;
+    }
+
+    @Override
+    public Void delete() {
+        return null;
+    }
+
     /*
         public List<String> getResultsContaining(String text) {
             RepositoryConnection repoConnection = repository.getConnection();

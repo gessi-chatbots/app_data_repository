@@ -20,6 +20,7 @@ import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
+import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.impl.ReviewRepository;
 import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
@@ -372,4 +373,38 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
+    @Override
+    public List<ReviewDTO> create(List<ReviewDTO> entity) {
+        return null;
+    }
+
+    @Override
+    public ReviewDTO get(String id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<ReviewDTO> getListed(List<String> id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<ReviewDTO> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return null;
+    }
+
+    @Override
+    public List<ReviewDTO> getAll() {
+        return null;
+    }
+
+    @Override
+    public ReviewDTO update(ReviewDTO entity) {
+        return null;
+    }
+
+    @Override
+    public Void delete() {
+        return null;
+    }
 }

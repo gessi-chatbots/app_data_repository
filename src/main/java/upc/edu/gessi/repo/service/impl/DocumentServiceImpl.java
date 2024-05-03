@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import upc.edu.gessi.repo.dto.Document;
 import upc.edu.gessi.repo.dto.graph.GraphDocument;
+import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.service.DocumentService;
 import upc.edu.gessi.repo.util.Utils;
 
@@ -57,4 +59,38 @@ public class DocumentServiceImpl implements DocumentService {
         return apps;
     }
 
+    @Override
+    public List<Document> create(List<Document> entity) {
+        return null;
+    }
+
+    @Override
+    public Document get(String id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Document> getListed(List<String> id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Document> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return null;
+    }
+
+    @Override
+    public List<Document> getAll() {
+        return null;
+    }
+
+    @Override
+    public Document update(Document entity) {
+        return null;
+    }
+
+    @Override
+    public Void delete() {
+        return null;
+    }
 }

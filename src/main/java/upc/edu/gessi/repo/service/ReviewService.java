@@ -1,4 +1,6 @@
 package upc.edu.gessi.repo.service;
 
-public interface ReviewService {
+import upc.edu.gessi.repo.dto.Review.ReviewDTO;
+
+public interface ReviewService extends CrudService<ReviewDTO> {
 }
