@@ -4,6 +4,7 @@ package upc.edu.gessi.repo.service.impl;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplicationDTO;
 import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
@@ -18,6 +19,7 @@ import java.util.List;
 
 
 @Service
+@Lazy
 public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     private final MobileApplicationRepository mobileApplicationRepository;

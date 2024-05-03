@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.Analysis.*;
 import upc.edu.gessi.repo.service.AnalysisService;
@@ -21,6 +22,7 @@ import java.util.List;
 
 
 @Service
+@Lazy
 public class AnalysisServiceImpl implements AnalysisService {
 
     private final HTTPRepository repository;

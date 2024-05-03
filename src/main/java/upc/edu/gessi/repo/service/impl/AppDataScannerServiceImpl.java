@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplicationDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Lazy
 public class AppDataScannerServiceImpl implements AppDataScannerService {
 
     private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);

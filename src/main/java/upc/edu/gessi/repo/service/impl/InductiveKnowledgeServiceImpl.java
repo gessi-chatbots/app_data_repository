@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
@@ -18,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 @Service
+@Lazy
 public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService {
 
     private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
