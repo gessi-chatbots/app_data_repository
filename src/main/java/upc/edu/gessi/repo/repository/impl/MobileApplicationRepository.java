@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Repository
-public class MobileApplicationRepository<T> implements RdfRepository {
+public class MobileApplicationRepository implements RdfRepository {
 
     private final HTTPRepository repository;
 
