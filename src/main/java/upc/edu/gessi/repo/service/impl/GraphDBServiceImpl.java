@@ -37,6 +37,8 @@ public class GraphDBServiceImpl implements GraphDBService {
 
     private HTTPRepository repository;
 
+    private int count;
+
     public GraphDBServiceImpl(@Value("${db.url}") String url,
                               @Value("${db.username}") String username,
                               @Value("${db.password}") String password) {
@@ -44,14 +46,15 @@ public class GraphDBServiceImpl implements GraphDBService {
         repository.setUsernameAndPassword(username, password);
     }
 
+    @Override
     public void updateRepository(String url) {
         repository = new HTTPRepository(url);
     }
 
-    private int count;
-
+    @Override
     public int getCount() {return count;}
 
+    @Override
     public void deleteSameAsRelations() {
         String query = "delete where { \n" +
                 "    ?x <https://schema.org/sameAs> ?z .\n" +
@@ -64,6 +67,7 @@ public class GraphDBServiceImpl implements GraphDBService {
         logger.info(counter + " similarity relations deleted");
     }
 
+    @Override
     public void exportRepository(String fileName) throws Exception {
         RepositoryConnection connection = repository.getConnection();
         FileOutputStream outputStream = new FileOutputStream("src/main/resources/exports/" + fileName);
@@ -73,6 +77,7 @@ public class GraphDBServiceImpl implements GraphDBService {
     }
 
 
+    @Override
     public void insertRDF(MultipartFile file) throws Exception {
         // Parse the Turtle file into an RDF model
         try (InputStream inputStream = file.getInputStream()) {
@@ -87,6 +92,7 @@ public class GraphDBServiceImpl implements GraphDBService {
         }
     }
 
+    @Override
     public void insertRML(String jsonFolder, File mappingFile) throws Exception {
         InputStream mappingStream = new FileInputStream(mappingFile);
         QuadStore rmlStore = QuadStoreFactory.read(mappingStream);

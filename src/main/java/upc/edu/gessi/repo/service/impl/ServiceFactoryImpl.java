@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import upc.edu.gessi.repo.service.*;
 import upc.edu.gessi.repo.service.AnalysisService;
@@ -13,6 +14,7 @@ import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.service.SimilarityService;
 
 @Component
+@Lazy
 public class ServiceFactoryImpl implements ServiceFactory {
 
     private final AnalysisService analysisService;
@@ -50,7 +52,7 @@ public class ServiceFactoryImpl implements ServiceFactory {
     }
 
     @Override
-    public Object createService(Class<?> clazz) {
+    public Object createService(final Class<?> clazz) {
         if (clazz == AnalysisService.class) {
             return analysisService;
         } else if (clazz == AppDataScannerService.class) {

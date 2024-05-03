@@ -27,19 +27,27 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         mobileApplicationRepository = appRepository;
     }
 
+    @Override
     public List findAll(boolean simplified) throws ApplicationNotFoundException {
         return simplified ? mobileApplicationRepository.findAllSimplified() : mobileApplicationRepository.findAll();
     }
+
+    @Override
     public List findAllPaginated(final Integer page, final Integer size) throws ApplicationNotFoundException {
         return mobileApplicationRepository.findAllSimplifiedPaginated(page, size);
     }
+
+    @Override
     public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
         return  (List<ApplicationSimplifiedDTO>) mobileApplicationRepository.findAllApplicationNames();
     }
+
+    @Override
     public MobileApplicationDTO findByName(final String appName) throws ObjectNotFoundException {
         return mobileApplicationRepository.findByName(appName);
     }
 
+    @Override
     public List<MobileApplicationDTO> insertApps(final List<MobileApplicationDTO> mobileApplicationDTOS) {
         List<MobileApplicationDTO> insertedApps = new ArrayList<>();
         for (MobileApplicationDTO mobileApplicationDTO : mobileApplicationDTOS) {
@@ -48,10 +56,12 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         return insertedApps;
     }
 
+    @Override
     public List<GraphApp> getAllApps() {
         return mobileApplicationRepository.getAllApps();
     }
 
+    @Override
     public void addFeatures(final MobileApplicationDTO mobileApplicationDTO,
                             final IRI sub,
                             final List<Statement> statements) {

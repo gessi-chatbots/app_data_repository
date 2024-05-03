@@ -13,6 +13,10 @@ import upc.edu.gessi.repo.controller.ExceptionHandlers;
 import upc.edu.gessi.repo.controller.MobileApplicationsAPI;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.exception.*;
+import upc.edu.gessi.repo.service.AnalysisService;
+import upc.edu.gessi.repo.service.GraphDBService;
+import upc.edu.gessi.repo.service.MobileApplicationService;
+import upc.edu.gessi.repo.service.ServiceFactory;
 import upc.edu.gessi.repo.service.impl.AnalysisServiceImpl;
 import upc.edu.gessi.repo.service.impl.MobileApplicationServiceImpl;
 import upc.edu.gessi.repo.service.impl.GraphDBServiceImpl;
@@ -24,22 +28,16 @@ import java.util.List;
 public class MobileApplicationsController implements MobileApplicationsAPI {
     private final Logger logger = LoggerFactory.getLogger(MobileApplicationsController.class);
 
-    private final GraphDBServiceImpl dbConnection;
-    private final MobileApplicationServiceImpl mobileApplicationServiceImpl;
-
     private final ExceptionHandlers exceptionHandlers;
 
+    private final ServiceFactory serviceFactory;
 
-    private final AnalysisServiceImpl analysisServiceImpl;
+
     @Autowired
-    public MobileApplicationsController(final GraphDBServiceImpl graphDBServiceImpl,
-                                        final MobileApplicationServiceImpl mobileApplicationServiceImpl,
-                                        final AnalysisServiceImpl analysisSv,
-                                        final ExceptionHandlers exceptionHandl) {
-        this.dbConnection = graphDBServiceImpl;
-        this.mobileApplicationServiceImpl = mobileApplicationServiceImpl;
-        this.analysisServiceImpl = analysisSv;
+    public MobileApplicationsController(final ExceptionHandlers exceptionHandl,
+                                        final ServiceFactory serviceFactory) {
         this.exceptionHandlers = exceptionHandl;
+        this.serviceFactory = serviceFactory;
     }
 
     @Value("${rml.path}")
@@ -51,14 +49,14 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
     @Override
     public ResponseEntity<List<MobileApplicationDTO>> create(final List<MobileApplicationDTO> mobileApplications) {
-        return new ResponseEntity<>(mobileApplicationServiceImpl.insertApps(mobileApplications), HttpStatus.CREATED);
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).insertApps(mobileApplications), HttpStatus.CREATED);
     }
 
     @Override
     public ResponseEntity<String> createViaRMLFormat(final String jsonFolder) {
         try {
             File mappingFile = Utils.getFile(rmlPath);
-            dbConnection.insertRML(jsonFolder, mappingFile);
+            ((GraphDBService) useService(GraphDBService.class)).insertRML(jsonFolder, mappingFile);
             return new ResponseEntity<>("RML data inserted successfully", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Error inserting RML data: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -71,7 +69,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
             if (file.isEmpty()) {
                 return new ResponseEntity<>("File is empty", HttpStatus.BAD_REQUEST);
             }
-            dbConnection.insertRDF(file);
+            ((GraphDBService) useService(GraphDBService.class)).insertRDF(file);
             return new ResponseEntity<>("RDF data inserted successfully", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Error inserting RDF data: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -82,7 +80,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     public ResponseEntity<List<MobileApplicationDTO>> getAllPaginated(final boolean paginated,
                                                                       final Integer page,
                                                                       final Integer size) throws ObjectNotFoundException {
-        return new ResponseEntity<>(mobileApplicationServiceImpl.findAllPaginated(page, size), HttpStatus.OK);
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).findAllPaginated(page, size), HttpStatus.OK);
 
     }
 
@@ -105,18 +103,18 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
     @Override
     public ResponseEntity<List<ApplicationSimplifiedDTO>> getAllApplicationsNames() throws ApplicationNotFoundException {
-        return new ResponseEntity<>(mobileApplicationServiceImpl.findAllApplicationNames(), HttpStatus.OK);
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).findAllApplicationNames(), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<List<String>> getApplicationFeatures(final String appName) {
-        return new ResponseEntity<>(analysisServiceImpl.findAppFeatures(appName), HttpStatus.OK);
+        return new ResponseEntity<>(((AnalysisService) useService(AnalysisService.class)).findAppFeatures(appName), HttpStatus.OK);
     }
 
     @Override
     public void export(final String fileName) throws Exception{
         logger.info("Initializing export...");
-        dbConnection.exportRepository(fileName);
+        ((GraphDBService) useService(GraphDBService.class)).exportRepository(fileName);
         logger.info("Repository successfully exported at " + fileName);
     }
 
@@ -128,12 +126,16 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     @Override
     public void updateRepository(final String url) {
         logger.info("Updating repo");
-        dbConnection.updateRepository(url);
+        ((GraphDBService) useService(GraphDBService.class)).updateRepository(url);
         logger.info("Repository updated");
     }
 
     @Override
     public ResponseEntity<Void> delete() {
         return null;
+    }
+
+    private Object useService(Class<?> clazz) {
+        return serviceFactory.createService(clazz);
     }
 }

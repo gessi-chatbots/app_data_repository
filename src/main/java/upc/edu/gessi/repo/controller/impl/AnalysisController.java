@@ -9,7 +9,8 @@ import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
 import upc.edu.gessi.repo.exception.MissingBodyException;
-import upc.edu.gessi.repo.service.impl.AnalysisServiceImpl;
+import upc.edu.gessi.repo.service.AnalysisService;
+import upc.edu.gessi.repo.service.ServiceFactory;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -18,11 +19,13 @@ import java.util.List;
 @RestController
 public class AnalysisController implements AnalysisAPI {
     private final Logger logger = LoggerFactory.getLogger(AnalysisController.class);
-    private final AnalysisServiceImpl analysisServiceImpl;
+
+    private final ServiceFactory serviceFactory;
+
 
     @Autowired
-    public AnalysisController(final AnalysisServiceImpl analysisSv) {
-        this.analysisServiceImpl = analysisSv;
+    public AnalysisController(final ServiceFactory serviceFactory) {
+        this.serviceFactory = serviceFactory;
     }
 
     @Override
@@ -37,13 +40,13 @@ public class AnalysisController implements AnalysisAPI {
     @Override
     public TopSentimentsDTO getTopSentimentsByAppNames(final List<String> appNames) throws MissingBodyException {
         validateAppNames(appNames);
-        return analysisServiceImpl.findTopSentimentsByApps(appNames);
+        return useAnalysisService().findTopSentimentsByApps(appNames);
     }
 
     @Override
     public TopFeaturesDTO getTopFeaturesByAppNames(final List<String> appNames)  throws MissingBodyException {
         validateAppNames(appNames);
-        return analysisServiceImpl.findTopFeaturesByApps(appNames);
+        return useAnalysisService().findTopFeaturesByApps(appNames);
     }
 
     @Override
@@ -56,7 +59,11 @@ public class AnalysisController implements AnalysisAPI {
             endDateAux = Calendar.getInstance().getTime();
         }
 
-        return analysisServiceImpl.getApplicationStatistics(appName, startDate, endDateAux);
+        return useAnalysisService().getApplicationStatistics(appName, startDate, endDateAux);
+    }
+
+    private AnalysisService useAnalysisService() {
+        return (AnalysisService) serviceFactory.createService(AnalysisService.class);
     }
 
 }

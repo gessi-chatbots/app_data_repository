@@ -154,6 +154,8 @@ public class AnalysisServiceImpl implements AnalysisService {
         return tupleQuery.evaluate();
     }
 
+    @Override
+
     public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName, final Date startDate, final Date endDate) {
         String query = analysisQueryBuilder.findStatisticBetweenDates(appName, startDate, endDate);
         HashMap<Date, ApplicationDayStatisticsDTO> statisticsMap = new HashMap<>();
@@ -175,6 +177,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         return new ArrayList<>(statisticsMap.values());
     }
 
+    @Override
     public TopSentimentsDTO findTopSentimentsByApps(final List<String> appNames){
         String query = analysisQueryBuilder.findTopSentimentsByAppNamesQuery(appNames);
         TupleQueryResult result = runSparqlQuery(query);
@@ -187,7 +190,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         topSentimentsDTO.setTopSentiments(sentiments);
         return topSentimentsDTO;
     }
-
+    @Override
     public TopFeaturesDTO findTopFeaturesByApps(final List<String> appNames) {
         String query = analysisQueryBuilder.findTopFeaturesByAppNamesQuery(appNames);
         TupleQueryResult result = runSparqlQuery(query);
@@ -200,7 +203,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         topFeaturesDTO.setTopFeatures(features);
         return topFeaturesDTO;
     }
-
+    @Override
     public List<String> findAppFeatures(final String appName) {
         String query = analysisQueryBuilder.findFeaturesByAppName(appName);
         TupleQueryResult result = runSparqlQuery(query);
