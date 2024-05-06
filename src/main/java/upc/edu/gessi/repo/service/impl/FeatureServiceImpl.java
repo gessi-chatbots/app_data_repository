@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.*;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.*;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.service.FeatureService;
@@ -71,7 +72,7 @@ public class FeatureServiceImpl implements FeatureService {
         List<Statement> statements = new ArrayList<>();
 
         for (int i = 0; i < features.size(); ++i) {
-            MobileApplicationDTO completeApplicationDataDTO = new MobileApplicationDTO();
+            MobileApplicationFullDataDTO completeApplicationDataDTO = new MobileApplicationFullDataDTO();
             List<String> featureString = features.get(i).getFeatures();
             List<Feature> featureList = new ArrayList<>();
             for (String fs : featureString) {
@@ -329,7 +330,7 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public List<Feature> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<Feature> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return null;
     }
 

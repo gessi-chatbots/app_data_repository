@@ -75,7 +75,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public List<Document> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<Document> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return null;
     }
 

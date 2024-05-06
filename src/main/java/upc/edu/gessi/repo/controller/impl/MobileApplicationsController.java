@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.controller.ExceptionHandlers;
 import upc.edu.gessi.repo.controller.MobileApplicationsAPI;
-import upc.edu.gessi.repo.dto.*;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.exception.*;
 import upc.edu.gessi.repo.service.AnalysisService;
 import upc.edu.gessi.repo.service.GraphDBService;
@@ -46,7 +47,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> create(final List<MobileApplicationDTO> mobileApplications) {
+    public ResponseEntity<List<MobileApplicationFullDataDTO>> create(final List<MobileApplicationFullDataDTO> mobileApplications) {
         return new ResponseEntity<>(
                 ((MobileApplicationService) useService(MobileApplicationService.class)).create(mobileApplications),
                 HttpStatus.CREATED);
@@ -77,34 +78,38 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> getAllPaginated(final boolean paginated,
-                                                                      final Integer page,
-                                                                      final Integer size)
+    public ResponseEntity<List<MobileApplicationFullDataDTO>> getAllPaginated(final Integer page,
+                                                                              final Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAllPaginated(paginated, page, size), HttpStatus.OK);
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAllPaginated(page, size), HttpStatus.OK);
+    }
 
+    public ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsBasicDataPaginated(final Integer page,
+                                                                              final Integer size)
+            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAllBasicDataPaginated(page, size), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> getAll() {
-        return null;
-    }
-
-
-    @Override
-    public ResponseEntity<MobileApplicationDTO> get(final String id) throws ObjectNotFoundException {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<MobileApplicationDTO>> getListed(final List<String> ids) throws ObjectNotFoundException {
-        return null;
+    public ResponseEntity<List<MobileApplicationFullDataDTO>> getAll() {
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAll(), HttpStatus.OK);
     }
 
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> getAllApplicationsNames() throws ApplicationNotFoundException {
-        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).findAllApplicationNames(), HttpStatus.OK);
+    public ResponseEntity<MobileApplicationFullDataDTO> get(final String id) throws ObjectNotFoundException {
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).get(id), HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<MobileApplicationFullDataDTO>> getListed(final List<String> ids) throws ObjectNotFoundException {
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getListed(ids), HttpStatus.OK);
+    }
+
+
+    @Override
+    public ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsNames() throws ApplicationNotFoundException {
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAllBasicData(), HttpStatus.OK);
     }
 
     @Override
@@ -120,7 +125,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<MobileApplicationDTO> update(final MobileApplicationDTO entity) {
+    public ResponseEntity<MobileApplicationFullDataDTO> update(final MobileApplicationFullDataDTO entity) {
         return null;
     }
 

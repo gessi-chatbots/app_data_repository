@@ -32,7 +32,7 @@ public class DocumentsController implements DocumentsAPI {
     }
 
     @Override
-    public ResponseEntity<List<String>> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public ResponseEntity<List<String>> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return null;
     }
 

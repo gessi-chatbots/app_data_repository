@@ -11,8 +11,7 @@ public interface CrudService<T> {
 
     List<T> getListed(List<String> id) throws ObjectNotFoundException;
 
-    List<T> getAllPaginated(boolean paginated,
-                            Integer page,
+    List<T> getAllPaginated(Integer page,
                             Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
 

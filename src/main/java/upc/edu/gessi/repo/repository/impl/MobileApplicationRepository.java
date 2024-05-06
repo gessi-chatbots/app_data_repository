@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dto.*;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
@@ -66,28 +68,48 @@ public class MobileApplicationRepository implements RdfRepository {
         TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
         return tupleQuery.evaluate();
     }
-    private MobileApplicationDTO bindingSetToMobileApplicationDTO(final BindingSet bindings) {
-        MobileApplicationDTO mobileApplicationDTO = new MobileApplicationDTO();
+    private MobileApplicationFullDataDTO bindingSetToMobileApplicationFullDataDTO(final BindingSet bindings) {
+        MobileApplicationFullDataDTO mobileApplicationBasicDataDTO = new MobileApplicationFullDataDTO();
         if (bindings.getBinding("name") != null
                 && bindings.getBinding("name").getValue() != null) {
-            mobileApplicationDTO.setAppName(
+            mobileApplicationBasicDataDTO.setAppName(
                     bindings.getBinding("name").getValue().stringValue());
         }
         if (bindings.getBinding("package") != null
                 && bindings.getBinding("package").getValue() != null) {
-            mobileApplicationDTO.setPackageName(
+            mobileApplicationBasicDataDTO.setPackageName(
                     bindings.getBinding("package").getValue().stringValue());
         }
         if (bindings.getBinding("reviewCount") != null
                 && bindings.getBinding("reviewCount").getValue() != null) {
-            mobileApplicationDTO.setReviewCount(
+            mobileApplicationBasicDataDTO.setReviewCount(
                     Integer.valueOf(bindings.getBinding("reviewCount").getValue().stringValue()));
         }
-        return mobileApplicationDTO;
+        return mobileApplicationBasicDataDTO;
     }
 
-    private MobileApplicationDTO bindingSetToApplicationDTO(final TupleQueryResult result) {
-        MobileApplicationDTO mobileApplicationDTO = new MobileApplicationDTO();
+    private MobileApplicationBasicDataDTO bindingSetToMobileApplicationBasicDataDTO(final BindingSet bindings) {
+        MobileApplicationBasicDataDTO mobileApplicationBasicDataDTO = new MobileApplicationBasicDataDTO();
+        if (bindings.getBinding("name") != null
+                && bindings.getBinding("name").getValue() != null) {
+            mobileApplicationBasicDataDTO.setAppName(
+                    bindings.getBinding("name").getValue().stringValue());
+        }
+        if (bindings.getBinding("package") != null
+                && bindings.getBinding("package").getValue() != null) {
+            mobileApplicationBasicDataDTO.setPackageName(
+                    bindings.getBinding("package").getValue().stringValue());
+        }
+        if (bindings.getBinding("reviewCount") != null
+                && bindings.getBinding("reviewCount").getValue() != null) {
+            mobileApplicationBasicDataDTO.setReviewCount(
+                    Integer.valueOf(bindings.getBinding("reviewCount").getValue().stringValue()));
+        }
+        return mobileApplicationBasicDataDTO;
+    }
+
+    private MobileApplicationFullDataDTO bindingSetToApplicationDTO(final TupleQueryResult result) {
+        MobileApplicationFullDataDTO mobileApplicationFullDataDTO = new MobileApplicationFullDataDTO();
         while (result.hasNext()) {
             BindingSet bindings = result.next();
             if (existsPredicateAndObject(bindings)) {
@@ -100,7 +122,7 @@ public class MobileApplicationRepository implements RdfRepository {
                 String reviewIRI = schemaIRI.getReviewsIRI().stringValue();
                 String nameIRI = schemaIRI.getNameIRI().stringValue();
                 if (predicateValue.equals(identifierIRI)) {
-                    mobileApplicationDTO.setPackageName(bindings
+                    mobileApplicationFullDataDTO.setPackageName(bindings
                             .getBinding("object")
                             .getValue()
                             .stringValue());
@@ -110,16 +132,16 @@ public class MobileApplicationRepository implements RdfRepository {
                             .getValue()
                             .stringValue()
                             .split("https://schema.org/Organization/")[1];
-                    mobileApplicationDTO.setDeveloper(auth);
+                    mobileApplicationFullDataDTO.setDeveloper(auth);
                 } else if (predicateValue.equals(datePublishedIRI)) {
                     String dateTimeString = bindings.getBinding("object").getValue().stringValue();
                     String datePart = dateTimeString.substring(0, 10);
                     Date sqlDate = Date.valueOf(datePart);
-                    mobileApplicationDTO.setReleaseDate(sqlDate);
+                    mobileApplicationFullDataDTO.setReleaseDate(sqlDate);
                 } else if (predicateValue.equals(versionIRI)) {
-                    mobileApplicationDTO.setVersion(bindings.getBinding("object").getValue().stringValue());
+                    mobileApplicationFullDataDTO.setVersion(bindings.getBinding("object").getValue().stringValue());
                 } else if (predicateValue.equals(categoryIRI)) {
-                    mobileApplicationDTO.getCategories().add(bindings.getBinding("object").getValue().stringValue());
+                    mobileApplicationFullDataDTO.getCategories().add(bindings.getBinding("object").getValue().stringValue());
                 } else if (predicateValue.equals(reviewIRI)) {
                     String reviewId = bindings
                             .getBinding("object")
@@ -151,13 +173,13 @@ public class MobileApplicationRepository implements RdfRepository {
                                 .getSentences()
                                 .add(reviewServiceImpl.getSentenceDTO(sentencesResult));
                     }
-                    mobileApplicationDTO.getReviewDTOS().add(reviewResponseDTO);
+                    mobileApplicationFullDataDTO.getReviews().add(reviewResponseDTO);
                 } else if (predicateValue.equals(nameIRI)) {
-                    mobileApplicationDTO.setAppName(bindings.getBinding("object").getValue().stringValue());
+                    mobileApplicationFullDataDTO.setAppName(bindings.getBinding("object").getValue().stringValue());
                 }
             }
         }
-        return mobileApplicationDTO;
+        return mobileApplicationFullDataDTO;
     }
 
 
@@ -177,66 +199,66 @@ public class MobileApplicationRepository implements RdfRepository {
     }
 
     @Override
-    public List<MobileApplicationDTO> findAll() throws ApplicationNotFoundException {
+    public List<MobileApplicationFullDataDTO> findAll() throws ApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllQuery());
-        List<MobileApplicationDTO> mobileApplicationDTOS = new ArrayList<>();
+        List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
-        mobileApplicationDTOS.add(bindingSetToApplicationDTO(result));
-        return mobileApplicationDTOS;
+        mobileApplicationFullDataDTOS.add(bindingSetToApplicationDTO(result));
+        return mobileApplicationFullDataDTOS;
     }
 
-    public MobileApplicationDTO insertApp(MobileApplicationDTO mobileApplicationDTO) {
+    public MobileApplicationFullDataDTO insertApp(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
         List<Statement> statements = new ArrayList<>();
 
-        IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + mobileApplicationDTO.getPackageName());
+        IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + mobileApplicationFullDataDTO.getPackageName());
         statements.add(factory.createStatement(applicationIRI, schemaIRI.getTypeIRI(), schemaIRI.getAppIRI()));
 
-        addDeveloperToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addCategoriesToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addReleaseDateToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addCurrentVersionReleaseToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addVersionToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addAppNameToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addPackageNameToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addDescriptionToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addSummaryToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addChangelogToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addReviewDocumentToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addFeaturesToStatements(mobileApplicationDTO, statements, applicationIRI);
-        addReviewsToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addDeveloperToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addCategoriesToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addReleaseDateToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addCurrentVersionReleaseToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addVersionToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addAppNameToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addPackageNameToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addDescriptionToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addSummaryToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addChangelogToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addReviewDocumentToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addFeaturesToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
+        addReviewsToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
 
         commitChanges(statements);
 
-        return mobileApplicationDTO;
+        return mobileApplicationFullDataDTO;
     }
 
-    private void addReviewsToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        reviewServiceImpl.addCompleteReviewsToApplication(mobileApplicationDTO, applicationIRI, statements);
+    private void addReviewsToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        reviewServiceImpl.addCompleteReviewsToApplication(mobileApplicationFullDataDTO, applicationIRI, statements);
     }
 
-    private void addFeaturesToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getFeatures() != null) {
-            addFeature(mobileApplicationDTO, applicationIRI, statements);
+    private void addFeaturesToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getFeatures() != null) {
+            addFeature(mobileApplicationFullDataDTO, applicationIRI, statements);
         }
     }
 
-    private void addReviewDocumentToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addReviewDocumentToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
         addDigitalDocument(
-                mobileApplicationDTO.getPackageName(),
-                "Aggregated NL data for app " + mobileApplicationDTO.getAppName(),
+                mobileApplicationFullDataDTO.getPackageName(),
+                "Aggregated NL data for app " + mobileApplicationFullDataDTO.getAppName(),
                 statements,
                 applicationIRI,
                 schemaIRI.getReviewDocumentIRI(),
                 DocumentType.REVIEWS);
     }
 
-    private void addChangelogToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getChangelog() != null) {
+    private void addChangelogToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getChangelog() != null) {
             addDigitalDocument(
-                    mobileApplicationDTO.getPackageName(),
-                    mobileApplicationDTO.getChangelog(),
+                    mobileApplicationFullDataDTO.getPackageName(),
+                    mobileApplicationFullDataDTO.getChangelog(),
                     statements,
                     applicationIRI,
                     schemaIRI.getChangelogIRI(),
@@ -245,11 +267,11 @@ public class MobileApplicationRepository implements RdfRepository {
         }
     }
 
-    private void addSummaryToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getSummary() != null) {
+    private void addSummaryToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getSummary() != null) {
             addDigitalDocument(
-                    mobileApplicationDTO.getPackageName(),
-                    mobileApplicationDTO.getSummary(),
+                    mobileApplicationFullDataDTO.getPackageName(),
+                    mobileApplicationFullDataDTO.getSummary(),
                     statements,
                     applicationIRI,
                     schemaIRI.getSummaryIRI(),
@@ -258,11 +280,11 @@ public class MobileApplicationRepository implements RdfRepository {
         }
     }
 
-    private void addDescriptionToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getDescription() != null) {
+    private void addDescriptionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getDescription() != null) {
                 addDigitalDocument(
-                    mobileApplicationDTO.getPackageName(),
-                    mobileApplicationDTO.getDescription(),
+                    mobileApplicationFullDataDTO.getPackageName(),
+                    mobileApplicationFullDataDTO.getDescription(),
                         statements,
                         applicationIRI,
                     schemaIRI.getDescriptionIRI(),
@@ -271,72 +293,72 @@ public class MobileApplicationRepository implements RdfRepository {
         }
     }
 
-    private void addPackageNameToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getPackageName() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(mobileApplicationDTO.getPackageName())));
+    private void addPackageNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getPackageName() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getPackageName())));
         }
     }
 
-    private void addAppNameToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getAppName() != null) {
-            String sanitizedName = Utils.sanitizeString(mobileApplicationDTO.getAppName());
+    private void addAppNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getAppName() != null) {
+            String sanitizedName = Utils.sanitizeString(mobileApplicationFullDataDTO.getAppName());
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getNameIRI(), factory.createLiteral(sanitizedName)));
         }
     }
 
-    private void addVersionToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getVersion() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(mobileApplicationDTO.getVersion())));
+    private void addVersionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getVersion() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getVersion())));
         }
     }
 
-    private void addCurrentVersionReleaseToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getCurrentVersionReleaseDate() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDateModifiedIRI(), factory.createLiteral(mobileApplicationDTO.getCurrentVersionReleaseDate())));
+    private void addCurrentVersionReleaseToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getCurrentVersionReleaseDate() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDateModifiedIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getCurrentVersionReleaseDate())));
         }
     }
 
-    private void addReleaseDateToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getReleaseDate() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(mobileApplicationDTO.getReleaseDate())));
+    private void addReleaseDateToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getReleaseDate() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getReleaseDate())));
         }
     }
 
-    private void addCategoriesToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getCategoryId() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(mobileApplicationDTO.getCategoryId())));
+    private void addCategoriesToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getCategoryId() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getCategoryId())));
         }
-        if (mobileApplicationDTO.getCategory() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(mobileApplicationDTO.getCategory())));
+        if (mobileApplicationFullDataDTO.getCategory() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getCategory())));
         }
-        if (mobileApplicationDTO.getCategories() != null) {
-            for (String category : mobileApplicationDTO.getCategories()) {
+        if (mobileApplicationFullDataDTO.getCategories() != null) {
+            for (String category : mobileApplicationFullDataDTO.getCategories()) {
                 statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(category)));
             }
         }
     }
 
-    private void addDeveloperToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        if (mobileApplicationDTO.getDeveloper() != null) {
-            IRI devSubject = createDeveloperIRI(mobileApplicationDTO, statements);
+    private void addDeveloperToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationFullDataDTO.getDeveloper() != null) {
+            IRI devSubject = createDeveloperIRI(mobileApplicationFullDataDTO, statements);
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getAuthorIRI(), devSubject));
         }
     }
 
 
-    private IRI createDeveloperIRI(final MobileApplicationDTO mobileApplicationDTO,
+    private IRI createDeveloperIRI(final MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
                                    final List<Statement> statements) {
 
-        String developerName = mobileApplicationDTO.getDeveloper().replace(" ","_");
+        String developerName = mobileApplicationFullDataDTO.getDeveloper().replace(" ","_");
         IRI devSubject = factory.createIRI(schemaIRI.getDeveloperIRI()+"/"+developerName);
         statements.add(
                 factory.createStatement(
                         devSubject, schemaIRI.getIdentifierIRI(), factory.createLiteral(developerName)));
         statements.add(
                 factory.createStatement(
-                        devSubject, schemaIRI.getAuthorIRI(), factory.createLiteral(mobileApplicationDTO.getDeveloper())));
-        if (mobileApplicationDTO.getDeveloperSite() != null) {
-            statements.add(factory.createStatement(devSubject, schemaIRI.getSameAsIRI(), factory.createLiteral(mobileApplicationDTO.getDeveloperSite())));
+                        devSubject, schemaIRI.getAuthorIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getDeveloper())));
+        if (mobileApplicationFullDataDTO.getDeveloperSite() != null) {
+            statements.add(factory.createStatement(devSubject, schemaIRI.getSameAsIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getDeveloperSite())));
         }
         statements.add(factory.createStatement(devSubject, schemaIRI.getTypeIRI(), schemaIRI.getDeveloperIRI()));
         return devSubject;
@@ -356,7 +378,7 @@ public class MobileApplicationRepository implements RdfRepository {
         statements.add(factory.createStatement(appDescription, schemaIRI.getTypeIRI(), schemaIRI.getDigitalDocumentIRI()));
     }
 
-    public void addFeature(final MobileApplicationDTO completeApplicationDataDTO,
+    public void addFeature(final MobileApplicationFullDataDTO completeApplicationDataDTO,
                            final IRI sub,
                            final List<Statement> statements) {
         for (String feature : completeApplicationDataDTO.getFeatures()) {
@@ -396,7 +418,7 @@ public class MobileApplicationRepository implements RdfRepository {
     }
 
 
-    public void insert(final MobileApplicationDTO completeApplicationDataDTO) {
+    public void insert(final MobileApplicationFullDataDTO completeApplicationDataDTO) {
         insertApp(completeApplicationDataDTO);
     }
 
@@ -404,7 +426,7 @@ public class MobileApplicationRepository implements RdfRepository {
         List<GraphApp> apps = getAllApps();
         for (GraphApp app : apps) {
             //We send requests app per app
-            MobileApplicationDTO updatedCompleteApplicationDataDTO = appDataScannerServiceImpl.scanApp(app, daysFromLastUpdate);
+            MobileApplicationFullDataDTO updatedCompleteApplicationDataDTO = appDataScannerServiceImpl.scanApp(app, daysFromLastUpdate);
 
             if (updatedCompleteApplicationDataDTO != null) {
                 insertApp(updatedCompleteApplicationDataDTO);
@@ -415,32 +437,49 @@ public class MobileApplicationRepository implements RdfRepository {
     }
 
 
-    public List<MobileApplicationDTO> findAllPaginated(final Integer page,
-                                                       final Integer size) throws ApplicationNotFoundException {
+    public List<MobileApplicationFullDataDTO> findAllPaginated(final Integer page,
+                                                                final Integer size) throws ApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllSimplifiedQuery(page, size));
-        List<MobileApplicationDTO> applicationDTOS = new ArrayList<>();
+        List<MobileApplicationFullDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
         while (result.hasNext()) {
-            applicationDTOS.add(bindingSetToMobileApplicationDTO(result.next()));
+            applicationDTOS.add(bindingSetToMobileApplicationFullDataDTO(result.next()));
         }
         return applicationDTOS;
     }
 
-    public List<MobileApplicationDTO> findAllApplicationNames() throws ApplicationNotFoundException {
+    public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws ApplicationNotFoundException {
+        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllSimplifiedQuery(page, size));
+        List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
+        if (!result.hasNext()) {
+            throw new ApplicationNotFoundException("No applications were found");
+        }
+        while (result.hasNext()) {
+            applicationDTOS.add(bindingSetToMobileApplicationBasicDataDTO(result.next()));
+        }
+        return applicationDTOS;
+    }
+
+    public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws ApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationNamesQuery());
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
-        List<MobileApplicationDTO> applicationDTOS = new ArrayList<>();
+        List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         while (result.hasNext()) {
-            applicationDTOS.add(bindingSetToMobileApplicationDTO(result.next()));
+            MobileApplicationFullDataDTO fullDataDTO = bindingSetToMobileApplicationFullDataDTO(result.next());
+            MobileApplicationBasicDataDTO basicDataDTO = new MobileApplicationBasicDataDTO();
+            basicDataDTO.setAppName(fullDataDTO.getAppName());
+            basicDataDTO.setPackageName(fullDataDTO.getPackageName());
+            basicDataDTO.setReviewCount(fullDataDTO.getReviewCount());
+            applicationDTOS.add(basicDataDTO);
         }
         return applicationDTOS;
     }
 
-    public MobileApplicationDTO findByName(final String appName) throws ObjectNotFoundException {
+    public MobileApplicationFullDataDTO findByName(final String appName) throws ObjectNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findByNameQuery(appName));
         if (!result.hasNext()) {
             throw new ObjectNotFoundException("No applications were found with the given app name");

@@ -6,14 +6,16 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import upc.edu.gessi.repo.dto.MobileApplicationDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
 
 @RequestMapping("/mobile-applications")
 
-public interface MobileApplicationsAPI extends CrudAPI<MobileApplicationDTO>{
+public interface MobileApplicationsAPI extends CrudAPI<MobileApplicationFullDataDTO>{
 
 
     @PostMapping("/rml")
@@ -26,9 +28,16 @@ public interface MobileApplicationsAPI extends CrudAPI<MobileApplicationDTO>{
             "data is sent directly in RDF format through a multipart file in Turtle format (.ttl).")
     ResponseEntity<String> createViaRDFFormat(@RequestParam("file") MultipartFile file);
 
-    @GetMapping(value = "/names", produces = "application/json")
+    @GetMapping(value = "/data", produces = "application/json")
     @ResponseBody
-    ResponseEntity<List<MobileApplicationDTO>> getAllApplicationsNames() throws ApplicationNotFoundException;
+    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsNames() throws ApplicationNotFoundException;
+
+    @GetMapping(value = "/data/paginated", produces = "application/json")
+    @ResponseBody
+    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsBasicDataPaginated(
+            @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,
+            @RequestParam(value = "size", defaultValue = "20", required = false) Integer size)
+            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
 
 
     @GetMapping(value = "/{id}/features", produces = "application/json")

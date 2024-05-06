@@ -1,8 +1,6 @@
-package upc.edu.gessi.repo.dto;
+package upc.edu.gessi.repo.dto.MobileApplication;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -17,16 +15,10 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class MobileApplicationDTO implements Serializable {
-
-    @JsonProperty("app_name")
-    private String appName;
+public class MobileApplicationFullDataDTO extends MobileApplicationDTO implements Serializable {
 
     @JsonProperty("description")
     private String description;
@@ -37,19 +29,16 @@ public class MobileApplicationDTO implements Serializable {
     @JsonProperty("developer")
     private String developer;
 
-    @JsonProperty("package")
-    private String packageName;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
+    @JsonProperty("release_date")
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
-    @JsonProperty("release_date")
     private Date releaseDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
+    @JsonProperty("current_version_release_date")
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
-    @JsonProperty("current_version_release_date")
     private Date currentVersionReleaseDate;
 
     @JsonProperty("version")
@@ -59,7 +48,7 @@ public class MobileApplicationDTO implements Serializable {
     private String changelog;
 
     @JsonProperty("reviews")
-    private List<ReviewDTO> reviewDTOS = new ArrayList<>();
+    private List<ReviewDTO> reviews = new ArrayList<>();
 
     @JsonProperty("review_count")
     private Integer reviewCount;

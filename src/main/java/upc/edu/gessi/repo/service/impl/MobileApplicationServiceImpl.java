@@ -6,7 +6,8 @@ import org.eclipse.rdf4j.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.dto.MobileApplicationDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
@@ -28,10 +29,9 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         mobileApplicationRepository = appRepository;
     }
 
-
     @Override
-    public List<MobileApplicationDTO> findAllApplicationNames() throws ApplicationNotFoundException {
-        return mobileApplicationRepository.findAllApplicationNames();
+    public List<MobileApplicationBasicDataDTO> getAllBasicData() throws ApplicationNotFoundException {
+        return mobileApplicationRepository.findAllApplicationsBasicData();
     }
 
     @Override
@@ -40,18 +40,18 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public void addFeatures(final MobileApplicationDTO mobileApplicationDTO,
+    public void addFeatures(final MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
                             final IRI sub,
                             final List<Statement> statements) {
-        mobileApplicationRepository.addFeature(mobileApplicationDTO, sub, statements);
+        mobileApplicationRepository.addFeature(mobileApplicationFullDataDTO, sub, statements);
     }
 
     @Override
-    public List<MobileApplicationDTO> create(List<MobileApplicationDTO> dtos) {
-        List<MobileApplicationDTO> insertedApps = new ArrayList<>();
-        for (MobileApplicationDTO mobileApplicationDTO : dtos) {
+    public List<MobileApplicationFullDataDTO> create(List<MobileApplicationFullDataDTO> dtos) {
+        List<MobileApplicationFullDataDTO> insertedApps = new ArrayList<>();
+        for (MobileApplicationFullDataDTO mobileApplicationFullDataDTO : dtos) {
             // Insert App
-            insertedApps.add(mobileApplicationRepository.insertApp(mobileApplicationDTO));
+            insertedApps.add(mobileApplicationRepository.insertApp(mobileApplicationFullDataDTO));
             // Insert App reviews
             // TODO
 
@@ -65,22 +65,26 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public MobileApplicationDTO get(String id) throws ObjectNotFoundException {
+    public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException {
         return mobileApplicationRepository.findByName(id);
     }
 
     @Override
-    public List<MobileApplicationDTO> getListed(List<String> id) throws ObjectNotFoundException {
+    public List<MobileApplicationFullDataDTO> getListed(List<String> id) throws ObjectNotFoundException {
         return null;
     }
 
     @Override
-    public List<MobileApplicationDTO> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<MobileApplicationFullDataDTO> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return mobileApplicationRepository.findAllPaginated(page, size);
     }
 
     @Override
-    public List<MobileApplicationDTO> getAll() {
+    public List<MobileApplicationBasicDataDTO> getAllBasicDataPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return mobileApplicationRepository.findAllBasicDataPaginated(page, size);
+    }
+    @Override
+    public List<MobileApplicationFullDataDTO> getAll() {
         try {
             return mobileApplicationRepository.findAll();
         } catch (ApplicationNotFoundException applicationNotFoundException) {
@@ -90,7 +94,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public MobileApplicationDTO update(MobileApplicationDTO entity) {
+    public MobileApplicationFullDataDTO update(MobileApplicationFullDataDTO entity) {
         return null;
     }
 

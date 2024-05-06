@@ -46,7 +46,7 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<List<ReviewDTO>> getAllPaginated(boolean paginated, Integer page, Integer size)
+    public ResponseEntity<List<ReviewDTO>> getAllPaginated(Integer page, Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return null;
     }

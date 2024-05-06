@@ -14,8 +14,8 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
-import upc.edu.gessi.repo.dto.MobileApplicationDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
@@ -64,8 +64,8 @@ public class ReviewServiceImpl implements ReviewService {
 
 
 
-    public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
-        return  (List<ApplicationSimplifiedDTO>) reviewRepository.findAllReviewIDs();
+    public List<MobileApplicationBasicDataDTO> findAllApplicationNames() throws ApplicationNotFoundException {
+        return  (List<MobileApplicationBasicDataDTO>) reviewRepository.findAllReviewIDs();
     }
 
     public List findByName(final String appName) throws ApplicationNotFoundException {
@@ -338,10 +338,10 @@ public class ReviewServiceImpl implements ReviewService {
         return resultList;
     }
 
-    public void addCompleteReviewsToApplication(final MobileApplicationDTO completeApplicationDataDTO,
+    public void addCompleteReviewsToApplication(final MobileApplicationFullDataDTO completeApplicationDataDTO,
                                                 final IRI applicationIRI,
                                                 final List<Statement> statements) {
-        for (ReviewDTO r : completeApplicationDataDTO.getReviewDTOS()) {
+        for (ReviewDTO r : completeApplicationDataDTO.getReviews()) {
             if (r.getId() != null) {
                 IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + r.getId());
                 if (applicationIRI != null) {
@@ -384,7 +384,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDTO> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<ReviewDTO> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
         return null;
     }
 

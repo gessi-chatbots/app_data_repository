@@ -21,7 +21,6 @@ public interface CrudAPI<T> extends BaseAPI {
     @GetMapping(value = "/", params = {"paginated"}, produces = "application/json")
     @ResponseBody
     ResponseEntity<List<T>> getAllPaginated(
-            @RequestParam(value = "paginated", defaultValue = "false", required = false) boolean paginated,
             @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,
             @RequestParam(value = "size", defaultValue = "20", required = false) Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
