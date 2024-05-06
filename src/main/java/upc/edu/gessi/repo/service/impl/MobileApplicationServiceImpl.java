@@ -52,7 +52,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     public void addFeatures(final MobileApplicationDTO mobileApplicationDTO,
                             final IRI sub,
                             final List<Statement> statements) {
-        mobileApplicationRepository.addFeaturesToApplication(mobileApplicationDTO, sub, statements);
+        mobileApplicationRepository.addFeature(mobileApplicationDTO, sub, statements);
     }
 
     @Override

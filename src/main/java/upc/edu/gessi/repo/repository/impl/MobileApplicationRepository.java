@@ -193,11 +193,116 @@ public class MobileApplicationRepository implements RdfRepository {
         IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + mobileApplicationDTO.getPackageName());
         statements.add(factory.createStatement(applicationIRI, schemaIRI.getTypeIRI(), schemaIRI.getAppIRI()));
 
-        if (mobileApplicationDTO.getDeveloper() != null) {
-            IRI devSubject = addDeveloperIntoStatements(mobileApplicationDTO, statements);
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getAuthorIRI(), devSubject));
-        }
+        addDeveloperToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addCategoriesToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addReleaseDateToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addCurrentVersionReleaseToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addVersionToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addAppNameToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addPackageNameToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addDescriptionToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addSummaryToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addChangelogToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addReviewDocumentToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addFeaturesToStatements(mobileApplicationDTO, statements, applicationIRI);
+        addReviewsToStatements(mobileApplicationDTO, statements, applicationIRI);
 
+        commitChanges(statements);
+
+        return mobileApplicationDTO;
+    }
+
+    private void addReviewsToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        reviewServiceImpl.addCompleteReviewsToApplication(mobileApplicationDTO, applicationIRI, statements);
+    }
+
+    private void addFeaturesToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getFeatures() != null) {
+            addFeature(mobileApplicationDTO, applicationIRI, statements);
+        }
+    }
+
+    private void addReviewDocumentToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        addDigitalDocumentIntoStatements(
+                mobileApplicationDTO.getPackageName(),
+                "Aggregated NL data for app " + mobileApplicationDTO.getAppName(),
+                statements,
+                applicationIRI,
+                schemaIRI.getReviewDocumentIRI(),
+                DocumentType.REVIEWS);
+    }
+
+    private void addChangelogToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getChangelog() != null) {
+            addDigitalDocumentIntoStatements(
+                    mobileApplicationDTO.getPackageName(),
+                    mobileApplicationDTO.getChangelog(),
+                    statements,
+                    applicationIRI,
+                    schemaIRI.getChangelogIRI(),
+                    DocumentType.CHANGELOG);
+            //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
+        }
+    }
+
+    private void addSummaryToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getSummary() != null) {
+            addDigitalDocumentIntoStatements(
+                    mobileApplicationDTO.getPackageName(),
+                    mobileApplicationDTO.getSummary(),
+                    statements,
+                    applicationIRI,
+                    schemaIRI.getSummaryIRI(),
+                    DocumentType.SUMMARY);
+            //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
+        }
+    }
+
+    private void addDescriptionToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getDescription() != null) {
+                addDigitalDocumentIntoStatements(
+                    mobileApplicationDTO.getPackageName(),
+                    mobileApplicationDTO.getDescription(),
+                        statements,
+                        applicationIRI,
+                    schemaIRI.getDescriptionIRI(),
+                    DocumentType.DESCRIPTION);
+            //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
+        }
+    }
+
+    private void addPackageNameToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getPackageName() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(mobileApplicationDTO.getPackageName())));
+        }
+    }
+
+    private void addAppNameToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getAppName() != null) {
+            String sanitizedName = Utils.sanitizeString(mobileApplicationDTO.getAppName());
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getNameIRI(), factory.createLiteral(sanitizedName)));
+        }
+    }
+
+    private void addVersionToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getVersion() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(mobileApplicationDTO.getVersion())));
+        }
+    }
+
+    private void addCurrentVersionReleaseToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getCurrentVersionReleaseDate() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDateModifiedIRI(), factory.createLiteral(mobileApplicationDTO.getCurrentVersionReleaseDate())));
+        }
+    }
+
+    private void addReleaseDateToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getReleaseDate() != null) {
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(mobileApplicationDTO.getReleaseDate())));
+        }
+    }
+
+    private void addCategoriesToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
         if (mobileApplicationDTO.getCategoryId() != null) {
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(mobileApplicationDTO.getCategoryId())));
         }
@@ -209,90 +314,29 @@ public class MobileApplicationRepository implements RdfRepository {
                 statements.add(factory.createStatement(applicationIRI, schemaIRI.getCategoryIRI(), factory.createLiteral(category)));
             }
         }
-        if (mobileApplicationDTO.getReleaseDate() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(mobileApplicationDTO.getReleaseDate())));
-        }
+    }
 
-        if (mobileApplicationDTO.getCurrentVersionReleaseDate() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getDateModifiedIRI(), factory.createLiteral(mobileApplicationDTO.getCurrentVersionReleaseDate())));
+    private void addDeveloperToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
+        if (mobileApplicationDTO.getDeveloper() != null) {
+            IRI devSubject = createDeveloperIRI(mobileApplicationDTO, statements);
+            statements.add(factory.createStatement(applicationIRI, schemaIRI.getAuthorIRI(), devSubject));
         }
-
-        if (mobileApplicationDTO.getVersion() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(mobileApplicationDTO.getVersion())));
-        }
-
-        if (mobileApplicationDTO.getAppName() != null) {
-            String sanitizedName = Utils.sanitizeString(mobileApplicationDTO.getAppName());
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getNameIRI(), factory.createLiteral(sanitizedName)));
-        }
-        if (mobileApplicationDTO.getPackageName() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(mobileApplicationDTO.getPackageName())));
-        }
-
-        if (mobileApplicationDTO.getDescription() != null) {
-                addDigitalDocumentIntoStatements(
-                    mobileApplicationDTO.getPackageName(),
-                    mobileApplicationDTO.getDescription(),
-                    statements,
-                    applicationIRI,
-                    schemaIRI.getDescriptionIRI(),
-                    DocumentType.DESCRIPTION);
-            //statements.add(factory.createStatement(sub, descriptionIRI, factory.createLiteral(app.getDescription())));
-        }
-        if (mobileApplicationDTO.getSummary() != null) {
-            addDigitalDocumentIntoStatements(
-                    mobileApplicationDTO.getPackageName(),
-                    mobileApplicationDTO.getSummary(),
-                    statements,
-                    applicationIRI,
-                    schemaIRI.getSummaryIRI(),
-                    DocumentType.SUMMARY);
-            //statements.add(factory.createStatement(sub, summaryIRI, factory.createLiteral(app.getSummary())));
-        }
-
-        if (mobileApplicationDTO.getChangelog() != null) {
-            addDigitalDocumentIntoStatements(
-                    mobileApplicationDTO.getPackageName(),
-                    mobileApplicationDTO.getChangelog(),
-                    statements,
-                    applicationIRI,
-                    schemaIRI.getChangelogIRI(),
-                    DocumentType.CHANGELOG);
-            //statements.add(factory.createStatement(sub, changelogIRI, factory.createLiteral(app.getChangelog())));
-        }
-
-        addDigitalDocumentIntoStatements(
-                mobileApplicationDTO.getPackageName(),
-                "Aggregated NL data for app " + mobileApplicationDTO.getAppName(),
-                statements,
-                applicationIRI,
-                schemaIRI.getReviewDocumentIRI(),
-                DocumentType.REVIEWS);
-
-        if (mobileApplicationDTO.getFeatures() != null) {
-            addFeaturesToApplication(mobileApplicationDTO, applicationIRI, statements);
-        }
-        reviewServiceImpl.addCompleteReviewsToApplication(mobileApplicationDTO, applicationIRI, statements);
-
-        commitChanges(statements);
-
-        return mobileApplicationDTO;
     }
 
 
-    private IRI addDeveloperIntoStatements(final MobileApplicationDTO completeApplicationDataDTO,
-                                           final List<Statement> statements) {
+    private IRI createDeveloperIRI(final MobileApplicationDTO mobileApplicationDTO,
+                                   final List<Statement> statements) {
 
-        String developerName = completeApplicationDataDTO.getDeveloper().replace(" ","_");
+        String developerName = mobileApplicationDTO.getDeveloper().replace(" ","_");
         IRI devSubject = factory.createIRI(schemaIRI.getDeveloperIRI()+"/"+developerName);
         statements.add(
                 factory.createStatement(
                         devSubject, schemaIRI.getIdentifierIRI(), factory.createLiteral(developerName)));
         statements.add(
                 factory.createStatement(
-                        devSubject, schemaIRI.getAuthorIRI(), factory.createLiteral(completeApplicationDataDTO.getDeveloper())));
-        if (completeApplicationDataDTO.getDeveloperSite() != null) {
-            statements.add(factory.createStatement(devSubject, schemaIRI.getSameAsIRI(), factory.createLiteral(completeApplicationDataDTO.getDeveloperSite())));
+                        devSubject, schemaIRI.getAuthorIRI(), factory.createLiteral(mobileApplicationDTO.getDeveloper())));
+        if (mobileApplicationDTO.getDeveloperSite() != null) {
+            statements.add(factory.createStatement(devSubject, schemaIRI.getSameAsIRI(), factory.createLiteral(mobileApplicationDTO.getDeveloperSite())));
         }
         statements.add(factory.createStatement(devSubject, schemaIRI.getTypeIRI(), schemaIRI.getDeveloperIRI()));
         return devSubject;
@@ -312,9 +356,9 @@ public class MobileApplicationRepository implements RdfRepository {
         statements.add(factory.createStatement(appDescription, schemaIRI.getTypeIRI(), schemaIRI.getDigitalDocumentIRI()));
     }
 
-    public void addFeaturesToApplication(final MobileApplicationDTO completeApplicationDataDTO,
-                                         final IRI sub,
-                                         final List<Statement> statements) {
+    public void addFeature(final MobileApplicationDTO completeApplicationDataDTO,
+                           final IRI sub,
+                           final List<Statement> statements) {
         for (String feature : completeApplicationDataDTO.getFeatures()) {
             String id = WordUtils.capitalize(feature).replace(" ", "").replaceAll("[^a-zA-Z0-9]", "");
             IRI featureIRI = factory.createIRI(schemaIRI.getDefinedTermIRI() + "/" + id);
