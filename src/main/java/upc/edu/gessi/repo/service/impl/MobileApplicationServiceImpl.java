@@ -35,15 +35,6 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public List<MobileApplicationDTO> insertApps(final List<MobileApplicationDTO> mobileApplicationDTOS) {
-        List<MobileApplicationDTO> insertedApps = new ArrayList<>();
-        for (MobileApplicationDTO mobileApplicationDTO : mobileApplicationDTOS) {
-            insertedApps.add(mobileApplicationRepository.insertApp(mobileApplicationDTO));
-        }
-        return insertedApps;
-    }
-
-    @Override
     public List<GraphApp> getAllApps() {
         return mobileApplicationRepository.getAllApps();
     }
@@ -56,8 +47,21 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public List<MobileApplicationDTO> create(List<MobileApplicationDTO> entity) {
-        return null;
+    public List<MobileApplicationDTO> create(List<MobileApplicationDTO> dtos) {
+        List<MobileApplicationDTO> insertedApps = new ArrayList<>();
+        for (MobileApplicationDTO mobileApplicationDTO : dtos) {
+            // Insert App
+            insertedApps.add(mobileApplicationRepository.insertApp(mobileApplicationDTO));
+            // Insert App reviews
+            // TODO
+
+            // Insert app Features
+            // TODO
+
+            // Insert App digital Documents
+            // TODO
+        }
+        return insertedApps;
     }
 
     @Override
@@ -72,7 +76,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public List<MobileApplicationDTO> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return mobileApplicationRepository.findAllSimplifiedPaginated(page, size);
+        return mobileApplicationRepository.findAllPaginated(page, size);
     }
 
     @Override

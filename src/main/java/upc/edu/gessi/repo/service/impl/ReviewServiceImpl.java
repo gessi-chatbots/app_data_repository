@@ -369,7 +369,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDTO> create(List<ReviewDTO> entity) {
+    public List<ReviewDTO> create(List<ReviewDTO> dtos) {
         return null;
     }
 

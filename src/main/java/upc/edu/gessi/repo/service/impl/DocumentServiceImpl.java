@@ -60,7 +60,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public List<Document> create(List<Document> entity) {
+    public List<Document> create(List<Document> dtos) {
         return null;
     }
 

@@ -5,7 +5,7 @@ import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import java.util.List;
 
 public interface CrudService<T> {
-    List<T> create(List<T> entity);
+    List<T> create(List<T> dtos);
 
     T get(String id) throws ObjectNotFoundException;
 

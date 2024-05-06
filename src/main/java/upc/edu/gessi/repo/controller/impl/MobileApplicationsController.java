@@ -47,7 +47,9 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
     @Override
     public ResponseEntity<List<MobileApplicationDTO>> create(final List<MobileApplicationDTO> mobileApplications) {
-        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).insertApps(mobileApplications), HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                ((MobileApplicationService) useService(MobileApplicationService.class)).create(mobileApplications),
+                HttpStatus.CREATED);
     }
 
     @Override

@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface RdfRepository <T extends Serializable> {
     List<T> findAll() throws Exception;
-    List<T> findAllSimplifiedPaginated(final Integer page, final Integer size) throws ApplicationNotFoundException;
+    List<T> findAllPaginated(final Integer page, final Integer size) throws ApplicationNotFoundException;
 }

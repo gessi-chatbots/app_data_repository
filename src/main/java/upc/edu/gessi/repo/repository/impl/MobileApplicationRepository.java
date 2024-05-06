@@ -223,7 +223,7 @@ public class MobileApplicationRepository implements RdfRepository {
     }
 
     private void addReviewDocumentToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
-        addDigitalDocumentIntoStatements(
+        addDigitalDocument(
                 mobileApplicationDTO.getPackageName(),
                 "Aggregated NL data for app " + mobileApplicationDTO.getAppName(),
                 statements,
@@ -234,7 +234,7 @@ public class MobileApplicationRepository implements RdfRepository {
 
     private void addChangelogToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
         if (mobileApplicationDTO.getChangelog() != null) {
-            addDigitalDocumentIntoStatements(
+            addDigitalDocument(
                     mobileApplicationDTO.getPackageName(),
                     mobileApplicationDTO.getChangelog(),
                     statements,
@@ -247,7 +247,7 @@ public class MobileApplicationRepository implements RdfRepository {
 
     private void addSummaryToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
         if (mobileApplicationDTO.getSummary() != null) {
-            addDigitalDocumentIntoStatements(
+            addDigitalDocument(
                     mobileApplicationDTO.getPackageName(),
                     mobileApplicationDTO.getSummary(),
                     statements,
@@ -260,7 +260,7 @@ public class MobileApplicationRepository implements RdfRepository {
 
     private void addDescriptionToStatements(MobileApplicationDTO mobileApplicationDTO, List<Statement> statements, IRI applicationIRI) {
         if (mobileApplicationDTO.getDescription() != null) {
-                addDigitalDocumentIntoStatements(
+                addDigitalDocument(
                     mobileApplicationDTO.getPackageName(),
                     mobileApplicationDTO.getDescription(),
                         statements,
@@ -342,12 +342,12 @@ public class MobileApplicationRepository implements RdfRepository {
         return devSubject;
     }
 
-    private void addDigitalDocumentIntoStatements(final String packageName,
-                                                  final String text,
-                                                  final List<Statement> statements,
-                                                  final IRI sub,
-                                                  final IRI pred,
-                                                  final DocumentType documentType) {
+    private void addDigitalDocument(final String packageName,
+                                    final String text,
+                                    final List<Statement> statements,
+                                    final IRI sub,
+                                    final IRI pred,
+                                    final DocumentType documentType) {
         IRI appDescription = factory.createIRI(schemaIRI.getDigitalDocumentIRI() + "/" + packageName + "-" + documentType);
         statements.add(factory.createStatement(appDescription, schemaIRI.getIdentifierIRI(), factory.createLiteral(packageName + "-" + documentType)));
         statements.add(factory.createStatement(appDescription, schemaIRI.getTextPropertyIRI(), factory.createLiteral(text)));
@@ -415,8 +415,8 @@ public class MobileApplicationRepository implements RdfRepository {
     }
 
 
-    public List<MobileApplicationDTO> findAllSimplifiedPaginated(final Integer page,
-                                                                     final Integer size) throws ApplicationNotFoundException {
+    public List<MobileApplicationDTO> findAllPaginated(final Integer page,
+                                                       final Integer size) throws ApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllSimplifiedQuery(page, size));
         List<MobileApplicationDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
