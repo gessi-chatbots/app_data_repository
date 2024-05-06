@@ -38,7 +38,7 @@ public class DigitalDocumentsController implements DigitalDocumentsAPI {
     }
 
     @Override
-    public ResponseEntity<List<DigitalDocumentDTO>> getListed(final List<String> id) throws ObjectNotFoundException {
+    public ResponseEntity<List<DigitalDocumentDTO>> getListed(final List<String> ids) throws ObjectNotFoundException {
         return null;
     }
 
@@ -61,7 +61,7 @@ public class DigitalDocumentsController implements DigitalDocumentsAPI {
     }
 
     @Override
-    public ResponseEntity<Void> delete() {
+    public ResponseEntity<Void> delete(String id) {
         return ResponseEntity.noContent().build();
     }
 }

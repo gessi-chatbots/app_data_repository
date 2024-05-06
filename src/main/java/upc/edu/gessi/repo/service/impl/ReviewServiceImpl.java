@@ -62,12 +62,7 @@ public class ReviewServiceImpl implements ReviewService {
         reviewQueryBuilder = reviewQB;
     }
 
-    public List findAll(boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? reviewRepository.findAllSimplified() : reviewRepository.findAll();
-    }
-    public List findAllPaginated(final Integer page, final Integer size, final boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? reviewRepository.findAllSimplifiedPaginated(page, size) : reviewRepository.findAll();
-    }
+
 
     public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
         return  (List<ApplicationSimplifiedDTO>) reviewRepository.findAllReviewIDs();

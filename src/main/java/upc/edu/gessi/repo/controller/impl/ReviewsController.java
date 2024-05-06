@@ -41,7 +41,7 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<List<ReviewDTO>> getListed(List<String> id) throws ObjectNotFoundException {
+    public ResponseEntity<List<ReviewDTO>> getListed(List<String> ids) throws ObjectNotFoundException {
         return null;
     }
 
@@ -64,7 +64,7 @@ public class ReviewsController implements ReviewsAPI {
 
 
     @Override
-    public ResponseEntity<Void> delete() {
+    public ResponseEntity<Void> delete(String id) {
         return null;
     }
 }

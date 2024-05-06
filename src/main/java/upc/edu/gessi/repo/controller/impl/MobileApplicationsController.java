@@ -17,9 +17,7 @@ import upc.edu.gessi.repo.service.AnalysisService;
 import upc.edu.gessi.repo.service.GraphDBService;
 import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.service.ServiceFactory;
-import upc.edu.gessi.repo.service.impl.AnalysisServiceImpl;
-import upc.edu.gessi.repo.service.impl.MobileApplicationServiceImpl;
-import upc.edu.gessi.repo.service.impl.GraphDBServiceImpl;
+
 
 import java.io.File;
 import java.util.List;
@@ -79,8 +77,9 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     @Override
     public ResponseEntity<List<MobileApplicationDTO>> getAllPaginated(final boolean paginated,
                                                                       final Integer page,
-                                                                      final Integer size) throws ObjectNotFoundException {
-        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).findAllPaginated(page, size), HttpStatus.OK);
+                                                                      final Integer size)
+            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAllPaginated(paginated, page, size), HttpStatus.OK);
 
     }
 
@@ -96,13 +95,13 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationDTO>> getListed(final List<String> id) throws ObjectNotFoundException {
+    public ResponseEntity<List<MobileApplicationDTO>> getListed(final List<String> ids) throws ObjectNotFoundException {
         return null;
     }
 
 
     @Override
-    public ResponseEntity<List<ApplicationSimplifiedDTO>> getAllApplicationsNames() throws ApplicationNotFoundException {
+    public ResponseEntity<List<MobileApplicationDTO>> getAllApplicationsNames() throws ApplicationNotFoundException {
         return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).findAllApplicationNames(), HttpStatus.OK);
     }
 
@@ -131,7 +130,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<Void> delete() {
+    public ResponseEntity<Void> delete(String id) {
         return null;
     }
 

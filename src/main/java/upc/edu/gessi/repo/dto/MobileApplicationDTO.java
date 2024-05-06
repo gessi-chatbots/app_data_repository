@@ -50,6 +50,9 @@ public class MobileApplicationDTO implements Serializable {
     @JsonProperty("reviews")
     private List<ReviewDTO> reviewDTOS = new ArrayList<>();
 
+    @JsonProperty("reviewCount")
+    private Integer reviewCount;
+
     @JsonProperty("androidVersion")
     private String androidVersion;
 

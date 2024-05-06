@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/v1/analysis")
 public class AnalysisController implements AnalysisAPI {
     private final Logger logger = LoggerFactory.getLogger(AnalysisController.class);
 

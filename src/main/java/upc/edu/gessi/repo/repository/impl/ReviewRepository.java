@@ -14,10 +14,6 @@ public class ReviewRepository implements RdfRepository {
         return null;
     }
 
-    @Override
-    public List findAllSimplified() throws ApplicationNotFoundException {
-        return null;
-    }
 
     @Override
     public List findAllSimplifiedPaginated(final Integer page, final Integer size) throws ApplicationNotFoundException {

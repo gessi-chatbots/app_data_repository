@@ -66,24 +66,24 @@ public class MobileApplicationRepository implements RdfRepository {
         TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
         return tupleQuery.evaluate();
     }
-    private ApplicationSimplifiedDTO bindingSetToApplicationSimplifiedDTO(final BindingSet bindings) {
-        ApplicationSimplifiedDTO applicationSimplifiedDTO = new ApplicationSimplifiedDTO();
+    private MobileApplicationDTO bindingSetToMobileApplicationDTO(final BindingSet bindings) {
+        MobileApplicationDTO mobileApplicationDTO = new MobileApplicationDTO();
         if (bindings.getBinding("name") != null
                 && bindings.getBinding("name").getValue() != null) {
-            applicationSimplifiedDTO.setName(
+            mobileApplicationDTO.setAppName(
                     bindings.getBinding("name").getValue().stringValue());
         }
         if (bindings.getBinding("package") != null
                 && bindings.getBinding("package").getValue() != null) {
-            applicationSimplifiedDTO.setApplicationPackage(
+            mobileApplicationDTO.setPackageName(
                     bindings.getBinding("package").getValue().stringValue());
         }
         if (bindings.getBinding("reviewCount") != null
                 && bindings.getBinding("reviewCount").getValue() != null) {
-            applicationSimplifiedDTO.setReviewCount(
+            mobileApplicationDTO.setReviewCount(
                     Integer.valueOf(bindings.getBinding("reviewCount").getValue().stringValue()));
         }
-        return applicationSimplifiedDTO;
+        return mobileApplicationDTO;
     }
 
     private MobileApplicationDTO bindingSetToApplicationDTO(final TupleQueryResult result) {
@@ -142,7 +142,10 @@ public class MobileApplicationRepository implements RdfRepository {
 
                     reviewResponseDTO.setSentences(new ArrayList<>());
                     TupleQueryResult sentencesResult =
-                            runSparqlQuery(reviewQueryBuilder.findReviewSentencesEmotions(new ArrayList<>(Collections.singleton(reviewResponseDTO.getId()))));
+                            runSparqlQuery(
+                                    reviewQueryBuilder
+                                            .findReviewSentencesEmotions(
+                                                    new ArrayList<>(Collections.singleton(reviewResponseDTO.getId()))));
                     while (sentencesResult.hasNext()) {
                         reviewResponseDTO
                                 .getSentences()
@@ -366,39 +369,29 @@ public class MobileApplicationRepository implements RdfRepository {
             //TODO remove reviews older than MAX_DAYS_REVIEWS
         }
     }
-    public List<ApplicationSimplifiedDTO> findAllSimplified() throws ApplicationNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllSimplifiedQuery(null, null));
-        List<ApplicationSimplifiedDTO> applicationDTOS = new ArrayList<>();
-        if (!result.hasNext()) {
-            throw new ApplicationNotFoundException("No applications were found");
-        }
-        while (result.hasNext()) {
-            applicationDTOS.add(bindingSetToApplicationSimplifiedDTO(result.next()));
-        }
-        return applicationDTOS;
-    }
 
-    public List<ApplicationSimplifiedDTO> findAllSimplifiedPaginated(final Integer page,
+
+    public List<MobileApplicationDTO> findAllSimplifiedPaginated(final Integer page,
                                                                      final Integer size) throws ApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllSimplifiedQuery(page, size));
-        List<ApplicationSimplifiedDTO> applicationDTOS = new ArrayList<>();
+        List<MobileApplicationDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
         while (result.hasNext()) {
-            applicationDTOS.add(bindingSetToApplicationSimplifiedDTO(result.next()));
+            applicationDTOS.add(bindingSetToMobileApplicationDTO(result.next()));
         }
         return applicationDTOS;
     }
 
-    public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
+    public List<MobileApplicationDTO> findAllApplicationNames() throws ApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationNamesQuery());
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
-        List<ApplicationSimplifiedDTO> applicationDTOS = new ArrayList<>();
+        List<MobileApplicationDTO> applicationDTOS = new ArrayList<>();
         while (result.hasNext()) {
-            applicationDTOS.add(bindingSetToApplicationSimplifiedDTO(result.next()));
+            applicationDTOS.add(bindingSetToMobileApplicationDTO(result.next()));
         }
         return applicationDTOS;
     }

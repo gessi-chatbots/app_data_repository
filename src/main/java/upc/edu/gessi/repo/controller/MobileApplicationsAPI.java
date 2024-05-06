@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.dto.MobileApplicationDTO;
-import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 
 import java.util.List;
@@ -29,14 +28,14 @@ public interface MobileApplicationsAPI extends CrudAPI<MobileApplicationDTO>{
 
     @GetMapping(value = "/names", produces = "application/json")
     @ResponseBody
-    ResponseEntity<List<ApplicationSimplifiedDTO>> getAllApplicationsNames() throws ApplicationNotFoundException;
+    ResponseEntity<List<MobileApplicationDTO>> getAllApplicationsNames() throws ApplicationNotFoundException;
 
 
     @GetMapping(value = "/{id}/features", produces = "application/json")
     @ResponseBody
     ResponseEntity<List<String>> getApplicationFeatures(@PathVariable String id);
 
-    @PostMapping("/updateRepository")
+    @PostMapping("/update-repository")
     void updateRepository(@RequestParam(value = "url") String url);
 
 

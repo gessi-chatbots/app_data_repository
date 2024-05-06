@@ -1,6 +1,5 @@
 package upc.edu.gessi.repo.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
@@ -13,34 +12,34 @@ import java.util.Map;
 @RequestMapping("/inductive-knowledge")
 public interface InductiveKnowledgeAPI extends BaseAPI {
 
-    @GetMapping("/lastReview")
+    @GetMapping("/last-review")
     int getLastReview();
 
-    @PostMapping("/derivedNLFeatures")
+    @PostMapping("/derived-NL-Features")
     int derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType,
                           @RequestParam(value = "batch-size") Integer batchSize,
                           @RequestParam(value = "from") Integer from);
 
-    @PostMapping("/computeFeatureSimilarity")
+    @PostMapping("/compute-Feature-Similarity")
     void computeFeatureSimilarity(@RequestParam(defaultValue = "0.5", name = "threshold") double synonymThreshold);
 
-    @DeleteMapping("/deleteFeatureSimilarities")
+    @DeleteMapping("/Feature-Similarities")
     void deleteFeatureSimilarities();
 
-    @PostMapping("/computeSimilarity")
+    @PostMapping("/compute-Similarity")
     void computeSimilarity(@RequestParam(defaultValue = "JACCARD") SimilarityAlgorithm algorithm);
 
-    @GetMapping("/findSimilarApps")
+    @GetMapping("/find-Similar-Apps")
     Map<String, List<SimilarityApp>> getTopKSimilarApps(@RequestBody List<String> apps,
                                                         @RequestParam Integer k,
                                                         @RequestParam DocumentType documentType);
 
-    @GetMapping("/findAppsByFeature")
+    @GetMapping("/find-Apps-By-Feature")
     Map<String, List<SimilarityApp>> findAppsByFeature(@RequestBody List<String> features,
                                                        @RequestParam Integer k,
                                                        @RequestParam DocumentType documentType);
 
-    @GetMapping("/findAppsByFeatures")
+    @GetMapping("/find-Apps-By-Features")
     List<SimilarityApp> findAppsByFeatures(@RequestBody List<String> features,
                                            @RequestParam Integer k,
                                            @RequestParam DocumentType documentType);

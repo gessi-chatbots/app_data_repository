@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplicationDTO;
-import upc.edu.gessi.repo.dto.ApplicationSimplifiedDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
@@ -29,24 +28,10 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         mobileApplicationRepository = appRepository;
     }
 
-    @Override
-    public List findAll(boolean simplified) throws ApplicationNotFoundException {
-        return simplified ? mobileApplicationRepository.findAllSimplified() : mobileApplicationRepository.findAll();
-    }
 
     @Override
-    public List findAllPaginated(final Integer page, final Integer size) throws ApplicationNotFoundException {
-        return mobileApplicationRepository.findAllSimplifiedPaginated(page, size);
-    }
-
-    @Override
-    public List<ApplicationSimplifiedDTO> findAllApplicationNames() throws ApplicationNotFoundException {
-        return  (List<ApplicationSimplifiedDTO>) mobileApplicationRepository.findAllApplicationNames();
-    }
-
-    @Override
-    public MobileApplicationDTO findByName(final String appName) throws ObjectNotFoundException {
-        return mobileApplicationRepository.findByName(appName);
+    public List<MobileApplicationDTO> findAllApplicationNames() throws ApplicationNotFoundException {
+        return mobileApplicationRepository.findAllApplicationNames();
     }
 
     @Override
@@ -77,7 +62,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public MobileApplicationDTO get(String id) throws ObjectNotFoundException {
-        return null;
+        return mobileApplicationRepository.findByName(id);
     }
 
     @Override
@@ -87,12 +72,17 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public List<MobileApplicationDTO> getAllPaginated(boolean paginated, Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return null;
+        return mobileApplicationRepository.findAllSimplifiedPaginated(page, size);
     }
 
     @Override
     public List<MobileApplicationDTO> getAll() {
-        return null;
+        try {
+            return mobileApplicationRepository.findAll();
+        } catch (ApplicationNotFoundException applicationNotFoundException) {
+            return new ArrayList<>();
+        }
+
     }
 
     @Override

@@ -35,7 +35,7 @@ public class SoftwareApplicationsController implements SoftwareApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<SoftwareApplicationDTO>> getListed(List<String> id) throws ObjectNotFoundException {
+    public ResponseEntity<List<SoftwareApplicationDTO>> getListed(List<String> ids) throws ObjectNotFoundException {
         return null;
     }
 
@@ -56,7 +56,7 @@ public class SoftwareApplicationsController implements SoftwareApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<Void> delete() {
+    public ResponseEntity<Void> delete(String id) {
         return null;
     }
 

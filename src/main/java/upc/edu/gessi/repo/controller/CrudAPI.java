@@ -15,10 +15,10 @@ public interface CrudAPI<T> extends BaseAPI {
     @GetMapping("/{id}")
     ResponseEntity<T> get(@PathVariable String id) throws ObjectNotFoundException;
 
-    @GetMapping("/")
-    ResponseEntity<List<T>> getListed(@PathVariable List<String> id) throws ObjectNotFoundException;
+    @GetMapping("/list")
+    ResponseEntity<List<T>> getListed(@RequestBody List<String> ids) throws ObjectNotFoundException;
 
-    @GetMapping(value = "/all", params = {"paginated"}, produces = "application/json")
+    @GetMapping(value = "/", params = {"paginated"}, produces = "application/json")
     @ResponseBody
     ResponseEntity<List<T>> getAllPaginated(
             @RequestParam(value = "paginated", defaultValue = "false", required = false) boolean paginated,
@@ -26,12 +26,12 @@ public interface CrudAPI<T> extends BaseAPI {
             @RequestParam(value = "size", defaultValue = "20", required = false) Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
 
-    @GetMapping("/all")
+    @GetMapping("/paginated")
     ResponseEntity<List<T>> getAll();
 
     @PutMapping("/")
     ResponseEntity<T> update(@RequestBody T entity);
 
-    @DeleteMapping("/")
-    ResponseEntity<Void> delete();
+    @DeleteMapping("/{id}")
+    ResponseEntity<Void> delete(@PathVariable String id);
 }
