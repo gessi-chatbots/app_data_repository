@@ -1,10 +1,15 @@
 package upc.edu.gessi.repo.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
+import upc.edu.gessi.repo.dto.serializer.CustomDateDeserializer;
+import upc.edu.gessi.repo.dto.serializer.CustomDateSerializer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,7 +25,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MobileApplicationDTO implements Serializable {
 
-    @JsonProperty("name")
+    @JsonProperty("app_name")
     private String appName;
 
     @JsonProperty("description")
@@ -29,16 +34,22 @@ public class MobileApplicationDTO implements Serializable {
     @JsonProperty("summary")
     private String summary;
 
-    @JsonProperty("author")
+    @JsonProperty("developer")
     private String developer;
 
     @JsonProperty("package")
     private String packageName;
 
-    @JsonProperty("releaseDate")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @JsonDeserialize(using = CustomDateDeserializer.class)
+    @JsonProperty("release_date")
     private Date releaseDate;
 
-    @JsonProperty("currentVersionReleaseDate")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @JsonDeserialize(using = CustomDateDeserializer.class)
+    @JsonProperty("current_version_release_date")
     private Date currentVersionReleaseDate;
 
     @JsonProperty("version")
@@ -50,16 +61,16 @@ public class MobileApplicationDTO implements Serializable {
     @JsonProperty("reviews")
     private List<ReviewDTO> reviewDTOS = new ArrayList<>();
 
-    @JsonProperty("reviewCount")
+    @JsonProperty("review_count")
     private Integer reviewCount;
 
-    @JsonProperty("androidVersion")
+    @JsonProperty("android_version")
     private String androidVersion;
 
-    @JsonProperty("developerSite")
+    @JsonProperty("developer_site")
     private String developerSite;
 
-    @JsonProperty("inAppPurchases")
+    @JsonProperty("in_app_purchases")
     private Boolean inAppPurchases;
 
     @JsonProperty("genre")

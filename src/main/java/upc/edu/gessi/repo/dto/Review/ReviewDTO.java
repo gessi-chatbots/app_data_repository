@@ -28,7 +28,7 @@ public class ReviewDTO implements Serializable {
     @JsonProperty("review")
     private String reviewText;
 
-    @JsonProperty("author")
+    @JsonProperty("userName")
     private String author;
 
     @JsonProperty("applicationId")
