@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.service.impl;
 
 
+import org.apache.poi.xdgf.util.Util;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.impl.MobileApplicationRepository;
 import upc.edu.gessi.repo.service.MobileApplicationService;
+import upc.edu.gessi.repo.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,12 +68,21 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException {
-        return mobileApplicationRepository.findByName(id);
+        return mobileApplicationRepository.findByName(Utils.sanitizeString(id));
     }
 
     @Override
-    public List<MobileApplicationFullDataDTO> getListed(List<String> id) throws ObjectNotFoundException {
-        return null;
+    public List<MobileApplicationFullDataDTO> getListed(List<String> ids) throws ObjectNotFoundException {
+        List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
+        for (String id : ids) {
+            try {
+                mobileApplicationFullDataDTOS.add(mobileApplicationRepository.findByName(id));
+            } catch (ObjectNotFoundException ignored) {
+                // do nothing, refactor in future to error tracking
+            }
+
+        }
+        return mobileApplicationFullDataDTOS;
     }
 
     @Override

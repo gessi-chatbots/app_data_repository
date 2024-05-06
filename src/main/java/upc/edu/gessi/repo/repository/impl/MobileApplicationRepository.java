@@ -205,7 +205,9 @@ public class MobileApplicationRepository implements RdfRepository {
         if (!result.hasNext()) {
             throw new ApplicationNotFoundException("No applications were found");
         }
-        mobileApplicationFullDataDTOS.add(bindingSetToApplicationDTO(result));
+        while (result.hasNext()) {
+            mobileApplicationFullDataDTOS.add(bindingSetToMobileApplicationFullDataDTO(result.next()));
+        }
         return mobileApplicationFullDataDTOS;
     }
 
@@ -439,6 +441,7 @@ public class MobileApplicationRepository implements RdfRepository {
 
     public List<MobileApplicationFullDataDTO> findAllPaginated(final Integer page,
                                                                 final Integer size) throws ApplicationNotFoundException {
+        // TODO add Full query
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllSimplifiedQuery(page, size));
         List<MobileApplicationFullDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {

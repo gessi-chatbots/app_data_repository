@@ -18,14 +18,14 @@ public interface CrudAPI<T> extends BaseAPI {
     @GetMapping("/list")
     ResponseEntity<List<T>> getListed(@RequestBody List<String> ids) throws ObjectNotFoundException;
 
-    @GetMapping(value = "/", params = {"paginated"}, produces = "application/json")
+    @GetMapping(value = "/paginated", produces = "application/json")
     @ResponseBody
     ResponseEntity<List<T>> getAllPaginated(
             @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,
             @RequestParam(value = "size", defaultValue = "20", required = false) Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
 
-    @GetMapping("/paginated")
+    @GetMapping("/")
     ResponseEntity<List<T>> getAll();
 
     @PutMapping("/")
