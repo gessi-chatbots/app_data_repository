@@ -8,7 +8,6 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
-import org.eclipse.rdf4j.sparqlbuilder.constraint.Bind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -19,7 +18,7 @@ import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
-import upc.edu.gessi.repo.repository.RdfRepository;
+import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
 import upc.edu.gessi.repo.service.impl.ReviewServiceImpl;
 import upc.edu.gessi.repo.util.ApplicationQueryBuilder;
@@ -33,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Repository
-public class MobileApplicationRepository implements RdfRepository {
+public class MobileApplicationRepositoryImpl implements MobileApplicationRepository {
 
     private final HTTPRepository repository;
 
@@ -47,14 +46,14 @@ public class MobileApplicationRepository implements RdfRepository {
     private final ReviewServiceImpl reviewServiceImpl;
     private final ReviewQueryBuilder reviewQueryBuilder;
     @Autowired
-    public MobileApplicationRepository(final @Value("${db.url}") String url,
-                                       final @Value("${db.username}") String username,
-                                       final @Value("${db.password}") String password,
-                                       final AppDataScannerServiceImpl appDataScannerServ,
-                                       final SchemaIRI schema,
-                                       final ApplicationQueryBuilder appQB,
-                                       final ReviewQueryBuilder reviewQB,
-                                       final ReviewServiceImpl reviewSv) {
+    public MobileApplicationRepositoryImpl(final @Value("${db.url}") String url,
+                                           final @Value("${db.username}") String username,
+                                           final @Value("${db.password}") String password,
+                                           final AppDataScannerServiceImpl appDataScannerServ,
+                                           final SchemaIRI schema,
+                                           final ApplicationQueryBuilder appQB,
+                                           final ReviewQueryBuilder reviewQB,
+                                           final ReviewServiceImpl reviewSv) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         appDataScannerServiceImpl = appDataScannerServ;
@@ -208,7 +207,10 @@ public class MobileApplicationRepository implements RdfRepository {
 
         return mobileApplicationFullDataDTOS;
     }
-    public MobileApplicationFullDataDTO insertApp(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
+
+
+    @Override
+    public MobileApplicationFullDataDTO insert(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
         List<Statement> statements = new ArrayList<>();
 
         IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + mobileApplicationFullDataDTO.getPackageName());
@@ -231,6 +233,16 @@ public class MobileApplicationRepository implements RdfRepository {
         commitChanges(statements);
 
         return mobileApplicationFullDataDTO;
+    }
+
+    @Override
+    public MobileApplicationFullDataDTO update(MobileApplicationFullDataDTO entity) {
+        return null;
+    }
+
+    @Override
+    public void delete(String id) {
+
     }
 
     private void addReviewsToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
@@ -377,6 +389,7 @@ public class MobileApplicationRepository implements RdfRepository {
         statements.add(factory.createStatement(appDescription, schemaIRI.getTypeIRI(), schemaIRI.getDigitalDocumentIRI()));
     }
 
+    @Override
     public void addFeature(final MobileApplicationFullDataDTO completeApplicationDataDTO,
                            final IRI sub,
                            final List<Statement> statements) {
@@ -390,6 +403,7 @@ public class MobileApplicationRepository implements RdfRepository {
         }
     }
 
+    @Override
     public List<GraphApp> getAllApps() {
         List<GraphApp> apps = new ArrayList<>();
 
@@ -417,10 +431,6 @@ public class MobileApplicationRepository implements RdfRepository {
     }
 
 
-    public void insert(final MobileApplicationFullDataDTO completeApplicationDataDTO) {
-        insertApp(completeApplicationDataDTO);
-    }
-
     public void update(int daysFromLastUpdate) {
         List<GraphApp> apps = getAllApps();
         for (GraphApp app : apps) {
@@ -428,7 +438,7 @@ public class MobileApplicationRepository implements RdfRepository {
             MobileApplicationFullDataDTO updatedCompleteApplicationDataDTO = appDataScannerServiceImpl.scanApp(app, daysFromLastUpdate);
 
             if (updatedCompleteApplicationDataDTO != null) {
-                insertApp(updatedCompleteApplicationDataDTO);
+                insert(updatedCompleteApplicationDataDTO);
             }
 
             //TODO remove reviews older than MAX_DAYS_REVIEWS
@@ -449,6 +459,7 @@ public class MobileApplicationRepository implements RdfRepository {
         return applicationDTOS;
     }
 
+    @Override
     public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws MobileApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedSimplifiedQuery(page, size));
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
@@ -461,6 +472,7 @@ public class MobileApplicationRepository implements RdfRepository {
         return applicationDTOS;
     }
 
+    @Override
     public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws MobileApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationNamesQuery());
         if (!result.hasNext()) {
@@ -478,6 +490,7 @@ public class MobileApplicationRepository implements RdfRepository {
         return applicationDTOS;
     }
 
+    @Override
     public MobileApplicationFullDataDTO findByName(final String appName) throws ObjectNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findByNameQuery(appName));
         if (!result.hasNext()) {

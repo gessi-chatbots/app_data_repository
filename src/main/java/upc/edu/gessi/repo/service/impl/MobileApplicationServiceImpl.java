@@ -11,7 +11,8 @@ import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
-import upc.edu.gessi.repo.repository.impl.MobileApplicationRepository;
+import upc.edu.gessi.repo.repository.MobileApplicationRepository;
+import upc.edu.gessi.repo.repository.RepositoryFactory;
 import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.util.Utils;
 
@@ -23,28 +24,28 @@ import java.util.List;
 @Lazy
 public class MobileApplicationServiceImpl implements MobileApplicationService {
 
-    private final MobileApplicationRepository mobileApplicationRepository;
+    private final RepositoryFactory repositoryFactory;
 
     @Autowired
-    public MobileApplicationServiceImpl(final MobileApplicationRepository appRepository) {
-        mobileApplicationRepository = appRepository;
+    public MobileApplicationServiceImpl(final RepositoryFactory repoFact) {
+        repositoryFactory = repoFact;
     }
 
     @Override
     public List<MobileApplicationBasicDataDTO> getAllBasicData() throws MobileApplicationNotFoundException {
-        return mobileApplicationRepository.findAllApplicationsBasicData();
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllApplicationsBasicData();
     }
 
     @Override
     public List<GraphApp> getAllApps() {
-        return mobileApplicationRepository.getAllApps();
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).getAllApps();
     }
 
     @Override
     public void addFeatures(final MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
                             final IRI sub,
                             final List<Statement> statements) {
-        mobileApplicationRepository.addFeature(mobileApplicationFullDataDTO, sub, statements);
+        ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).addFeature(mobileApplicationFullDataDTO, sub, statements);
     }
 
     @Override
@@ -52,7 +53,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         List<MobileApplicationFullDataDTO> insertedApps = new ArrayList<>();
         for (MobileApplicationFullDataDTO mobileApplicationFullDataDTO : dtos) {
             // Insert App
-            insertedApps.add(mobileApplicationRepository.insertApp(mobileApplicationFullDataDTO));
+            insertedApps.add(((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).insert(mobileApplicationFullDataDTO));
             // Insert App reviews
             // TODO use review Service
 
@@ -67,7 +68,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException {
-        return mobileApplicationRepository.findByName(Utils.sanitizeString(id));
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findByName(Utils.sanitizeString(id));
     }
 
     @Override
@@ -75,7 +76,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
         for (String id : ids) {
             try {
-                mobileApplicationFullDataDTOS.add(mobileApplicationRepository.findByName(id));
+                mobileApplicationFullDataDTOS.add(((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findByName(id));
             } catch (ObjectNotFoundException ignored) {
                 // do nothing, refactor in future to error tracking
             }
@@ -86,19 +87,21 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public List<MobileApplicationFullDataDTO> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return mobileApplicationRepository.findAllPaginated(page, size);
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllPaginated(page, size);
     }
 
     @Override
     public List<MobileApplicationBasicDataDTO> getAllBasicDataPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return mobileApplicationRepository.findAllBasicDataPaginated(page, size);
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllBasicDataPaginated(page, size);
     }
     @Override
     public List<MobileApplicationFullDataDTO> getAll() {
         try {
-            return mobileApplicationRepository.findAll();
+            return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAll();
         } catch (MobileApplicationNotFoundException mobileApplicationNotFoundException) {
             return new ArrayList<>();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -112,7 +115,9 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     public Void delete() {
         return null;
     }
-
+    private Object useRepository(Class<?> clazz) {
+        return repositoryFactory.createRepository(clazz);
+    }
     /*
         public List<String> getResultsContaining(String text) {
             RepositoryConnection repoConnection = repository.getConnection();

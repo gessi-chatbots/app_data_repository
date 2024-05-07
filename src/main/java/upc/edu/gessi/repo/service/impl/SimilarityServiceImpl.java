@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityApp;
-import upc.edu.gessi.repo.repository.impl.MobileApplicationRepository;
+import upc.edu.gessi.repo.repository.impl.MobileApplicationRepositoryImpl;
 import upc.edu.gessi.repo.service.SimilarityService;
 
 import java.util.*;
@@ -21,7 +21,7 @@ public class SimilarityServiceImpl implements SimilarityService {
     private Logger logger = LoggerFactory.getLogger(SimilarityServiceImpl.class);
 
     @Autowired
-    MobileApplicationRepository mobileApplicationRepository;
+    MobileApplicationRepositoryImpl mobileApplicationRepositoryImpl;
 
     @Autowired
     GraphDBServiceImpl graphDBServiceImpl;
@@ -66,9 +66,9 @@ public class SimilarityServiceImpl implements SimilarityService {
         for (String app : apps) {
             List<SimilarityApp> similarApps;
             if (documentType.equals(DocumentType.ALL)) {
-                List<SimilarityApp> descriptionSimilarities = mobileApplicationRepository.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
-                List<SimilarityApp> summarySimilarities = mobileApplicationRepository.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
-                List<SimilarityApp> changelogSimilarities = mobileApplicationRepository.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
+                List<SimilarityApp> descriptionSimilarities = mobileApplicationRepositoryImpl.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
+                List<SimilarityApp> summarySimilarities = mobileApplicationRepositoryImpl.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
+                List<SimilarityApp> changelogSimilarities = mobileApplicationRepositoryImpl.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
 
                 similarApps = descriptionSimilarities;
                 mergeSimilarities(similarApps, summarySimilarities, 2);
@@ -77,7 +77,7 @@ public class SimilarityServiceImpl implements SimilarityService {
                         .collect(Collectors.toList()).subList(0, k);
 
             } else {
-                similarApps = mobileApplicationRepository.getTopKSimilarApps(app, k, documentType);
+                similarApps = mobileApplicationRepositoryImpl.getTopKSimilarApps(app, k, documentType);
             }
             res.put("https://schema.org/MobileApplication/" + app, similarApps);
         }
