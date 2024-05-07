@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
-import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public interface MobileApplicationsAPI extends CrudAPI<MobileApplicationFullData
 
     @GetMapping(value = "/data", produces = "application/json")
     @ResponseBody
-    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsNames() throws ApplicationNotFoundException;
+    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsNames() throws MobileApplicationNotFoundException;
 
     @GetMapping(value = "/data/paginated", produces = "application/json")
     @ResponseBody

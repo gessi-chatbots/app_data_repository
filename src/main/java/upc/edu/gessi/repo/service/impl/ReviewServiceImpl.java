@@ -18,7 +18,7 @@ import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
-import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.impl.ReviewRepository;
@@ -64,11 +64,11 @@ public class ReviewServiceImpl implements ReviewService {
 
 
 
-    public List<MobileApplicationBasicDataDTO> findAllApplicationNames() throws ApplicationNotFoundException {
+    public List<MobileApplicationBasicDataDTO> findAllApplicationNames() throws MobileApplicationNotFoundException {
         return  (List<MobileApplicationBasicDataDTO>) reviewRepository.findAllReviewIDs();
     }
 
-    public List findByName(final String appName) throws ApplicationNotFoundException {
+    public List findByName(final String appName) throws MobileApplicationNotFoundException {
         return reviewRepository.findByApplicationName(appName);
     }
 

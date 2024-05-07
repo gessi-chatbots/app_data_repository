@@ -8,6 +8,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Bind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.RdfRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
@@ -68,25 +69,6 @@ public class MobileApplicationRepository implements RdfRepository {
         TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
         return tupleQuery.evaluate();
     }
-    private MobileApplicationFullDataDTO bindingSetToMobileApplicationFullDataDTO(final BindingSet bindings) {
-        MobileApplicationFullDataDTO mobileApplicationBasicDataDTO = new MobileApplicationFullDataDTO();
-        if (bindings.getBinding("name") != null
-                && bindings.getBinding("name").getValue() != null) {
-            mobileApplicationBasicDataDTO.setAppName(
-                    bindings.getBinding("name").getValue().stringValue());
-        }
-        if (bindings.getBinding("package") != null
-                && bindings.getBinding("package").getValue() != null) {
-            mobileApplicationBasicDataDTO.setPackageName(
-                    bindings.getBinding("package").getValue().stringValue());
-        }
-        if (bindings.getBinding("reviewCount") != null
-                && bindings.getBinding("reviewCount").getValue() != null) {
-            mobileApplicationBasicDataDTO.setReviewCount(
-                    Integer.valueOf(bindings.getBinding("reviewCount").getValue().stringValue()));
-        }
-        return mobileApplicationBasicDataDTO;
-    }
 
     private MobileApplicationBasicDataDTO bindingSetToMobileApplicationBasicDataDTO(final BindingSet bindings) {
         MobileApplicationBasicDataDTO mobileApplicationBasicDataDTO = new MobileApplicationBasicDataDTO();
@@ -108,80 +90,83 @@ public class MobileApplicationRepository implements RdfRepository {
         return mobileApplicationBasicDataDTO;
     }
 
-    private MobileApplicationFullDataDTO bindingSetToApplicationDTO(final TupleQueryResult result) {
+    private MobileApplicationFullDataDTO queryResultToMobileApplicationFullDataDTO(final TupleQueryResult result) {
         MobileApplicationFullDataDTO mobileApplicationFullDataDTO = new MobileApplicationFullDataDTO();
         while (result.hasNext()) {
             BindingSet bindings = result.next();
             if (existsPredicateAndObject(bindings)) {
-                String predicateValue = bindings.getBinding("predicate").getValue().stringValue();
-                String identifierIRI = schemaIRI.getIdentifierIRI().stringValue();
-                String authorIRI = schemaIRI.getAuthorIRI().stringValue();
-                String datePublishedIRI = schemaIRI.getDatePublishedIRI().stringValue();
-                String versionIRI = schemaIRI.getSoftwareVersionIRI().stringValue();
-                String categoryIRI = schemaIRI.getCategoryIRI().stringValue();
-                String reviewIRI = schemaIRI.getReviewsIRI().stringValue();
-                String nameIRI = schemaIRI.getNameIRI().stringValue();
-                if (predicateValue.equals(identifierIRI)) {
-                    mobileApplicationFullDataDTO.setPackageName(bindings
-                            .getBinding("object")
-                            .getValue()
-                            .stringValue());
-                } else if (predicateValue.equals(authorIRI)) {
-                    String auth = bindings
-                            .getBinding("object")
-                            .getValue()
-                            .stringValue()
-                            .split("https://schema.org/Organization/")[1];
-                    mobileApplicationFullDataDTO.setDeveloper(auth);
-                } else if (predicateValue.equals(datePublishedIRI)) {
-                    String dateTimeString = bindings.getBinding("object").getValue().stringValue();
-                    String datePart = dateTimeString.substring(0, 10);
-                    Date sqlDate = Date.valueOf(datePart);
-                    mobileApplicationFullDataDTO.setReleaseDate(sqlDate);
-                } else if (predicateValue.equals(versionIRI)) {
-                    mobileApplicationFullDataDTO.setVersion(bindings.getBinding("object").getValue().stringValue());
-                } else if (predicateValue.equals(categoryIRI)) {
-                    mobileApplicationFullDataDTO.getCategories().add(bindings.getBinding("object").getValue().stringValue());
-                } else if (predicateValue.equals(reviewIRI)) {
-                    String reviewId = bindings
-                            .getBinding("object")
-                            .getValue()
-                            .stringValue()
-                            .split("https://schema.org/Review/")[1];
-                    ReviewDTO reviewResponseDTO = new ReviewDTO();
-                    reviewResponseDTO.setId(reviewId);
-                    List<String> reviewIds = new ArrayList<>(Collections.singleton(reviewResponseDTO.getId()));
-
-                    TupleQueryResult textResult =
-                            runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
-                    if (textResult.hasNext()) {
-                        BindingSet bindingSet = textResult.next();
-                        if (bindingSet.getBinding("text") != null
-                                && bindingSet.getBinding("text").getValue().stringValue() != null) {
-                            reviewResponseDTO.setReviewText(bindingSet.getBinding("text").getValue().stringValue());
-                        }
-                    }
-
-                    reviewResponseDTO.setSentences(new ArrayList<>());
-                    TupleQueryResult sentencesResult =
-                            runSparqlQuery(
-                                    reviewQueryBuilder
-                                            .findReviewSentencesEmotions(
-                                                    new ArrayList<>(Collections.singleton(reviewResponseDTO.getId()))));
-                    while (sentencesResult.hasNext()) {
-                        reviewResponseDTO
-                                .getSentences()
-                                .add(reviewServiceImpl.getSentenceDTO(sentencesResult));
-                    }
-                    mobileApplicationFullDataDTO.getReviews().add(reviewResponseDTO);
-                } else if (predicateValue.equals(nameIRI)) {
-                    mobileApplicationFullDataDTO.setAppName(bindings.getBinding("object").getValue().stringValue());
-                }
+                updateMobileAppFromBindings(mobileApplicationFullDataDTO, bindings);
             }
         }
         return mobileApplicationFullDataDTO;
     }
 
+    private void updateMobileAppFromBindings(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, BindingSet bindings) {
+        String predicateValue = bindings.getBinding("predicate").getValue().stringValue();
+        String identifierIRI = schemaIRI.getIdentifierIRI().stringValue();
+        String authorIRI = schemaIRI.getAuthorIRI().stringValue();
+        String datePublishedIRI = schemaIRI.getDatePublishedIRI().stringValue();
+        String versionIRI = schemaIRI.getSoftwareVersionIRI().stringValue();
+        String categoryIRI = schemaIRI.getCategoryIRI().stringValue();
+        String reviewIRI = schemaIRI.getReviewsIRI().stringValue();
+        String nameIRI = schemaIRI.getNameIRI().stringValue();
+        if (predicateValue.equals(identifierIRI)) {
+            mobileApplicationFullDataDTO.setPackageName(bindings
+                    .getBinding("object")
+                    .getValue()
+                    .stringValue());
+        } else if (predicateValue.equals(authorIRI)) {
+            String auth = bindings
+                    .getBinding("object")
+                    .getValue()
+                    .stringValue()
+                    .split("https://schema.org/Organization/")[1];
+            mobileApplicationFullDataDTO.setDeveloper(auth);
+        } else if (predicateValue.equals(datePublishedIRI)) {
+            String dateTimeString = bindings.getBinding("object").getValue().stringValue();
+            String datePart = dateTimeString.substring(0, 10);
+            Date sqlDate = Date.valueOf(datePart);
+            mobileApplicationFullDataDTO.setReleaseDate(sqlDate);
+        } else if (predicateValue.equals(versionIRI)) {
+            mobileApplicationFullDataDTO.setVersion(bindings.getBinding("object").getValue().stringValue());
+        } else if (predicateValue.equals(categoryIRI)) {
+            mobileApplicationFullDataDTO.getCategories().add(bindings.getBinding("object").getValue().stringValue());
+        } else if (predicateValue.equals(reviewIRI)) {
+            String reviewId = bindings
+                    .getBinding("object")
+                    .getValue()
+                    .stringValue()
+                    .split("https://schema.org/Review/")[1];
+            ReviewDTO reviewResponseDTO = new ReviewDTO();
+            reviewResponseDTO.setId(reviewId);
+            List<String> reviewIds = new ArrayList<>(Collections.singleton(reviewResponseDTO.getId()));
+
+            TupleQueryResult textResult =
+                    runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
+            if (textResult.hasNext()) {
+                BindingSet bindingSet = textResult.next();
+                if (bindingSet.getBinding("text") != null
+                        && bindingSet.getBinding("text").getValue().stringValue() != null) {
+                    reviewResponseDTO.setReviewText(bindingSet.getBinding("text").getValue().stringValue());
+                }
+            }
+
+            reviewResponseDTO.setSentences(new ArrayList<>());
+            TupleQueryResult sentencesResult =
+                    runSparqlQuery(
+                            reviewQueryBuilder
+                                    .findReviewSentencesEmotions(
+                                            new ArrayList<>(Collections.singleton(reviewResponseDTO.getId()))));
+            while (sentencesResult.hasNext()) {
+                reviewResponseDTO
+                        .getSentences()
+                        .add(reviewServiceImpl.getSentenceDTO(sentencesResult));
+            }
+            mobileApplicationFullDataDTO.getReviews().add(reviewResponseDTO);
+        } else if (predicateValue.equals(nameIRI)) {
+            mobileApplicationFullDataDTO.setAppName(bindings.getBinding("object").getValue().stringValue());
+        }
+    }
 
 
     private boolean existsPredicateAndObject(BindingSet bindings) {
@@ -199,18 +184,30 @@ public class MobileApplicationRepository implements RdfRepository {
     }
 
     @Override
-    public List<MobileApplicationFullDataDTO> findAll() throws ApplicationNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllQuery());
+    public List<MobileApplicationFullDataDTO> findAll() throws MobileApplicationNotFoundException {
+        List<BindingSet> bindingSetResults = runSparqlQuery(applicationQueryBuilder.findAllQuery()).stream().toList();
         List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
-        if (!result.hasNext()) {
-            throw new ApplicationNotFoundException("No applications were found");
+
+        String currentAppUri = null;
+        MobileApplicationFullDataDTO mobileApplicationFullDataDTO = null;
+        for (BindingSet bs : bindingSetResults) {
+            String appUri = bs.getBinding("subject").getValue().stringValue();
+            if (!appUri.equals(currentAppUri)) {
+                if (mobileApplicationFullDataDTO != null) {
+                    mobileApplicationFullDataDTOS.add(mobileApplicationFullDataDTO);
+                }
+                currentAppUri = appUri;
+                mobileApplicationFullDataDTO = new MobileApplicationFullDataDTO();
+            }
+            updateMobileAppFromBindings(mobileApplicationFullDataDTO, bs);
+
         }
-        while (result.hasNext()) {
-            mobileApplicationFullDataDTOS.add(bindingSetToMobileApplicationFullDataDTO(result.next()));
+        if (mobileApplicationFullDataDTOS.isEmpty()) {
+            throw new MobileApplicationNotFoundException("No applications were found");
         }
+
         return mobileApplicationFullDataDTOS;
     }
-
     public MobileApplicationFullDataDTO insertApp(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
         List<Statement> statements = new ArrayList<>();
 
@@ -440,24 +437,23 @@ public class MobileApplicationRepository implements RdfRepository {
 
 
     public List<MobileApplicationFullDataDTO> findAllPaginated(final Integer page,
-                                                                final Integer size) throws ApplicationNotFoundException {
-        // TODO add Full query
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllSimplifiedQuery(page, size));
+                                                                final Integer size) throws MobileApplicationNotFoundException {
+        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedQuery(page, size));
         List<MobileApplicationFullDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
-            throw new ApplicationNotFoundException("No applications were found");
+            throw new MobileApplicationNotFoundException("No applications were found");
         }
         while (result.hasNext()) {
-            applicationDTOS.add(bindingSetToMobileApplicationFullDataDTO(result.next()));
+            applicationDTOS.add(queryResultToMobileApplicationFullDataDTO(result));
         }
         return applicationDTOS;
     }
 
-    public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws ApplicationNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllSimplifiedQuery(page, size));
+    public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws MobileApplicationNotFoundException {
+        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedSimplifiedQuery(page, size));
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
-            throw new ApplicationNotFoundException("No applications were found");
+            throw new MobileApplicationNotFoundException("No applications were found");
         }
         while (result.hasNext()) {
             applicationDTOS.add(bindingSetToMobileApplicationBasicDataDTO(result.next()));
@@ -465,14 +461,14 @@ public class MobileApplicationRepository implements RdfRepository {
         return applicationDTOS;
     }
 
-    public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws ApplicationNotFoundException {
+    public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws MobileApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationNamesQuery());
         if (!result.hasNext()) {
-            throw new ApplicationNotFoundException("No applications were found");
+            throw new MobileApplicationNotFoundException("No applications were found");
         }
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         while (result.hasNext()) {
-            MobileApplicationFullDataDTO fullDataDTO = bindingSetToMobileApplicationFullDataDTO(result.next());
+            MobileApplicationFullDataDTO fullDataDTO = queryResultToMobileApplicationFullDataDTO(result);
             MobileApplicationBasicDataDTO basicDataDTO = new MobileApplicationBasicDataDTO();
             basicDataDTO.setAppName(fullDataDTO.getAppName());
             basicDataDTO.setPackageName(fullDataDTO.getPackageName());
@@ -487,7 +483,7 @@ public class MobileApplicationRepository implements RdfRepository {
         if (!result.hasNext()) {
             throw new ObjectNotFoundException("No applications were found with the given app name");
         }
-        return bindingSetToApplicationDTO(result);
+        return queryResultToMobileApplicationFullDataDTO(result);
     }
 
     public List<SimilarityApp> getTopKSimilarApps(String app, int k, DocumentType documentType) {

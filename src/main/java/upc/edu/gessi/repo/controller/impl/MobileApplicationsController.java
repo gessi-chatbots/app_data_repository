@@ -108,7 +108,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
 
     @Override
-    public ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsNames() throws ApplicationNotFoundException {
+    public ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsNames() throws MobileApplicationNotFoundException {
         return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAllBasicData(), HttpStatus.OK);
     }
 

@@ -1,7 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
 
-import org.apache.poi.xdgf.util.Util;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.ApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.impl.MobileApplicationRepository;
 import upc.edu.gessi.repo.service.MobileApplicationService;
@@ -32,7 +31,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> getAllBasicData() throws ApplicationNotFoundException {
+    public List<MobileApplicationBasicDataDTO> getAllBasicData() throws MobileApplicationNotFoundException {
         return mobileApplicationRepository.findAllApplicationsBasicData();
     }
 
@@ -55,13 +54,13 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
             // Insert App
             insertedApps.add(mobileApplicationRepository.insertApp(mobileApplicationFullDataDTO));
             // Insert App reviews
-            // TODO
+            // TODO use review Service
 
             // Insert app Features
-            // TODO
+            // TODO use Feature Service
 
             // Insert App digital Documents
-            // TODO
+            // TODO use digital document service
         }
         return insertedApps;
     }
@@ -98,7 +97,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     public List<MobileApplicationFullDataDTO> getAll() {
         try {
             return mobileApplicationRepository.findAll();
-        } catch (ApplicationNotFoundException applicationNotFoundException) {
+        } catch (MobileApplicationNotFoundException mobileApplicationNotFoundException) {
             return new ArrayList<>();
         }
 
