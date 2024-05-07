@@ -84,6 +84,8 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
         return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAllPaginated(page, size), HttpStatus.OK);
     }
 
+
+    @Override
     public ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsBasicDataPaginated(final Integer page,
                                                                               final Integer size)
             throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
