@@ -13,7 +13,6 @@ import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
-import upc.edu.gessi.repo.repository.impl.MobileApplicationRepositoryImpl;
 import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.util.Utils;
 
@@ -113,8 +112,8 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public Void delete() {
-        return null;
+    public void delete(String id) {
+        ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).delete(id);
     }
     private Object useRepository(Class<?> clazz) {
         return repositoryFactory.createRepository(clazz);

@@ -20,5 +20,5 @@ public interface CrudService<T> {
 
     void update(T entity);
 
-    Void delete();
+    void delete(String id);
 }

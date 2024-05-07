@@ -345,7 +345,6 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public Void delete() {
-        return null;
+    public void delete(String id) {
     }
 }

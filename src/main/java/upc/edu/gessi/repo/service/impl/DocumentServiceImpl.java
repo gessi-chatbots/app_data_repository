@@ -89,7 +89,6 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public Void delete() {
-        return null;
+    public void delete(String id) {
     }
 }

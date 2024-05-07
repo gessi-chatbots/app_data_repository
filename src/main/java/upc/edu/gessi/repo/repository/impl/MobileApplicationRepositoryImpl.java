@@ -125,7 +125,8 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
     @Override
     public void delete(String id) {
-
+        Utils.runSparqlUpdateQuery(repository.getConnection(),
+                applicationQueryBuilder.deleteByNameQuery(id));
     }
 
     @Override

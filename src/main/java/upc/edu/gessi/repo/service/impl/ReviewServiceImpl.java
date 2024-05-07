@@ -399,7 +399,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Void delete() {
-        return null;
+    public void delete(String id) {
+
     }
 }

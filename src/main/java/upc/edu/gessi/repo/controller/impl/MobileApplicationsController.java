@@ -139,7 +139,8 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
     @Override
     public ResponseEntity<Void> delete(String id) {
-        return null;
+        ((MobileApplicationService) useService(MobileApplicationService.class)).delete(id);
+        return new ResponseEntity<>((HttpStatus.NO_CONTENT));
     }
 
     private Object useService(Class<?> clazz) {
