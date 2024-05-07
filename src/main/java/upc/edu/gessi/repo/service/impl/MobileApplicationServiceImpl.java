@@ -109,7 +109,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public void update(MobileApplicationFullDataDTO entity) {
-        ((MobileApplicationRepository) useRepository(MobileApplicationRepositoryImpl.class)).update(entity);
+        ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).update(entity);
     }
 
     @Override
