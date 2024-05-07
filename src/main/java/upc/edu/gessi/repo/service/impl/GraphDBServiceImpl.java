@@ -20,8 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import upc.edu.gessi.repo.service.GraphDBService;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.io.File;
@@ -30,27 +32,31 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 @Service
-public class GraphDBService {
+@Lazy
+public class GraphDBServiceImpl implements GraphDBService {
 
-    private Logger logger = LoggerFactory.getLogger(GraphDBService.class);
+    private Logger logger = LoggerFactory.getLogger(GraphDBServiceImpl.class);
 
     private HTTPRepository repository;
 
-    public GraphDBService(@Value("${db.url}") String url,
-                          @Value("${db.username}") String username,
-                          @Value("${db.password}") String password) {
+    private int count;
+
+    public GraphDBServiceImpl(@Value("${db.url}") String url,
+                              @Value("${db.username}") String username,
+                              @Value("${db.password}") String password) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
     }
 
+    @Override
     public void updateRepository(String url) {
         repository = new HTTPRepository(url);
     }
 
-    private int count;
-
+    @Override
     public int getCount() {return count;}
 
+    @Override
     public void deleteSameAsRelations() {
         String query = "delete where { \n" +
                 "    ?x <https://schema.org/sameAs> ?z .\n" +
@@ -63,6 +69,7 @@ public class GraphDBService {
         logger.info(counter + " similarity relations deleted");
     }
 
+    @Override
     public void exportRepository(String fileName) throws Exception {
         RepositoryConnection connection = repository.getConnection();
         FileOutputStream outputStream = new FileOutputStream("src/main/resources/exports/" + fileName);
@@ -72,6 +79,7 @@ public class GraphDBService {
     }
 
 
+    @Override
     public void insertRDF(MultipartFile file) throws Exception {
         // Parse the Turtle file into an RDF model
         try (InputStream inputStream = file.getInputStream()) {
@@ -86,6 +94,7 @@ public class GraphDBService {
         }
     }
 
+    @Override
     public void insertRML(String jsonFolder, File mappingFile) throws Exception {
         InputStream mappingStream = new FileInputStream(mappingFile);
         QuadStore rmlStore = QuadStoreFactory.read(mappingStream);

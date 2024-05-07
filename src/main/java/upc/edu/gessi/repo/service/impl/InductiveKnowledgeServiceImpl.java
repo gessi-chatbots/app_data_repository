@@ -9,20 +9,40 @@ import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
+import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 @Service
-public class InductiveKnowledgeService {
+@Lazy
+public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService {
 
-    private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeService.class);
+    private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
 
     @Value("${inductive-knowledge-service.url}")
     private String url;
+    private void request(StringEntity entity) {
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        try {
+            HttpPost request = new HttpPost(url);
+            request.addHeader("Content-Type", "application/json");
+
+            request.setEntity(entity);
+            HttpResponse response = httpClient.execute(request);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                logger.error("There was some error");
+            }
+
+        } catch (Exception ex) {
+            logger.error("There was some error with feature extraction");
+        }
+    }
+
 
     public void addNodes(List<GraphNode> nodeList) {
         try {
@@ -43,23 +63,6 @@ public class InductiveKnowledgeService {
             request(stringEntity);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-        }
-    }
-
-    private void request(StringEntity entity) {
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        try {
-            HttpPost request = new HttpPost(url);
-            request.addHeader("Content-Type", "application/json");
-
-            request.setEntity(entity);
-            HttpResponse response = httpClient.execute(request);
-            if (response.getStatusLine().getStatusCode() != 200) {
-                logger.error("There was some error");
-            }
-
-        } catch (Exception ex) {
-            logger.error("There was some error with feature extraction");
         }
     }
 

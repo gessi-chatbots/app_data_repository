@@ -4,27 +4,30 @@ import org.eclipse.rdf4j.model.IRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityApp;
-import upc.edu.gessi.repo.repository.impl.ApplicationRepository;
+import upc.edu.gessi.repo.repository.impl.MobileApplicationRepositoryImpl;
+import upc.edu.gessi.repo.service.SimilarityService;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class SimilarityService {
+@Lazy
+public class SimilarityServiceImpl implements SimilarityService {
 
-    private Logger logger = LoggerFactory.getLogger(SimilarityService.class);
-
-    @Autowired
-    ApplicationRepository applicationRepository;
+    private Logger logger = LoggerFactory.getLogger(SimilarityServiceImpl.class);
 
     @Autowired
-    GraphDBService graphDBService;
+    MobileApplicationRepositoryImpl mobileApplicationRepositoryImpl;
 
     @Autowired
-    FeatureService featureService;
+    GraphDBServiceImpl graphDBServiceImpl;
+
+    @Autowired
+    FeatureServiceImpl featureServiceImpl;
 /*
     public void computeSimilarity(SimilarityAlgorithm algorithm) {
         graphDBService.getAppsWithFeatures();
@@ -34,70 +37,6 @@ public class SimilarityService {
 
     }
 */
-    public Map<String, List<SimilarityApp>> getTopKSimilarApps(List<String> apps, int k, DocumentType documentType) {
-        Map<String, List<SimilarityApp>> res = new HashMap<>();
-        for (String app : apps) {
-            List<SimilarityApp> similarApps;
-            if (documentType.equals(DocumentType.ALL)) {
-                List<SimilarityApp> descriptionSimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
-                List<SimilarityApp> summarySimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
-                List<SimilarityApp> changelogSimilarities = applicationRepository.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
-
-                similarApps = descriptionSimilarities;
-                mergeSimilarities(similarApps, summarySimilarities, 2);
-                mergeSimilarities(similarApps, changelogSimilarities, 3);
-                similarApps = similarApps.stream().sorted(Comparator.comparingDouble(SimilarityApp::getScore).reversed())
-                        .collect(Collectors.toList()).subList(0, k);
-
-            } else {
-                similarApps = applicationRepository.getTopKSimilarApps(app, k, documentType);
-            }
-            res.put("https://schema.org/MobileApplication/" + app, similarApps);
-        }
-        return res;
-    }
-
-    public Map<String, List<SimilarityApp>> findAppsByFeature(List<String> features, Integer k, DocumentType documentType) {
-        Map<String, List<SimilarityApp>> res = new HashMap<>();
-        for (String feature : features) {
-            List<SimilarityApp> similarFeatures;
-            if (documentType.equals(DocumentType.ALL)) {
-                List<SimilarityApp> descriptionSimilarities = featureService.getTopKAppsByFeature(feature, k, DocumentType.DESCRIPTION);
-                List<SimilarityApp> summarySimilarities = featureService.getTopKAppsByFeature(feature, k, DocumentType.SUMMARY);
-                List<SimilarityApp> changelogSimilarities = featureService.getTopKAppsByFeature(feature, k, DocumentType.CHANGELOG);
-
-                similarFeatures = descriptionSimilarities;
-                mergeSimilarities(similarFeatures, summarySimilarities, 2);
-                mergeSimilarities(similarFeatures, changelogSimilarities, 3);
-                similarFeatures = similarFeatures.stream().sorted(Comparator.comparingDouble(SimilarityApp::getScore).reversed())
-                        .collect(Collectors.toList()).subList(0, k);
-
-            } else {
-                similarFeatures = featureService.getTopKAppsByFeature(feature, k, documentType);
-            }
-            res.put("https://schema.org/DefinedTerm/" + feature.replace(" ", ""), similarFeatures);
-        }
-        return res;
-    }
-
-    public List<SimilarityApp> findAppsByFeatures(List<String> features, Integer k, DocumentType documentType) {
-        Map<String, List<SimilarityApp>> res = findAppsByFeature(features, k, documentType);
-        List<SimilarityApp> similarityApps = new ArrayList<>();
-        for (List<SimilarityApp> apps : res.values()) {
-            for (SimilarityApp app : apps) {
-                app.setScore(app.getScore() / features.size());
-                SimilarityApp existingApp = similarityApps.stream()
-                        .filter(a -> a.getDocumentID().equals(app.getDocumentID())).findFirst().orElse(null);
-                if (existingApp == null) {
-                    similarityApps.add(app);
-                } else {
-                    existingApp.setScore(existingApp.getScore() + app.getScore() / features.size());
-                }
-            }
-        }
-        return similarityApps;
-    }
-
     private void mergeSimilarities(List<SimilarityApp> similarApps, List<SimilarityApp> summarySimilarities, int i) {
         for (SimilarityApp app1 : summarySimilarities) {
             SimilarityApp foundApp = null;
@@ -122,18 +61,81 @@ public class SimilarityService {
         }
     }
 
+    public Map<String, List<SimilarityApp>> getTopKSimilarApps(List<String> apps, int k, DocumentType documentType) {
+        Map<String, List<SimilarityApp>> res = new HashMap<>();
+        for (String app : apps) {
+            List<SimilarityApp> similarApps;
+            if (documentType.equals(DocumentType.ALL)) {
+                List<SimilarityApp> descriptionSimilarities = mobileApplicationRepositoryImpl.getTopKSimilarApps(app, k, DocumentType.DESCRIPTION);
+                List<SimilarityApp> summarySimilarities = mobileApplicationRepositoryImpl.getTopKSimilarApps(app, k, DocumentType.SUMMARY);
+                List<SimilarityApp> changelogSimilarities = mobileApplicationRepositoryImpl.getTopKSimilarApps(app, k, DocumentType.CHANGELOG);
+
+                similarApps = descriptionSimilarities;
+                mergeSimilarities(similarApps, summarySimilarities, 2);
+                mergeSimilarities(similarApps, changelogSimilarities, 3);
+                similarApps = similarApps.stream().sorted(Comparator.comparingDouble(SimilarityApp::getScore).reversed())
+                        .collect(Collectors.toList()).subList(0, k);
+
+            } else {
+                similarApps = mobileApplicationRepositoryImpl.getTopKSimilarApps(app, k, documentType);
+            }
+            res.put("https://schema.org/MobileApplication/" + app, similarApps);
+        }
+        return res;
+    }
+
+    public Map<String, List<SimilarityApp>> findAppsByFeature(List<String> features, Integer k, DocumentType documentType) {
+        Map<String, List<SimilarityApp>> res = new HashMap<>();
+        for (String feature : features) {
+            List<SimilarityApp> similarFeatures;
+            if (documentType.equals(DocumentType.ALL)) {
+                List<SimilarityApp> descriptionSimilarities = featureServiceImpl.getTopKAppsByFeature(feature, k, DocumentType.DESCRIPTION);
+                List<SimilarityApp> summarySimilarities = featureServiceImpl.getTopKAppsByFeature(feature, k, DocumentType.SUMMARY);
+                List<SimilarityApp> changelogSimilarities = featureServiceImpl.getTopKAppsByFeature(feature, k, DocumentType.CHANGELOG);
+
+                similarFeatures = descriptionSimilarities;
+                mergeSimilarities(similarFeatures, summarySimilarities, 2);
+                mergeSimilarities(similarFeatures, changelogSimilarities, 3);
+                similarFeatures = similarFeatures.stream().sorted(Comparator.comparingDouble(SimilarityApp::getScore).reversed())
+                        .collect(Collectors.toList()).subList(0, k);
+
+            } else {
+                similarFeatures = featureServiceImpl.getTopKAppsByFeature(feature, k, documentType);
+            }
+            res.put("https://schema.org/DefinedTerm/" + feature.replace(" ", ""), similarFeatures);
+        }
+        return res;
+    }
+    public List<SimilarityApp> findAppsByFeatures(List<String> features, Integer k, DocumentType documentType) {
+        Map<String, List<SimilarityApp>> res = findAppsByFeature(features, k, documentType);
+        List<SimilarityApp> similarityApps = new ArrayList<>();
+        for (List<SimilarityApp> apps : res.values()) {
+            for (SimilarityApp app : apps) {
+                app.setScore(app.getScore() / features.size());
+                SimilarityApp existingApp = similarityApps.stream()
+                        .filter(a -> a.getDocumentID().equals(app.getDocumentID())).findFirst().orElse(null);
+                if (existingApp == null) {
+                    similarityApps.add(app);
+                } else {
+                    existingApp.setScore(existingApp.getScore() + app.getScore() / features.size());
+                }
+            }
+        }
+        return similarityApps;
+    }
+
     public void computeFeatureSimilarity(double synonymThreshold) {
-        List<IRI> features = featureService.getAllFeatures();
+        List<IRI> features = featureServiceImpl.getAllFeatures();
         int count = 0;
         for (IRI feature : features) {
-            featureService.connectFeatureWithSynonyms(feature, synonymThreshold);
+            featureServiceImpl.connectFeatureWithSynonyms(feature, synonymThreshold);
             ++count;
             if (count % 100 == 0) logger.info(count + " apps out of " + features.size());
         }
     }
 
     public void deleteFeatureSimilarities() {
-        graphDBService.deleteSameAsRelations();
+        graphDBServiceImpl.deleteSameAsRelations();
     }
 
 }

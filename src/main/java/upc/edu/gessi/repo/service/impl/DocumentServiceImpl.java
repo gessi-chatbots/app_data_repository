@@ -6,22 +6,27 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import upc.edu.gessi.repo.dto.Document;
 import upc.edu.gessi.repo.dto.graph.GraphDocument;
+import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.service.DocumentService;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class DocumentService {
+@Lazy
+public class DocumentServiceImpl implements DocumentService {
 
     private final HTTPRepository repository;
 
     @Autowired
-    public DocumentService(final @Value("${db.url}") String url,
-                                 final @Value("${db.username}") String username,
-                                 final @Value("${db.password}") String password) {
+    public DocumentServiceImpl(final @Value("${db.url}") String url,
+                               final @Value("${db.username}") String username,
+                               final @Value("${db.password}") String password) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
     }
@@ -54,4 +59,36 @@ public class DocumentService {
         return apps;
     }
 
+    @Override
+    public List<Document> create(List<Document> dtos) {
+        return null;
+    }
+
+    @Override
+    public Document get(String id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Document> getListed(List<String> id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Document> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return null;
+    }
+
+    @Override
+    public List<Document> getAll() {
+        return null;
+    }
+
+    @Override
+    public void update(Document entity) {
+    }
+
+    @Override
+    public void delete(String id) {
+    }
 }

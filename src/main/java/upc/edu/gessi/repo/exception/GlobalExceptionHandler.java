@@ -11,9 +11,9 @@ import java.util.Date;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ApplicationNotFoundException.class)
+    @ExceptionHandler(MobileApplicationNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorMessage handleApplicationNotFound(ApplicationNotFoundException appEx) {
+    public ErrorMessage handleApplicationNotFound(MobileApplicationNotFoundException appEx) {
         return new ErrorMessage(HttpStatus.NOT_FOUND, new Date(), appEx.getMessage());
     }
 

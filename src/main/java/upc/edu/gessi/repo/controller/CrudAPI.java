@@ -1,28 +1,36 @@
 package upc.edu.gessi.repo.controller;
 
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
 
 public interface CrudAPI<T> extends BaseAPI {
-    @PostMapping("/ping")
-    @ResponseStatus(HttpStatus.OK)
-    void ping();
-
-    @GetMapping("/")
-    T get();
-
-    @GetMapping("/all")
-    List<T> getAll();
 
     @PostMapping("/")
-    T create(@RequestBody T entity);
+    ResponseEntity<List<T>> create(@RequestBody List<T> entity);
+
+    @GetMapping("/{id}")
+    ResponseEntity<T> get(@PathVariable String id) throws ObjectNotFoundException;
+
+    @GetMapping("/list")
+    ResponseEntity<List<T>> getListed(@RequestBody List<String> ids) throws ObjectNotFoundException;
+
+    @GetMapping(value = "/paginated", produces = "application/json")
+    @ResponseBody
+    ResponseEntity<List<T>> getAllPaginated(
+            @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,
+            @RequestParam(value = "size", defaultValue = "20", required = false) Integer size)
+            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
+
+    @GetMapping("/")
+    ResponseEntity<List<T>> getAll();
 
     @PutMapping("/")
-    T update(@RequestBody T entity);
+    ResponseEntity<T> update(@RequestBody T entity);
 
-    @DeleteMapping("/")
-    void delete();
+    @DeleteMapping("/{id}")
+    ResponseEntity<Void> delete(@PathVariable String id);
 }

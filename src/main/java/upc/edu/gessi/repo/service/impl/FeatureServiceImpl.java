@@ -12,9 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.*;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.*;
+import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.service.FeatureService;
 import upc.edu.gessi.repo.util.FeatureQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
@@ -23,43 +27,103 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class FeatureService {
+@Lazy
+public class FeatureServiceImpl implements FeatureService {
 
-    private Logger logger = LoggerFactory.getLogger(FeatureService.class);
+    private Logger logger = LoggerFactory.getLogger(FeatureServiceImpl.class);
 
     private final HTTPRepository repository;
     private final SchemaIRI schemaIRI;
-    private final InductiveKnowledgeService inductiveKnowledgeService;
-    private final ReviewService reviewService;
+    private final InductiveKnowledgeServiceImpl inductiveKnowledgeServiceImpl;
+    private final ReviewServiceImpl reviewServiceImpl;
 
-    private final ApplicationServiceImpl applicationService;
-    private final NLFeatureService nlFeatureService;
+    private final MobileApplicationServiceImpl applicationService;
+    private final NLFeatureServiceImpl nlFeatureServiceImpl;
     private final ValueFactory factory = SimpleValueFactory.getInstance();
-    private final DocumentService documentService;
+    private final DocumentServiceImpl documentServiceImpl;
 
     private final FeatureQueryBuilder featureQueryBuilder;
 
     @Autowired
-    public FeatureService(
+    public FeatureServiceImpl(
             final @Value("${db.url}") String url,
             final @Value("${db.username}") String username,
             final @Value("${db.password}") String password,
             final SchemaIRI schema,
-            final NLFeatureService nlFeatureService,
-            final ApplicationServiceImpl applicationSv,
-            final DocumentService documentSv,
-            final InductiveKnowledgeService iks,
-            final ReviewService revSv,
+            final NLFeatureServiceImpl nlFeatureServiceImpl,
+            final MobileApplicationServiceImpl applicationSv,
+            final DocumentServiceImpl documentSv,
+            final InductiveKnowledgeServiceImpl iks,
+            final ReviewServiceImpl revSv,
             final FeatureQueryBuilder ftQueryBuilder) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         schemaIRI = schema;
-        this.nlFeatureService = nlFeatureService;
-        applicationService = (ApplicationServiceImpl) applicationSv;
-        documentService = documentSv;
-        inductiveKnowledgeService = iks;
-        reviewService = revSv;
+        this.nlFeatureServiceImpl = nlFeatureServiceImpl;
+        applicationService = (MobileApplicationServiceImpl) applicationSv;
+        documentServiceImpl = documentSv;
+        inductiveKnowledgeServiceImpl = iks;
+        reviewServiceImpl = revSv;
         featureQueryBuilder = ftQueryBuilder;
+    }
+
+    private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
+        List<AnalyzedDocument> features = nlFeatureServiceImpl.getNLFeatures(analyzedDocuments);
+        List<Statement> statements = new ArrayList<>();
+
+        for (int i = 0; i < features.size(); ++i) {
+            MobileApplicationFullDataDTO completeApplicationDataDTO = new MobileApplicationFullDataDTO();
+            List<String> featureString = features.get(i).getFeatures();
+            List<Feature> featureList = new ArrayList<>();
+            for (String fs : featureString) {
+                featureList.add(new Feature(appIRI.toString(), fs));
+            }
+            completeApplicationDataDTO.setFeatures(
+                    featureList
+                            .stream()
+                            .map(Feature::getName)
+                            .toList());
+            try {
+                applicationService
+                        .addFeatures(
+                                completeApplicationDataDTO,
+                                source.get(i),
+                                statements);
+            } catch (Exception e) {
+                logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
+            }
+        }
+        commitChanges(statements);
+        logger.info(count + " documents already processed. Keep going...");
+    }
+    private List<GraphFeature> getFeatures(String nodeId) {
+        List<GraphFeature> features = new ArrayList<>();
+
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "select ?feature ?name where {\n" +
+                "    <"+ nodeId +"> schema:feature ?keywords .\n" +
+                "    ?feature schema:name ?name\n" +
+                "} ";
+
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+            IRI feature = (IRI) bindings.getValue("feature");
+            String name = bindings.getValue("name").stringValue();
+
+            GraphFeature graphFeature = new GraphFeature(feature.toString(), name);
+            features.add(graphFeature);
+        }
+
+        return features;
+    }
+    private void commitChanges(final List<Statement> statements) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        repoConnection.add(statements);
+        repoConnection.close();
     }
     private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
         Integer count;
@@ -131,63 +195,6 @@ public class FeatureService {
         return executeFeatureQuery(repository.getConnection(), query, batchSize, from);
     }
 
-
-    private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
-        List<AnalyzedDocument> features = nlFeatureService.getNLFeatures(analyzedDocuments);
-        List<Statement> statements = new ArrayList<>();
-
-        for (int i = 0; i < features.size(); ++i) {
-            CompleteApplicationDataDTO completeApplicationDataDTO = new CompleteApplicationDataDTO();
-            List<String> featureString = features.get(i).getFeatures();
-            List<Feature> featureList = new ArrayList<>();
-            for (String fs : featureString) {
-                featureList.add(new Feature(appIRI.toString(), fs));
-            }
-            completeApplicationDataDTO.setFeatures(
-                    featureList
-                            .stream()
-                            .map(Feature::getName)
-                            .toList());
-            try {
-                applicationService
-                        .addFeatures(
-                                completeApplicationDataDTO,
-                                source.get(i),
-                                statements);
-            } catch (Exception e) {
-                logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
-            }
-        }
-        commitChanges(statements);
-        logger.info(count + " documents already processed. Keep going...");
-    }
-
-
-    private List<GraphFeature> getFeatures(String nodeId) {
-        List<GraphFeature> features = new ArrayList<>();
-
-        String query = "PREFIX schema: <https://schema.org/>\n" +
-                "\n" +
-                "select ?feature ?name where {\n" +
-                "    <"+ nodeId +"> schema:feature ?keywords .\n" +
-                "    ?feature schema:name ?name\n" +
-                "} ";
-
-        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
-
-        while (result.hasNext()) {
-            BindingSet bindings = result.next();
-
-            IRI feature = (IRI) bindings.getValue("feature");
-            String name = bindings.getValue("name").stringValue();
-
-            GraphFeature graphFeature = new GraphFeature(feature.toString(), name);
-            features.add(graphFeature);
-        }
-
-        return features;
-    }
-
     public List<IRI> getAllFeatures() {
         String query = featureQueryBuilder.findAllFeaturesQuery();
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
@@ -230,13 +237,6 @@ public class FeatureService {
         commitChanges(statements);
     }
 
-    private void commitChanges(final List<Statement> statements) {
-        RepositoryConnection repoConnection = repository.getConnection();
-        repoConnection.add(statements);
-        repoConnection.close();
-    }
-
-
     public List<SimilarityApp> getTopKAppsByFeature(String feature, Integer k, DocumentType documentType) {
         String query = "PREFIX :<http://www.ontotext.com/graphdb/similarity/>\n" +
                 "PREFIX inst:<http://www.ontotext.com/graphdb/similarity/instance/>\n" +
@@ -277,7 +277,7 @@ public class FeatureService {
             ++count;
 
             //Add documents
-            List<GraphDocument> graphDocuments = documentService.getDocumentsByApp(app.getNodeId());
+            List<GraphDocument> graphDocuments = documentServiceImpl.getDocumentsByApp(app.getNodeId());
             nodes.addAll(graphDocuments);
             for (GraphDocument document : graphDocuments) {
                 edges.add(new GraphEdge(app.getNodeId(), document.getNodeId()));
@@ -297,7 +297,7 @@ public class FeatureService {
             }
 
             //Add reviews
-            List<GraphReview> graphReviews = reviewService.getReviews(app.getNodeId());
+            List<GraphReview> graphReviews = reviewServiceImpl.getReviews(app.getNodeId());
             nodes.addAll(graphReviews);
             for (GraphReview graphReview : graphReviews) {
                 edges.add(new GraphEdge(app.getNodeId(), graphReview.getNodeId()));
@@ -308,12 +308,43 @@ public class FeatureService {
                     edges.add(new GraphEdge(graphReview.getNodeId(), feature.getNodeId()));
                 }
             }
-            inductiveKnowledgeService.addNodes(nodes);
-            inductiveKnowledgeService.addEdges(edges);
+            inductiveKnowledgeServiceImpl.addNodes(nodes);
+            inductiveKnowledgeServiceImpl.addEdges(edges);
         }
         //return new Graph(nodes, edges);
     }
 
+    @Override
+    public List<Feature> create(List<Feature> dtos) {
+        return null;
+    }
 
+    @Override
+    public Feature get(String id) throws ObjectNotFoundException {
+        return null;
+    }
 
+    @Override
+    public List<Feature> getListed(List<String> id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Feature> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+        return null;
+    }
+
+    @Override
+    public List<Feature> getAll() {
+        return null;
+    }
+
+    @Override
+    public void update(Feature entity) {
+
+    }
+
+    @Override
+    public void delete(String id) {
+    }
 }
