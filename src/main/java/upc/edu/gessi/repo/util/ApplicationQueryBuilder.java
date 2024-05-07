@@ -75,7 +75,7 @@ public class ApplicationQueryBuilder
         return queryBuilder.toString();
     }
 
-    public String findAllApplicationNamesQuery() {
+    public String findAllApplicationsBasicDataQuery() {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");

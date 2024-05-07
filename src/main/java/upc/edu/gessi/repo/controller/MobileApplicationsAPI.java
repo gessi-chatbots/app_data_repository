@@ -28,11 +28,11 @@ public interface MobileApplicationsAPI extends CrudAPI<MobileApplicationFullData
             "data is sent directly in RDF format through a multipart file in Turtle format (.ttl).")
     ResponseEntity<String> createViaRDFFormat(@RequestParam("file") MultipartFile file);
 
-    @GetMapping(value = "/data", produces = "application/json")
+    @GetMapping(value = "/basic-data", produces = "application/json")
     @ResponseBody
-    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsNames() throws MobileApplicationNotFoundException;
+    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsBasicData() throws MobileApplicationNotFoundException;
 
-    @GetMapping(value = "/data/paginated", produces = "application/json")
+    @GetMapping(value = "/basic-data/paginated", produces = "application/json")
     @ResponseBody
     ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsBasicDataPaginated(
             @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,

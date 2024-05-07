@@ -211,13 +211,13 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
     @Override
     public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws MobileApplicationNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationNamesQuery());
+        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationsBasicDataQuery());
         if (!result.hasNext()) {
             throw new MobileApplicationNotFoundException("No applications were found");
         }
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         while (result.hasNext()) {
-            MobileApplicationFullDataDTO fullDataDTO = queryResultToMobileApplicationFullDataDTO(result);
+            MobileApplicationFullDataDTO fullDataDTO = bindingSetToMobileApplicationFullDataDTO(result.next());
             MobileApplicationBasicDataDTO basicDataDTO = new MobileApplicationBasicDataDTO();
             basicDataDTO.setAppName(fullDataDTO.getAppName());
             basicDataDTO.setPackageName(fullDataDTO.getPackageName());
@@ -430,6 +430,26 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
                     Integer.valueOf(bindings.getBinding("reviewCount").getValue().stringValue()));
         }
         return mobileApplicationBasicDataDTO;
+    }
+
+    private MobileApplicationFullDataDTO bindingSetToMobileApplicationFullDataDTO(final BindingSet bindings) {
+        MobileApplicationFullDataDTO mobileApplicationFullDataDTO = new MobileApplicationFullDataDTO();
+        if (bindings.getBinding("name") != null
+                && bindings.getBinding("name").getValue() != null) {
+            mobileApplicationFullDataDTO.setAppName(
+                    bindings.getBinding("name").getValue().stringValue());
+        }
+        if (bindings.getBinding("package") != null
+                && bindings.getBinding("package").getValue() != null) {
+            mobileApplicationFullDataDTO.setPackageName(
+                    bindings.getBinding("package").getValue().stringValue());
+        }
+        if (bindings.getBinding("reviewCount") != null
+                && bindings.getBinding("reviewCount").getValue() != null) {
+            mobileApplicationFullDataDTO.setReviewCount(
+                    Integer.valueOf(bindings.getBinding("reviewCount").getValue().stringValue()));
+        }
+        return mobileApplicationFullDataDTO;
     }
 
     private MobileApplicationFullDataDTO queryResultToMobileApplicationFullDataDTO(final TupleQueryResult result) {
