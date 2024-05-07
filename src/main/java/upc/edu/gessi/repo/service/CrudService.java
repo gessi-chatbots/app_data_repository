@@ -18,7 +18,7 @@ public interface CrudService<T> {
 
     List<T> getAll();
 
-    T update(T entity);
+    void update(T entity);
 
     Void delete();
 }

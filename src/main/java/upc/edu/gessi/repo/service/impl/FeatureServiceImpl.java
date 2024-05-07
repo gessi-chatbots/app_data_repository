@@ -340,8 +340,8 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public Feature update(Feature entity) {
-        return null;
+    public void update(Feature entity) {
+
     }
 
     @Override

@@ -13,6 +13,7 @@ import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
+import upc.edu.gessi.repo.repository.impl.MobileApplicationRepositoryImpl;
 import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.util.Utils;
 
@@ -107,8 +108,8 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public MobileApplicationFullDataDTO update(MobileApplicationFullDataDTO entity) {
-        return null;
+    public void update(MobileApplicationFullDataDTO entity) {
+        ((MobileApplicationRepository) useRepository(MobileApplicationRepositoryImpl.class)).update(entity);
     }
 
     @Override

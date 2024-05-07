@@ -126,7 +126,8 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
     @Override
     public ResponseEntity<MobileApplicationFullDataDTO> update(final MobileApplicationFullDataDTO entity) {
-        return null;
+        ((MobileApplicationService) useService(MobileApplicationService.class)).update(entity);
+        return new ResponseEntity<>((HttpStatus.NO_CONTENT));
     }
 
     @Override

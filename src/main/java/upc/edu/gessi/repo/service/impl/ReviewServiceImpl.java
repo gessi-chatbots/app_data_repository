@@ -394,8 +394,8 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDTO update(ReviewDTO entity) {
-        return null;
+    public void update(ReviewDTO entity) {
+
     }
 
     @Override

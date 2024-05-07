@@ -85,8 +85,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public Document update(Document entity) {
-        return null;
+    public void update(Document entity) {
     }
 
     @Override
