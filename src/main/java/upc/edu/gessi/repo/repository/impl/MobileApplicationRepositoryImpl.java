@@ -42,8 +42,9 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     private final SchemaIRI schemaIRI;
     private final AppDataScannerServiceImpl appDataScannerServiceImpl;
 
+    private final ReviewRepository reviewRepository;
+
     private final MobileApplicationsQueryBuilder mobileApplicationsQueryBuilder;
-    private final RepositoryFactory repositoryFactory;
 
     private final ReviewQueryBuilder reviewQueryBuilder;
     @Autowired
@@ -52,16 +53,17 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
                                            final @Value("${db.password}") String password,
                                            final AppDataScannerServiceImpl appDataScannerServ,
                                            final SchemaIRI schema,
+                                           final ReviewRepository revRepo,
                                            final MobileApplicationsQueryBuilder appQB,
-                                           final ReviewQueryBuilder reviewQB,
-                                           final RepositoryFactory repoFact) {
+                                           final ReviewQueryBuilder reviewQB) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         appDataScannerServiceImpl = appDataScannerServ;
         schemaIRI = schema;
+        reviewRepository = revRepo;
         mobileApplicationsQueryBuilder = appQB;
         reviewQueryBuilder = reviewQB;
-        repositoryFactory = repoFact;
+
     }
 
     @Override
@@ -254,7 +256,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     private void addReviewsToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
-        ((ReviewRepository) useRepository(ReviewRepository.class)).addCompleteReviewsToApplication(mobileApplicationFullDataDTO, applicationIRI, statements);
+        reviewRepository.addCompleteReviewsToApplication(mobileApplicationFullDataDTO, applicationIRI, statements);
     }
 
     private void addFeaturesToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
@@ -513,17 +515,13 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
             while (sentencesResult.hasNext()) {
                 reviewResponseDTO
                         .getSentences()
-                        .add(((ReviewRepository) useRepository(ReviewRepository.class)).getSentenceDTO(sentencesResult));
+                        .add(reviewRepository.getSentenceDTO(sentencesResult));
             }
             mobileApplicationFullDataDTO.getReviews().add(reviewResponseDTO);
         } else if (predicateValue.equals(nameIRI)) {
             mobileApplicationFullDataDTO.setAppName(bindings.getBinding("object").getValue().stringValue());
         }
     }
-    private Object useRepository(Class<?> clazz) {
-        return repositoryFactory.createRepository(clazz);
-    }
-
     private boolean existsPredicateAndObject(BindingSet bindings) {
         return bindings.getBinding("predicate") != null
                 && bindings.getBinding("predicate").getValue() != null

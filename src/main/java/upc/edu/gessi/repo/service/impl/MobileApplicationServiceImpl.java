@@ -28,14 +28,14 @@ import java.util.List;
 public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     private final RepositoryFactory repositoryFactory;
-    private final ServiceFactory serviceFactory;
 
+    private final AppDataScannerService appDataScannerService;
 
     @Autowired
     public MobileApplicationServiceImpl(final RepositoryFactory repoFact,
-                                        final ServiceFactory servFact) {
+                                        final AppDataScannerService appDataScannerSv) {
         repositoryFactory = repoFact;
-        serviceFactory = servFact;
+        appDataScannerService = appDataScannerSv;
     }
 
     @Override
@@ -136,7 +136,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         List<GraphApp> apps = getAllApps();
         for (GraphApp app : apps) {
 
-            MobileApplicationFullDataDTO updatedCompleteApplicationDataDTO = ((AppDataScannerService) useService(AppDataScannerService.class)).scanApp(app, daysFromLastUpdate);
+            MobileApplicationFullDataDTO updatedCompleteApplicationDataDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
 
             if (updatedCompleteApplicationDataDTO != null) {
                 ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).insert(updatedCompleteApplicationDataDTO);
@@ -146,9 +146,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     private Object useRepository(Class<?> clazz) {
         return repositoryFactory.createRepository(clazz);
     }
-    private Object useService(Class<?> clazz) {
-        return serviceFactory.createService(clazz);
-    }
+
 
     /*
         public List<String> getResultsContaining(String text) {
