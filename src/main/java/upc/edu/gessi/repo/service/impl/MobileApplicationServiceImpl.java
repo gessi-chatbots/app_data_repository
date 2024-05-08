@@ -16,7 +16,6 @@ import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
 import upc.edu.gessi.repo.service.AppDataScannerService;
 import upc.edu.gessi.repo.service.MobileApplicationService;
-import upc.edu.gessi.repo.service.ServiceFactory;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.util.ArrayList;

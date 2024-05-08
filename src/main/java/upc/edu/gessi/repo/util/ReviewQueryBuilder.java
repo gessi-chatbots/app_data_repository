@@ -186,6 +186,7 @@ public class ReviewQueryBuilder
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  ?s schema:identifier \"").append(reviewId).append("\" .\n");
         queryBuilder.append("  ?s ?p ?o .\n");
+        queryBuilder.append("  ?app schema:review ?s .\n");
         queryBuilder.append("}");
         return queryBuilder.toString();
     }

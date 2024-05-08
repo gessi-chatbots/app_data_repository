@@ -5,25 +5,26 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
+import upc.edu.gessi.repo.repository.ReviewRepository;
 
 @Component
 @Lazy
 public class RepositoryFactoryImpl implements RepositoryFactory {
 
     private final MobileApplicationRepository mobileApplicationRepository;
-    private final ReviewRepositoryImpl reviewRepositoryImpl;
+    private final ReviewRepository reviewRepository;
 
     @Autowired
-    public RepositoryFactoryImpl(final ReviewRepositoryImpl reviewRepositoryImpl,
+    public RepositoryFactoryImpl(final ReviewRepository reviewRepository,
                                  final MobileApplicationRepository mobileApplicationRepository) {
-        this.reviewRepositoryImpl = reviewRepositoryImpl;
+        this.reviewRepository = reviewRepository;
         this.mobileApplicationRepository = mobileApplicationRepository;
     }
 
     @Override
     public Object createRepository(final Class<?> clazz) {
-        if (clazz == ReviewRepositoryImpl.class) {
-            return reviewRepositoryImpl;
+        if (clazz == ReviewRepository.class) {
+            return reviewRepository;
         } else if (clazz == MobileApplicationRepository.class) {
             return mobileApplicationRepository;
         }

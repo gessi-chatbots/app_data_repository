@@ -84,8 +84,13 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + entity.getPackageName());
         statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
         statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-        String reviewBody = entity.getReviewText();
-        createReviewContent(statements, reviewIRI, reviewBody, entity.getSentences());
+
+        createReviewContent(statements, reviewIRI, entity.getReviewText(), entity.getSentences());
+
+        statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(entity.getId())));
+        statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(entity.getAuthor())));
+        statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(entity.getRating())));
+
         commitChanges(statements);
         return entity;
     }
