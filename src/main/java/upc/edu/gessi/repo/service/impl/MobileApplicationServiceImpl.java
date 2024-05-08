@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
+import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
+import upc.edu.gessi.repo.service.AppDataScannerService;
 import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.util.Utils;
 
@@ -26,13 +28,17 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     private final RepositoryFactory repositoryFactory;
 
+    private final AppDataScannerService appDataScannerService;
+
     @Autowired
-    public MobileApplicationServiceImpl(final RepositoryFactory repoFact) {
+    public MobileApplicationServiceImpl(final RepositoryFactory repoFact,
+                                        final AppDataScannerService appDataScannerSv) {
         repositoryFactory = repoFact;
+        appDataScannerService = appDataScannerSv;
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> getAllBasicData() throws MobileApplicationNotFoundException {
+    public List<MobileApplicationBasicDataDTO> getAllBasicData() throws NoMobileApplicationsFoundException {
         return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllApplicationsBasicData();
     }
 
@@ -68,37 +74,41 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException {
-        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findByName(Utils.sanitizeString(id));
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findById(Utils.sanitizeString(id));
     }
 
     @Override
-    public List<MobileApplicationFullDataDTO> getListed(List<String> ids) throws ObjectNotFoundException {
+    public List<MobileApplicationFullDataDTO> getListed(List<String> ids) throws NoObjectFoundException {
         List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
         for (String id : ids) {
             try {
-                mobileApplicationFullDataDTOS.add(((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findByName(id));
+                mobileApplicationFullDataDTOS.add(((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findById(Utils.sanitizeString(id)));
             } catch (ObjectNotFoundException ignored) {
-                // do nothing, refactor in future to error tracking
             }
-
         }
         return mobileApplicationFullDataDTOS;
     }
 
     @Override
-    public List<MobileApplicationFullDataDTO> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllPaginated(page, size);
+    public List<MobileApplicationFullDataDTO> getAllPaginated(Integer page, Integer size) throws NoObjectFoundException {
+        try {
+            return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllPaginated(page, size);
+        } catch (NoMobileApplicationsFoundException noMobileApplicationsFoundException) {
+            return new ArrayList<>();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> getAllBasicDataPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<MobileApplicationBasicDataDTO> getAllBasicDataPaginated(Integer page, Integer size) throws NoMobileApplicationsFoundException{
         return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllBasicDataPaginated(page, size);
     }
     @Override
     public List<MobileApplicationFullDataDTO> getAll() {
         try {
             return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAll();
-        } catch (MobileApplicationNotFoundException mobileApplicationNotFoundException) {
+        } catch (NoMobileApplicationsFoundException noMobileApplicationsFoundException) {
             return new ArrayList<>();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -112,12 +122,31 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
+    public void updateOld(int daysFromLastUpdate) {
+        updateApp(daysFromLastUpdate);
+    }
+
+    @Override
     public void delete(String id) {
         ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).delete(id);
+    }
+
+    private void updateApp(int daysFromLastUpdate) {
+        List<GraphApp> apps = getAllApps();
+        for (GraphApp app : apps) {
+
+            MobileApplicationFullDataDTO updatedCompleteApplicationDataDTO = appDataScannerService.scanApp(app, daysFromLastUpdate);
+
+            if (updatedCompleteApplicationDataDTO != null) {
+                ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).insert(updatedCompleteApplicationDataDTO);
+            }
+        }
     }
     private Object useRepository(Class<?> clazz) {
         return repositoryFactory.createRepository(clazz);
     }
+
+
     /*
         public List<String> getResultsContaining(String text) {
             RepositoryConnection repoConnection = repository.getConnection();

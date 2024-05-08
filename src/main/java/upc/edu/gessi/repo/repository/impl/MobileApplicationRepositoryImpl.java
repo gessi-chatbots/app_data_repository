@@ -16,12 +16,11 @@ import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
-import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
-import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
-import upc.edu.gessi.repo.service.impl.ReviewServiceImpl;
-import upc.edu.gessi.repo.util.ApplicationQueryBuilder;
+import upc.edu.gessi.repo.repository.ReviewRepository;
+import upc.edu.gessi.repo.util.MobileApplicationsQueryBuilder;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
@@ -39,33 +38,32 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     private final ValueFactory factory = SimpleValueFactory.getInstance();
 
     private final SchemaIRI schemaIRI;
-    private final AppDataScannerServiceImpl appDataScannerServiceImpl;
 
-    private final ApplicationQueryBuilder applicationQueryBuilder;
+    private final ReviewRepository reviewRepository;
 
-    private final ReviewServiceImpl reviewServiceImpl;
+    private final MobileApplicationsQueryBuilder mobileApplicationsQueryBuilder;
+
     private final ReviewQueryBuilder reviewQueryBuilder;
     @Autowired
     public MobileApplicationRepositoryImpl(final @Value("${db.url}") String url,
                                            final @Value("${db.username}") String username,
                                            final @Value("${db.password}") String password,
-                                           final AppDataScannerServiceImpl appDataScannerServ,
                                            final SchemaIRI schema,
-                                           final ApplicationQueryBuilder appQB,
-                                           final ReviewQueryBuilder reviewQB,
-                                           final ReviewServiceImpl reviewSv) {
+                                           final ReviewRepository revRepo,
+                                           final MobileApplicationsQueryBuilder appQB,
+                                           final ReviewQueryBuilder reviewQB) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
-        appDataScannerServiceImpl = appDataScannerServ;
         schemaIRI = schema;
-        reviewServiceImpl = reviewSv;
-        applicationQueryBuilder = appQB;
+        reviewRepository = revRepo;
+        mobileApplicationsQueryBuilder = appQB;
         reviewQueryBuilder = reviewQB;
+
     }
 
     @Override
-    public List<MobileApplicationFullDataDTO> findAll() throws MobileApplicationNotFoundException {
-        List<BindingSet> bindingSetResults = runSparqlQuery(applicationQueryBuilder.findAllQuery()).stream().toList();
+    public List<MobileApplicationFullDataDTO> findAll() throws NoMobileApplicationsFoundException {
+        List<BindingSet> bindingSetResults = runSparqlQuery(mobileApplicationsQueryBuilder.findAllQuery()).stream().toList();
         List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
 
         String currentAppUri = null;
@@ -83,7 +81,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
         }
         if (mobileApplicationFullDataDTOS.isEmpty()) {
-            throw new MobileApplicationNotFoundException("No applications were found");
+            throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
 
         return mobileApplicationFullDataDTOS;
@@ -126,7 +124,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     @Override
     public void delete(String id) {
         Utils.runSparqlUpdateQuery(repository.getConnection(),
-                applicationQueryBuilder.deleteByNameQuery(id));
+                mobileApplicationsQueryBuilder.deleteByNameQuery(id));
     }
 
     @Override
@@ -170,25 +168,15 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
 
-    public void update(int daysFromLastUpdate) {
-        List<GraphApp> apps = getAllApps();
-        for (GraphApp app : apps) {
 
-            MobileApplicationFullDataDTO updatedCompleteApplicationDataDTO = appDataScannerServiceImpl.scanApp(app, daysFromLastUpdate);
-
-            if (updatedCompleteApplicationDataDTO != null) {
-                insert(updatedCompleteApplicationDataDTO);
-            }
-        }
-    }
 
 
     public List<MobileApplicationFullDataDTO> findAllPaginated(final Integer page,
-                                                                final Integer size) throws MobileApplicationNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedQuery(page, size));
+                                                                final Integer size) throws NoMobileApplicationsFoundException {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findAllPaginatedQuery(page, size));
         List<MobileApplicationFullDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
-            throw new MobileApplicationNotFoundException("No applications were found");
+            throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
         while (result.hasNext()) {
             applicationDTOS.add(queryResultToMobileApplicationFullDataDTO(result));
@@ -197,11 +185,11 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws MobileApplicationNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedSimplifiedQuery(page, size));
+    public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws NoMobileApplicationsFoundException {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findAllPaginatedSimplifiedQuery(page, size));
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
-            throw new MobileApplicationNotFoundException("No applications were found");
+            throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
         while (result.hasNext()) {
             applicationDTOS.add(bindingSetToMobileApplicationBasicDataDTO(result.next()));
@@ -210,10 +198,10 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws MobileApplicationNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationsBasicDataQuery());
+    public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws NoMobileApplicationsFoundException {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findAllApplicationsBasicDataQuery());
         if (!result.hasNext()) {
-            throw new MobileApplicationNotFoundException("No applications were found");
+            throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         while (result.hasNext()) {
@@ -228,10 +216,10 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public MobileApplicationFullDataDTO findByName(final String appName) throws ObjectNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findByNameQuery(appName));
+    public MobileApplicationFullDataDTO findById(final String appName) throws MobileApplicationNotFoundException {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findByNameQuery(appName));
         if (!result.hasNext()) {
-            throw new ObjectNotFoundException("No applications were found with the given app name");
+            throw new MobileApplicationNotFoundException("No Mobile Application was found for name: " + appName);
         }
         return queryResultToMobileApplicationFullDataDTO(result);
     }
@@ -263,7 +251,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     private void addReviewsToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
-        reviewServiceImpl.addCompleteReviewsToApplication(mobileApplicationFullDataDTO, applicationIRI, statements);
+        reviewRepository.addCompleteReviewsToApplication(mobileApplicationFullDataDTO, applicationIRI, statements);
     }
 
     private void addFeaturesToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
@@ -504,7 +492,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
             List<String> reviewIds = new ArrayList<>(Collections.singleton(reviewResponseDTO.getId()));
 
             TupleQueryResult textResult =
-                    runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
+                    runSparqlQuery(reviewQueryBuilder.findReviewsByIds(reviewIds));
             if (textResult.hasNext()) {
                 BindingSet bindingSet = textResult.next();
                 if (bindingSet.getBinding("text") != null
@@ -522,14 +510,13 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
             while (sentencesResult.hasNext()) {
                 reviewResponseDTO
                         .getSentences()
-                        .add(reviewServiceImpl.getSentenceDTO(sentencesResult));
+                        .add(reviewRepository.getSentenceDTO(sentencesResult));
             }
             mobileApplicationFullDataDTO.getReviews().add(reviewResponseDTO);
         } else if (predicateValue.equals(nameIRI)) {
             mobileApplicationFullDataDTO.setAppName(bindings.getBinding("object").getValue().stringValue());
         }
     }
-
     private boolean existsPredicateAndObject(BindingSet bindings) {
         return bindings.getBinding("predicate") != null
                 && bindings.getBinding("predicate").getValue() != null

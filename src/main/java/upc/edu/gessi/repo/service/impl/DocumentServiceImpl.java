@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.Document;
 import upc.edu.gessi.repo.dto.graph.GraphDocument;
+import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.service.DocumentService;
 import upc.edu.gessi.repo.util.Utils;
@@ -70,12 +71,12 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public List<Document> getListed(List<String> id) throws ObjectNotFoundException {
+    public List<Document> getListed(List<String> id) throws NoObjectFoundException {
         return null;
     }
 
     @Override
-    public List<Document> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<Document> getAllPaginated(Integer page, Integer size) throws NoObjectFoundException {
         return null;
     }
 

@@ -8,7 +8,19 @@ import java.util.List;
 public class ReviewQueryBuilder
 {
 
-    public String findTextReviewsQuery(final List<String> ids) {
+    public String findAllQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?subject ?predicate ?object\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?subject rdf:type schema:Review .\n");
+        queryBuilder.append("  ?subject ?predicate ?object .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+
+    public String findReviewsByIds(final List<String> ids) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
@@ -175,6 +187,19 @@ public class ReviewQueryBuilder
         queryBuilder.append("          schema:hasPart ?reviewPart .\n");
         queryBuilder.append("  ?reviewPart schema:keywords ?feature .\n");
         queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+
+    public String deleteByIDQuery(final String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("DELETE\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?s schema:identifier \"").append(reviewId).append("\" .\n");
+        queryBuilder.append("  ?s ?p ?o .\n");
+        queryBuilder.append("  ?app schema:review ?s .\n");
+        queryBuilder.append("}");
         return queryBuilder.toString();
     }
 }

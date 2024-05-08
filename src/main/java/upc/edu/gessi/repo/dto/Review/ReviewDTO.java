@@ -22,6 +22,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ReviewDTO implements Serializable {
 
+    @JsonProperty("package_name")
+    private String packageName;
+
     @JsonProperty("reviewId")
     private String id;
 

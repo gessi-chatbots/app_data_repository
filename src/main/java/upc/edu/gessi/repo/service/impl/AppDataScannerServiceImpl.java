@@ -58,6 +58,7 @@ public class AppDataScannerServiceImpl implements AppDataScannerService {
         }
     }
 
+    @Override
     public MobileApplicationFullDataDTO scanApp(GraphApp app, int daysFromLastUpdate) {
         List<MobileApplicationFullDataDTO> updatedCompleteApplicationDataDTOS = new ArrayList<>();
         try {

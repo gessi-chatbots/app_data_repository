@@ -17,7 +17,10 @@ import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.*;
+import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.repository.RepositoryFactory;
+import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.service.FeatureService;
 import upc.edu.gessi.repo.util.FeatureQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
@@ -44,6 +47,9 @@ public class FeatureServiceImpl implements FeatureService {
 
     private final FeatureQueryBuilder featureQueryBuilder;
 
+    private final RepositoryFactory repositoryFactory;
+
+
     @Autowired
     public FeatureServiceImpl(
             final @Value("${db.url}") String url,
@@ -55,16 +61,18 @@ public class FeatureServiceImpl implements FeatureService {
             final DocumentServiceImpl documentSv,
             final InductiveKnowledgeServiceImpl iks,
             final ReviewServiceImpl revSv,
-            final FeatureQueryBuilder ftQueryBuilder) {
+            final FeatureQueryBuilder ftQueryBuilder,
+            final RepositoryFactory repoFact) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         schemaIRI = schema;
         this.nlFeatureServiceImpl = nlFeatureServiceImpl;
-        applicationService = (MobileApplicationServiceImpl) applicationSv;
+        applicationService = applicationSv;
         documentServiceImpl = documentSv;
         inductiveKnowledgeServiceImpl = iks;
         reviewServiceImpl = revSv;
         featureQueryBuilder = ftQueryBuilder;
+        repositoryFactory = repoFact;
     }
 
     private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
@@ -297,7 +305,7 @@ public class FeatureServiceImpl implements FeatureService {
             }
 
             //Add reviews
-            List<GraphReview> graphReviews = reviewServiceImpl.getReviews(app.getNodeId());
+            List<GraphReview> graphReviews = ((ReviewRepository) useRepository(ReviewRepository.class)).getReviews(app.getNodeId());
             nodes.addAll(graphReviews);
             for (GraphReview graphReview : graphReviews) {
                 edges.add(new GraphEdge(app.getNodeId(), graphReview.getNodeId()));
@@ -325,12 +333,12 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public List<Feature> getListed(List<String> id) throws ObjectNotFoundException {
+    public List<Feature> getListed(List<String> id) throws NoObjectFoundException {
         return null;
     }
 
     @Override
-    public List<Feature> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<Feature> getAllPaginated(Integer page, Integer size) throws NoObjectFoundException {
         return null;
     }
 
@@ -347,4 +355,8 @@ public class FeatureServiceImpl implements FeatureService {
     @Override
     public void delete(String id) {
     }
+    private Object useRepository(Class<?> clazz) {
+        return repositoryFactory.createRepository(clazz);
+    }
+
 }

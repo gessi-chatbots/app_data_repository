@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import upc.edu.gessi.repo.controller.SoftwareApplicationsAPI;
 import upc.edu.gessi.repo.dto.*;
+import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
@@ -35,13 +36,13 @@ public class SoftwareApplicationsController implements SoftwareApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<SoftwareApplicationDTO>> getListed(List<String> ids) throws ObjectNotFoundException {
+    public ResponseEntity<List<SoftwareApplicationDTO>> getListed(List<String> ids) throws NoObjectFoundException {
         return null;
     }
 
     @Override
     public ResponseEntity<List<SoftwareApplicationDTO>> getAllPaginated(Integer page, Integer size)
-            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+            throws NoObjectFoundException {
         return null;
     }
 

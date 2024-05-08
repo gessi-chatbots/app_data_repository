@@ -4,6 +4,7 @@ package upc.edu.gessi.repo.controller.impl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import upc.edu.gessi.repo.controller.DocumentsAPI;
+import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
@@ -27,12 +28,12 @@ public class DocumentsController implements DocumentsAPI {
     }
 
     @Override
-    public ResponseEntity<List<String>> getListed(List<String> ids) throws ObjectNotFoundException {
+    public ResponseEntity<List<String>> getListed(List<String> ids) throws NoObjectFoundException {
         return null;
     }
 
     @Override
-    public ResponseEntity<List<String>> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public ResponseEntity<List<String>> getAllPaginated(Integer page, Integer size) throws NoObjectFoundException {
         return null;
     }
 

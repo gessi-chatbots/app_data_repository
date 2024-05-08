@@ -3,7 +3,7 @@ package upc.edu.gessi.repo.util;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ApplicationQueryBuilder
+public class MobileApplicationsQueryBuilder
 {
     public String findAllPaginatedSimplifiedQuery(Integer page, Integer size) {
         StringBuilder queryBuilder = new StringBuilder();
