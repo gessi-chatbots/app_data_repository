@@ -18,10 +18,11 @@ import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
-import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
-import upc.edu.gessi.repo.repository.impl.ReviewRepository;
+import upc.edu.gessi.repo.exception.Reviews.ReviewNotFoundException;
+import upc.edu.gessi.repo.repository.impl.ReviewRepositoryImpl;
 import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
@@ -40,7 +41,7 @@ import java.util.List;
 @Lazy
 public class ReviewServiceImpl implements ReviewService {
 
-    private final ReviewRepository reviewRepository;
+    private final ReviewRepositoryImpl reviewRepositoryImpl;
     private final HTTPRepository repository;
     private final ValueFactory factory = SimpleValueFactory.getInstance();
 
@@ -52,12 +53,12 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewServiceImpl(final @org.springframework.beans.factory.annotation.Value("${db.url}") String url,
                              final @org.springframework.beans.factory.annotation.Value("${db.username}") String username,
                              final @org.springframework.beans.factory.annotation.Value("${db.password}") String password,
-                             final ReviewRepository reviewRep,
+                             final ReviewRepositoryImpl reviewRep,
                              final SchemaIRI schIRI,
                              final ReviewQueryBuilder reviewQB) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
-        reviewRepository = reviewRep;
+        reviewRepositoryImpl = reviewRep;
         schemaIRI = schIRI;
         reviewQueryBuilder = reviewQB;
     }
@@ -65,11 +66,11 @@ public class ReviewServiceImpl implements ReviewService {
 
 
     public List<MobileApplicationBasicDataDTO> findAllApplicationNames() throws MobileApplicationNotFoundException {
-        return  (List<MobileApplicationBasicDataDTO>) reviewRepository.findAllReviewIDs();
+        return  (List<MobileApplicationBasicDataDTO>) reviewRepositoryImpl.findAllReviewIDs();
     }
 
-    public List findByName(final String appName) throws MobileApplicationNotFoundException {
-        return reviewRepository.findByApplicationName(appName);
+    public ReviewDTO findByName(final String appName) throws ReviewNotFoundException {
+        return reviewRepositoryImpl.findById(appName);
     }
 
     private TupleQueryResult runSparqlQuery(final String query) {

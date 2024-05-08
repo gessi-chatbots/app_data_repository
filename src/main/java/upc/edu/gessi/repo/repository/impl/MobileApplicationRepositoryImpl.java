@@ -16,7 +16,8 @@ import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
@@ -64,7 +65,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public List<MobileApplicationFullDataDTO> findAll() throws MobileApplicationNotFoundException {
+    public List<MobileApplicationFullDataDTO> findAll() throws NoMobileApplicationsFoundException {
         List<BindingSet> bindingSetResults = runSparqlQuery(applicationQueryBuilder.findAllQuery()).stream().toList();
         List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
 
@@ -83,7 +84,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
         }
         if (mobileApplicationFullDataDTOS.isEmpty()) {
-            throw new MobileApplicationNotFoundException("No applications were found");
+            throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
 
         return mobileApplicationFullDataDTOS;
@@ -184,11 +185,11 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
 
     public List<MobileApplicationFullDataDTO> findAllPaginated(final Integer page,
-                                                                final Integer size) throws MobileApplicationNotFoundException {
+                                                                final Integer size) throws NoMobileApplicationsFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedQuery(page, size));
         List<MobileApplicationFullDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
-            throw new MobileApplicationNotFoundException("No applications were found");
+            throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
         while (result.hasNext()) {
             applicationDTOS.add(queryResultToMobileApplicationFullDataDTO(result));
@@ -197,11 +198,11 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws MobileApplicationNotFoundException {
+    public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws NoMobileApplicationsFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedSimplifiedQuery(page, size));
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
-            throw new MobileApplicationNotFoundException("No applications were found");
+            throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
         while (result.hasNext()) {
             applicationDTOS.add(bindingSetToMobileApplicationBasicDataDTO(result.next()));
@@ -210,10 +211,10 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws MobileApplicationNotFoundException {
+    public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws NoMobileApplicationsFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationsBasicDataQuery());
         if (!result.hasNext()) {
-            throw new MobileApplicationNotFoundException("No applications were found");
+            throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         while (result.hasNext()) {
@@ -228,10 +229,10 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public MobileApplicationFullDataDTO findByName(final String appName) throws ObjectNotFoundException {
+    public MobileApplicationFullDataDTO findById(final String appName) throws MobileApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findByNameQuery(appName));
         if (!result.hasNext()) {
-            throw new ObjectNotFoundException("No applications were found with the given app name");
+            throw new MobileApplicationNotFoundException("No Mobile Application was found for name: " + appName);
         }
         return queryResultToMobileApplicationFullDataDTO(result);
     }

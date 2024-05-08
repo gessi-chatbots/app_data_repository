@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
-import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
-import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 
 import java.util.List;
 
@@ -30,19 +29,19 @@ public interface MobileApplicationsAPI extends CrudAPI<MobileApplicationFullData
 
     @GetMapping(value = "/basic-data", produces = "application/json")
     @ResponseBody
-    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsBasicData() throws MobileApplicationNotFoundException;
+    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllMobileApplicationsBasicData() throws NoMobileApplicationsFoundException;
 
     @GetMapping(value = "/basic-data/paginated", produces = "application/json")
     @ResponseBody
-    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllApplicationsBasicDataPaginated(
+    ResponseEntity<List<MobileApplicationBasicDataDTO>> getAllMobileApplicationsBasicDataPaginated(
             @RequestParam(value = "page", defaultValue = "1", required = false) Integer page,
             @RequestParam(value = "size", defaultValue = "20", required = false) Integer size)
-            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
+            throws NoMobileApplicationsFoundException;
 
 
     @GetMapping(value = "/{id}/features", produces = "application/json")
     @ResponseBody
-    ResponseEntity<List<String>> getApplicationFeatures(@PathVariable String id);
+    ResponseEntity<List<String>> getMobileApplicationFeatures(@PathVariable String id);
 
     @PostMapping("/update-repository")
     void updateRepository(@RequestParam(value = "url") String url);

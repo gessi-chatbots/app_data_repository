@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
@@ -32,7 +33,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> getAllBasicData() throws MobileApplicationNotFoundException {
+    public List<MobileApplicationBasicDataDTO> getAllBasicData() throws NoMobileApplicationsFoundException {
         return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllApplicationsBasicData();
     }
 
@@ -68,7 +69,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException {
-        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findByName(Utils.sanitizeString(id));
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findById(Utils.sanitizeString(id));
     }
 
     @Override
@@ -76,29 +77,33 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
         for (String id : ids) {
             try {
-                mobileApplicationFullDataDTOS.add(((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findByName(id));
+                mobileApplicationFullDataDTOS.add(((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findById(Utils.sanitizeString(id)));
             } catch (ObjectNotFoundException ignored) {
-                // do nothing, refactor in future to error tracking
             }
-
         }
         return mobileApplicationFullDataDTOS;
     }
 
     @Override
     public List<MobileApplicationFullDataDTO> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
-        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllPaginated(page, size);
+        try {
+            return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllPaginated(page, size);
+        } catch (NoMobileApplicationsFoundException noMobileApplicationsFoundException) {
+            return new ArrayList<>();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> getAllBasicDataPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<MobileApplicationBasicDataDTO> getAllBasicDataPaginated(Integer page, Integer size) throws NoMobileApplicationsFoundException{
         return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllBasicDataPaginated(page, size);
     }
     @Override
     public List<MobileApplicationFullDataDTO> getAll() {
         try {
             return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAll();
-        } catch (MobileApplicationNotFoundException mobileApplicationNotFoundException) {
+        } catch (NoMobileApplicationsFoundException noMobileApplicationsFoundException) {
             return new ArrayList<>();
         } catch (Exception e) {
             throw new RuntimeException(e);

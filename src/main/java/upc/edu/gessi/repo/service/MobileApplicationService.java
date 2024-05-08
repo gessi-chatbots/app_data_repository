@@ -5,7 +5,8 @@ import org.eclipse.rdf4j.model.Statement;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
@@ -19,11 +20,11 @@ public interface MobileApplicationService extends CrudService<MobileApplicationF
                      IRI sub,
                      List<Statement> statements);
 
-    List<MobileApplicationBasicDataDTO> getAllBasicData() throws MobileApplicationNotFoundException;
+    List<MobileApplicationBasicDataDTO> getAllBasicData() throws NoMobileApplicationsFoundException;
 
     List<MobileApplicationBasicDataDTO> getAllBasicDataPaginated(Integer page,
                             Integer size)
-            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException;
+            throws NoMobileApplicationsFoundException;
 
 
 }

@@ -5,7 +5,8 @@ import org.eclipse.rdf4j.model.Statement;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
+import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
@@ -17,9 +18,7 @@ public interface MobileApplicationRepository extends RDFCRUDRepository<MobileApp
 
     List<GraphApp> getAllApps();
 
-    List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(Integer page, Integer size) throws MobileApplicationNotFoundException;
+    List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(Integer page, Integer size) throws NoMobileApplicationsFoundException;
 
-    List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws MobileApplicationNotFoundException;
-
-    MobileApplicationFullDataDTO findByName(String appName) throws ObjectNotFoundException;
+    List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws NoMobileApplicationsFoundException;
 }

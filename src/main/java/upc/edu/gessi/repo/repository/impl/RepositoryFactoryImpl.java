@@ -11,19 +11,19 @@ import upc.edu.gessi.repo.repository.RepositoryFactory;
 public class RepositoryFactoryImpl implements RepositoryFactory {
 
     private final MobileApplicationRepository mobileApplicationRepository;
-    private final ReviewRepository reviewRepository;
+    private final ReviewRepositoryImpl reviewRepositoryImpl;
 
     @Autowired
-    public RepositoryFactoryImpl(final ReviewRepository reviewRepository,
+    public RepositoryFactoryImpl(final ReviewRepositoryImpl reviewRepositoryImpl,
                                  final MobileApplicationRepository mobileApplicationRepository) {
-        this.reviewRepository = reviewRepository;
+        this.reviewRepositoryImpl = reviewRepositoryImpl;
         this.mobileApplicationRepository = mobileApplicationRepository;
     }
 
     @Override
     public Object createRepository(final Class<?> clazz) {
-        if (clazz == ReviewRepository.class) {
-            return reviewRepository;
+        if (clazz == ReviewRepositoryImpl.class) {
+            return reviewRepositoryImpl;
         } else if (clazz == MobileApplicationRepository.class) {
             return mobileApplicationRepository;
         }
