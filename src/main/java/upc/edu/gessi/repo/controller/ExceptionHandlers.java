@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MissingBodyException;
+import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.exception.NoReviewsFoundException;
 import upc.edu.gessi.repo.exception.ReviewNotFoundException;
 
@@ -25,7 +26,12 @@ public class ExceptionHandlers {
 
     @ExceptionHandler(NoReviewsFoundException.class)
     public ResponseEntity<String> handleNoReviewsFoundException(NoReviewsFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NoMobileApplicationsFoundException.class)
+    public ResponseEntity<String> handleNoMobileApplicationsFoundException(NoMobileApplicationsFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ex.getMessage());
     }
 
     @ExceptionHandler(MissingBodyException.class)

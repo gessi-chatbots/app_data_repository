@@ -41,18 +41,18 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<List<ReviewDTO>> getListed(List<String> ids) throws ObjectNotFoundException {
+    public ResponseEntity<List<ReviewDTO>> getListed(List<String> ids) throws NoObjectFoundException {
         return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getListed(ids), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<List<ReviewDTO>> getAllPaginated(Integer page, Integer size)
-            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+            throws NoObjectFoundException {
         return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getAllPaginated(page, size), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<List<ReviewDTO>> getAll() {
+    public ResponseEntity<List<ReviewDTO>> getAll() throws NoObjectFoundException {
         return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getAll(), HttpStatus.OK);
     }
 

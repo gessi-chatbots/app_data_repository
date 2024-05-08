@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
+import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
+import upc.edu.gessi.repo.service.AppDataScannerService;
 import upc.edu.gessi.repo.service.MobileApplicationService;
+import upc.edu.gessi.repo.service.ServiceFactory;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.util.ArrayList;
@@ -26,10 +28,14 @@ import java.util.List;
 public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     private final RepositoryFactory repositoryFactory;
+    private final ServiceFactory serviceFactory;
+
 
     @Autowired
-    public MobileApplicationServiceImpl(final RepositoryFactory repoFact) {
+    public MobileApplicationServiceImpl(final RepositoryFactory repoFact,
+                                        final ServiceFactory servFact) {
         repositoryFactory = repoFact;
+        serviceFactory = servFact;
     }
 
     @Override
@@ -73,7 +79,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public List<MobileApplicationFullDataDTO> getListed(List<String> ids) throws ObjectNotFoundException {
+    public List<MobileApplicationFullDataDTO> getListed(List<String> ids) throws NoObjectFoundException {
         List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
         for (String id : ids) {
             try {
@@ -85,7 +91,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public List<MobileApplicationFullDataDTO> getAllPaginated(Integer page, Integer size) throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+    public List<MobileApplicationFullDataDTO> getAllPaginated(Integer page, Integer size) throws NoObjectFoundException {
         try {
             return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllPaginated(page, size);
         } catch (NoMobileApplicationsFoundException noMobileApplicationsFoundException) {
@@ -117,12 +123,33 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
+    public void updateOld(int daysFromLastUpdate) {
+        updateApp(daysFromLastUpdate);
+    }
+
+    @Override
     public void delete(String id) {
         ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).delete(id);
+    }
+
+    private void updateApp(int daysFromLastUpdate) {
+        List<GraphApp> apps = getAllApps();
+        for (GraphApp app : apps) {
+
+            MobileApplicationFullDataDTO updatedCompleteApplicationDataDTO = ((AppDataScannerService) useService(AppDataScannerService.class)).scanApp(app, daysFromLastUpdate);
+
+            if (updatedCompleteApplicationDataDTO != null) {
+                ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).insert(updatedCompleteApplicationDataDTO);
+            }
+        }
     }
     private Object useRepository(Class<?> clazz) {
         return repositoryFactory.createRepository(clazz);
     }
+    private Object useService(Class<?> clazz) {
+        return serviceFactory.createService(clazz);
+    }
+
     /*
         public List<String> getResultsContaining(String text) {
             RepositoryConnection repoConnection = repository.getConnection();

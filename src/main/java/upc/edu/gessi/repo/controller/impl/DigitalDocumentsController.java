@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.DigitalDocumentsAPI;
 import upc.edu.gessi.repo.dto.DigitalDocumentDTO;
+import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
@@ -38,14 +39,14 @@ public class DigitalDocumentsController implements DigitalDocumentsAPI {
     }
 
     @Override
-    public ResponseEntity<List<DigitalDocumentDTO>> getListed(final List<String> ids) throws ObjectNotFoundException {
+    public ResponseEntity<List<DigitalDocumentDTO>> getListed(final List<String> ids) throws NoObjectFoundException {
         return null;
     }
 
     @Override
     public ResponseEntity<List<DigitalDocumentDTO>> getAllPaginated(final Integer page,
                                                                     final Integer size)
-            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+            throws NoObjectFoundException {
         return ResponseEntity.ok(null);
     }
 

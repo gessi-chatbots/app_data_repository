@@ -1,9 +1,7 @@
 package upc.edu.gessi.repo.repository;
 
-import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
-import upc.edu.gessi.repo.exception.Reviews.ReviewNotFoundException;
 
 import java.io.Serializable;
 import java.util.List;

@@ -27,4 +27,5 @@ public interface MobileApplicationService extends CrudService<MobileApplicationF
             throws NoMobileApplicationsFoundException;
 
 
+    void updateOld(int daysFromLastUpdate);
 }

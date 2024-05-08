@@ -14,7 +14,6 @@ import upc.edu.gessi.repo.controller.MobileApplicationsAPI;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.exception.*;
-import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.service.AnalysisService;
 import upc.edu.gessi.repo.service.GraphDBService;
@@ -82,7 +81,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     @Override
     public ResponseEntity<List<MobileApplicationFullDataDTO>> getAllPaginated(final Integer page,
                                                                               final Integer size)
-            throws ObjectNotFoundException, ClassNotFoundException, IllegalAccessException {
+            throws NoObjectFoundException {
         return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAllPaginated(page, size), HttpStatus.OK);
     }
 
@@ -95,7 +94,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationFullDataDTO>> getAll() {
+    public ResponseEntity<List<MobileApplicationFullDataDTO>> getAll() throws NoObjectFoundException  {
         return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getAll(), HttpStatus.OK);
     }
 
@@ -106,7 +105,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<MobileApplicationFullDataDTO>> getListed(final List<String> ids) throws ObjectNotFoundException {
+    public ResponseEntity<List<MobileApplicationFullDataDTO>> getListed(final List<String> ids) throws NoObjectFoundException {
         return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).getListed(ids), HttpStatus.OK);
     }
 

@@ -18,8 +18,9 @@ import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
-import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
+import upc.edu.gessi.repo.repository.RepositoryFactory;
+import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
 import upc.edu.gessi.repo.service.impl.ReviewServiceImpl;
 import upc.edu.gessi.repo.util.ApplicationQueryBuilder;
@@ -43,8 +44,8 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     private final AppDataScannerServiceImpl appDataScannerServiceImpl;
 
     private final ApplicationQueryBuilder applicationQueryBuilder;
+    private final RepositoryFactory repositoryFactory;
 
-    private final ReviewServiceImpl reviewServiceImpl;
     private final ReviewQueryBuilder reviewQueryBuilder;
     @Autowired
     public MobileApplicationRepositoryImpl(final @Value("${db.url}") String url,
@@ -54,14 +55,14 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
                                            final SchemaIRI schema,
                                            final ApplicationQueryBuilder appQB,
                                            final ReviewQueryBuilder reviewQB,
-                                           final ReviewServiceImpl reviewSv) {
+                                           final RepositoryFactory repoFact) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         appDataScannerServiceImpl = appDataScannerServ;
         schemaIRI = schema;
-        reviewServiceImpl = reviewSv;
         applicationQueryBuilder = appQB;
         reviewQueryBuilder = reviewQB;
+        repositoryFactory = repoFact;
     }
 
     @Override
@@ -171,17 +172,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
 
-    public void update(int daysFromLastUpdate) {
-        List<GraphApp> apps = getAllApps();
-        for (GraphApp app : apps) {
 
-            MobileApplicationFullDataDTO updatedCompleteApplicationDataDTO = appDataScannerServiceImpl.scanApp(app, daysFromLastUpdate);
-
-            if (updatedCompleteApplicationDataDTO != null) {
-                insert(updatedCompleteApplicationDataDTO);
-            }
-        }
-    }
 
 
     public List<MobileApplicationFullDataDTO> findAllPaginated(final Integer page,
@@ -264,7 +255,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     private void addReviewsToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
-        reviewServiceImpl.addCompleteReviewsToApplication(mobileApplicationFullDataDTO, applicationIRI, statements);
+        ((ReviewRepository) useRepository(ReviewRepository.class)).addCompleteReviewsToApplication(mobileApplicationFullDataDTO, applicationIRI, statements);
     }
 
     private void addFeaturesToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
@@ -523,12 +514,15 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
             while (sentencesResult.hasNext()) {
                 reviewResponseDTO
                         .getSentences()
-                        .add(reviewServiceImpl.getSentenceDTO(sentencesResult));
+                        .add(((ReviewRepository) useRepository(ReviewRepository.class)).getSentenceDTO(sentencesResult));
             }
             mobileApplicationFullDataDTO.getReviews().add(reviewResponseDTO);
         } else if (predicateValue.equals(nameIRI)) {
             mobileApplicationFullDataDTO.setAppName(bindings.getBinding("object").getValue().stringValue());
         }
+    }
+    private Object useRepository(Class<?> clazz) {
+        return repositoryFactory.createRepository(clazz);
     }
 
     private boolean existsPredicateAndObject(BindingSet bindings) {
