@@ -19,7 +19,6 @@ import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
-import upc.edu.gessi.repo.repository.RepositoryFactory;
 import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
 import upc.edu.gessi.repo.util.MobileApplicationsQueryBuilder;
@@ -497,7 +496,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
             List<String> reviewIds = new ArrayList<>(Collections.singleton(reviewResponseDTO.getId()));
 
             TupleQueryResult textResult =
-                    runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
+                    runSparqlQuery(reviewQueryBuilder.findReviewsByIds(reviewIds));
             if (textResult.hasNext()) {
                 BindingSet bindingSet = textResult.next();
                 if (bindingSet.getBinding("text") != null

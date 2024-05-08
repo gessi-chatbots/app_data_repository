@@ -8,7 +8,7 @@ import java.util.List;
 public class ReviewQueryBuilder
 {
 
-    public String findTextReviewsQuery(final List<String> ids) {
+    public String findReviewsByIds(final List<String> ids) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");

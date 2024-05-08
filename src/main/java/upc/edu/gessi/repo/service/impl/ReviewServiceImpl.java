@@ -40,8 +40,8 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDTO> getListed(List<String> id) throws NoObjectFoundException {
-        return null;
+    public List<ReviewDTO> getListed(List<String> ids) throws NoObjectFoundException {
+        return ((ReviewRepositoryImpl) useRepository(ReviewRepository.class)).findListed(ids);
     }
 
     @Override

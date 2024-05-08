@@ -63,7 +63,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     @Override
     public ReviewDTO findById(String id) throws ReviewNotFoundException {
-        return null;
+        try {
+            return findListed(List.of(id)).get(0);
+        } catch (NoReviewsFoundException nre) {
+            throw new ReviewNotFoundException("Review was not found");
+        }
     }
 
     @Override
@@ -75,6 +79,24 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     @Override
     public List findAllPaginated(final Integer page, final Integer size) throws NoReviewsFoundException {
         return null;
+    }
+
+    public List findAllReviewIDs() {
+        return null;
+    }
+
+    @Override
+    public List<ReviewDTO> findListed(List<String> reviewIds) throws NoReviewsFoundException {
+        TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findReviewsByIds(reviewIds));
+        if (!reviewsResult.hasNext()) {
+            throw new NoReviewsFoundException("Any review was found");
+        }
+        List<ReviewDTO> reviewDTOs = new ArrayList<>();
+        while (reviewsResult.hasNext()) {
+            ReviewDTO reviewDTO = getReviewDTO(reviewsResult);
+            reviewDTOs.add(reviewDTO);
+        }
+        return reviewDTOs;
     }
 
     @Override
@@ -107,9 +129,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 reviewQueryBuilder.deleteByIDQuery(id));
     }
 
-    public List findAllReviewIDs() {
-        return null;
-    }
 
     @Override
     public void addCompleteReviewsToApplication(final MobileApplicationFullDataDTO completeApplicationDataDTO,
@@ -141,6 +160,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
     }
 
+    @Override
     public List<String> getResultsContaining(String text) {
         RepositoryConnection repoConnection = repository.getConnection();
         String query = "PREFIX gessi: <http://gessi.upc.edu/app/> SELECT ?x ?y ?z " +
@@ -349,18 +369,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return ReviewDTO;
     }
 
-    private List<ReviewDTO> getReviewDTOList(final List<String> reviewIds) throws upc.edu.gessi.repo.exception.NoReviewsFoundException {
-        TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findTextReviewsQuery(reviewIds));
-        if (!reviewsResult.hasNext()) {
-            throw new upc.edu.gessi.repo.exception.NoReviewsFoundException("Any review was found");
-        }
-        List<ReviewDTO> ReviewDTOs = new ArrayList<>();
-        while (reviewsResult.hasNext()) {
-            ReviewDTO ReviewDTO = getReviewDTO(reviewsResult);
-            ReviewDTOs.add(ReviewDTO);
-        }
-        return ReviewDTOs;
-    }
     private boolean existsReviewBinding(BindingSet bindings) {
         return bindings.getBinding("id") != null
                 && bindings.getBinding("id").getValue() != null
