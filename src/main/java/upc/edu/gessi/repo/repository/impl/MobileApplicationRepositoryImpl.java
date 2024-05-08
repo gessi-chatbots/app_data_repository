@@ -20,7 +20,6 @@ import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFound
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.ReviewRepository;
-import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
 import upc.edu.gessi.repo.util.MobileApplicationsQueryBuilder;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
@@ -39,7 +38,6 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     private final ValueFactory factory = SimpleValueFactory.getInstance();
 
     private final SchemaIRI schemaIRI;
-    private final AppDataScannerServiceImpl appDataScannerServiceImpl;
 
     private final ReviewRepository reviewRepository;
 
@@ -50,14 +48,12 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     public MobileApplicationRepositoryImpl(final @Value("${db.url}") String url,
                                            final @Value("${db.username}") String username,
                                            final @Value("${db.password}") String password,
-                                           final AppDataScannerServiceImpl appDataScannerServ,
                                            final SchemaIRI schema,
                                            final ReviewRepository revRepo,
                                            final MobileApplicationsQueryBuilder appQB,
                                            final ReviewQueryBuilder reviewQB) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
-        appDataScannerServiceImpl = appDataScannerServ;
         schemaIRI = schema;
         reviewRepository = revRepo;
         mobileApplicationsQueryBuilder = appQB;

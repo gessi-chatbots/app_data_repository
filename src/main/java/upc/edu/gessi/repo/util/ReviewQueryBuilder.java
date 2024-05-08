@@ -8,6 +8,18 @@ import java.util.List;
 public class ReviewQueryBuilder
 {
 
+    public String findAllQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?subject ?predicate ?object\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?subject rdf:type schema:Review .\n");
+        queryBuilder.append("  ?subject ?predicate ?object .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+
     public String findReviewsByIds(final List<String> ids) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");

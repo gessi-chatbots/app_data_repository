@@ -71,17 +71,55 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public List<ReviewDTO> findAll() {
-        return null;
+    public List<ReviewDTO> findAll() throws NoReviewsFoundException {
+        List<BindingSet> bindingSetResults = runSparqlQuery(reviewQueryBuilder.findAllQuery()).stream().toList();
+        List<ReviewDTO> reviewDTOs = new ArrayList<>();
+        String currentReviewURI = null;
+        ReviewDTO reviewDTO = null;
+        for (BindingSet bs : bindingSetResults) {
+            String reviewURI = bs.getBinding("subject").getValue().stringValue();
+            if (!reviewURI.equals(currentReviewURI)) {
+                if (reviewDTO != null) {
+                    reviewDTOs.add(reviewDTO);
+                }
+                currentReviewURI = reviewURI;
+                reviewDTO = new ReviewDTO();
+            }
+            updateReviewDTOFromBindings(reviewDTO, bs);
+        }
+
+        if (reviewDTOs.isEmpty()) {
+            throw new NoReviewsFoundException("No Mobile Applications Reviews were found");
+        }
+
+        return reviewDTOs;
+    }
+
+
+    private void updateReviewDTOFromBindings(ReviewDTO reviewDTO, BindingSet bindings) {
+        String predicateValue = bindings.getBinding("predicate").getValue().stringValue();
+        String identifierIRI = schemaIRI.getIdentifierIRI().stringValue();
+        String authorIRI = schemaIRI.getAuthorIRI().stringValue();
+        String reviewBodyIRI = schemaIRI.getReviewBodyIRI().stringValue();
+        String reviewRatingIRI = schemaIRI.getReviewRatingIRI().stringValue();
+        String value = bindings
+                .getBinding("object")
+                .getValue()
+                .stringValue();
+        if (predicateValue.equals(identifierIRI)) {
+            reviewDTO.setId(value);
+        } else if (predicateValue.equals(authorIRI)) {
+            reviewDTO.setAuthor(value);
+        } else if (predicateValue.equals(reviewBodyIRI)) {
+            reviewDTO.setReviewText(value);
+        } else if (predicateValue.equals(reviewRatingIRI)) {
+            reviewDTO.setRating(Integer.valueOf(value));
+        }
     }
 
 
     @Override
-    public List findAllPaginated(final Integer page, final Integer size) throws NoReviewsFoundException {
-        return null;
-    }
-
-    public List findAllReviewIDs() {
+    public List<ReviewDTO> findAllPaginated(final Integer page, final Integer size) throws NoReviewsFoundException {
         return null;
     }
 
@@ -335,7 +373,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     private ReviewDTO getReviewDTO(final TupleQueryResult result) {
         ReviewDTO ReviewDTO = new ReviewDTO();
         BindingSet bindings = result.next();
-        if (existsReviewBinding(bindings)) {
+        if (existsShortReviewBinding(bindings)) {
             String idValue = bindings.getBinding("id").getValue().stringValue();
             String textValue = bindings.getBinding("text").getValue().stringValue();
             String appValue = bindings.getBinding("app_identifier").getValue().stringValue();
@@ -369,7 +407,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return ReviewDTO;
     }
 
-    private boolean existsReviewBinding(BindingSet bindings) {
+    private boolean existsShortReviewBinding(BindingSet bindings) {
         return bindings.getBinding("id") != null
                 && bindings.getBinding("id").getValue() != null
                 && bindings.getBinding("text") != null
