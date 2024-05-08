@@ -22,8 +22,7 @@ import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
 import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.service.impl.AppDataScannerServiceImpl;
-import upc.edu.gessi.repo.service.impl.ReviewServiceImpl;
-import upc.edu.gessi.repo.util.ApplicationQueryBuilder;
+import upc.edu.gessi.repo.util.MobileApplicationsQueryBuilder;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
@@ -43,7 +42,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     private final SchemaIRI schemaIRI;
     private final AppDataScannerServiceImpl appDataScannerServiceImpl;
 
-    private final ApplicationQueryBuilder applicationQueryBuilder;
+    private final MobileApplicationsQueryBuilder mobileApplicationsQueryBuilder;
     private final RepositoryFactory repositoryFactory;
 
     private final ReviewQueryBuilder reviewQueryBuilder;
@@ -53,21 +52,21 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
                                            final @Value("${db.password}") String password,
                                            final AppDataScannerServiceImpl appDataScannerServ,
                                            final SchemaIRI schema,
-                                           final ApplicationQueryBuilder appQB,
+                                           final MobileApplicationsQueryBuilder appQB,
                                            final ReviewQueryBuilder reviewQB,
                                            final RepositoryFactory repoFact) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         appDataScannerServiceImpl = appDataScannerServ;
         schemaIRI = schema;
-        applicationQueryBuilder = appQB;
+        mobileApplicationsQueryBuilder = appQB;
         reviewQueryBuilder = reviewQB;
         repositoryFactory = repoFact;
     }
 
     @Override
     public List<MobileApplicationFullDataDTO> findAll() throws NoMobileApplicationsFoundException {
-        List<BindingSet> bindingSetResults = runSparqlQuery(applicationQueryBuilder.findAllQuery()).stream().toList();
+        List<BindingSet> bindingSetResults = runSparqlQuery(mobileApplicationsQueryBuilder.findAllQuery()).stream().toList();
         List<MobileApplicationFullDataDTO> mobileApplicationFullDataDTOS = new ArrayList<>();
 
         String currentAppUri = null;
@@ -128,7 +127,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     @Override
     public void delete(String id) {
         Utils.runSparqlUpdateQuery(repository.getConnection(),
-                applicationQueryBuilder.deleteByNameQuery(id));
+                mobileApplicationsQueryBuilder.deleteByNameQuery(id));
     }
 
     @Override
@@ -177,7 +176,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
     public List<MobileApplicationFullDataDTO> findAllPaginated(final Integer page,
                                                                 final Integer size) throws NoMobileApplicationsFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedQuery(page, size));
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findAllPaginatedQuery(page, size));
         List<MobileApplicationFullDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
             throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
@@ -190,7 +189,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
     @Override
     public List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(final Integer page, final Integer size) throws NoMobileApplicationsFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllPaginatedSimplifiedQuery(page, size));
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findAllPaginatedSimplifiedQuery(page, size));
         List<MobileApplicationBasicDataDTO> applicationDTOS = new ArrayList<>();
         if (!result.hasNext()) {
             throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
@@ -203,7 +202,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
     @Override
     public List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws NoMobileApplicationsFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findAllApplicationsBasicDataQuery());
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findAllApplicationsBasicDataQuery());
         if (!result.hasNext()) {
             throw new NoMobileApplicationsFoundException("No Mobile Applications were found");
         }
@@ -221,7 +220,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
     @Override
     public MobileApplicationFullDataDTO findById(final String appName) throws MobileApplicationNotFoundException {
-        TupleQueryResult result = runSparqlQuery(applicationQueryBuilder.findByNameQuery(appName));
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findByNameQuery(appName));
         if (!result.hasNext()) {
             throw new MobileApplicationNotFoundException("No Mobile Application was found for name: " + appName);
         }

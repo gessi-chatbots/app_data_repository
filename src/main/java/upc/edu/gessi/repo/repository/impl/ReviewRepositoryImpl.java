@@ -81,6 +81,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     public ReviewDTO insert(ReviewDTO entity) {
         List<Statement> statements = new ArrayList<>();
         IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + entity.getId());
+        IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + entity.getPackageName());
+        statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
         statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
         String reviewBody = entity.getReviewText();
         createReviewContent(statements, reviewIRI, reviewBody, entity.getSentences());
@@ -99,7 +101,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     }
 
-    public List findAllReviewIDs(){
+    public List findAllReviewIDs() {
         return null;
     }
 
