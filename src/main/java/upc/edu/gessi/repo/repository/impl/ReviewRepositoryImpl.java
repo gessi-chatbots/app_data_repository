@@ -98,7 +98,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     @Override
     public void delete(String id) {
-
+        Utils.runSparqlUpdateQuery(repository.getConnection(),
+                reviewQueryBuilder.deleteByIDQuery(id));
     }
 
     public List findAllReviewIDs() {
