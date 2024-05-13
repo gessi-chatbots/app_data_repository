@@ -137,29 +137,29 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public IRI insert(ReviewDTO entity) {
+    public IRI insert(ReviewDTO dto) {
         List<Statement> statements = new ArrayList<>();
-        if (entity.getId() != null) {
-            IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + entity.getId());
+        if (dto.getId() != null) {
+            IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + dto.getId());
             statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-            IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + entity.getPackageName());
+            IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + dto.getPackageName());
             if (applicationIRI != null) {
                 statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
             }
-            if (entity.getRating() != null) {
-                statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(entity.getRating())));
+            if (dto.getRating() != null) {
+                statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(dto.getRating())));
             }
-            if (entity.getDate() != null) {
-                statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(entity.getDate())));
+            if (dto.getDate() != null) {
+                statements.add(factory.createStatement(reviewIRI, schemaIRI.getDatePublishedIRI(), factory.createLiteral(dto.getDate())));
             }
-            if (entity.getAuthor() != null) {
-                statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(entity.getAuthor())));
+            if (dto.getAuthor() != null) {
+                statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(dto.getAuthor())));
             }
-            if (entity.getId() != null) {
-                statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(entity.getId())));
+            if (dto.getId() != null) {
+                statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(dto.getId())));
             }
-            if (entity.getReviewText() != null) {
-                addReviewTextIntoStatements(entity.getReviewText(), statements, reviewIRI);
+            if (dto.getReviewText() != null) {
+                addReviewTextIntoStatements(dto.getReviewText(), statements, reviewIRI);
             }
             commitChanges(statements);
             return reviewIRI;

@@ -12,7 +12,7 @@ public interface RDFCRUDRepository<T extends Serializable> {
     List<T> findAll() throws NoObjectFoundException;
     List<T> findAllPaginated(final Integer page, final Integer size) throws NoObjectFoundException;
 
-    IRI insert(T entity);
+    IRI insert(T dto);
 
     T update(T entity);
 

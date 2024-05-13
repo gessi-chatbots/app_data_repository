@@ -10,9 +10,7 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import upc.edu.gessi.repo.dto.Review.FeatureDTO;
 import upc.edu.gessi.repo.dto.Review.SentenceDTO;
-import upc.edu.gessi.repo.dto.Review.SentimentDTO;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.SentenceRepository;
@@ -61,16 +59,16 @@ public class SentenceRepositoryImpl implements SentenceRepository {
     }
 
     @Override
-    public IRI insert(SentenceDTO entity) {
+    public IRI insert(SentenceDTO dto) {
         List<Statement> statements = new ArrayList<>();
-        IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + entity.getId());
+        IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + dto.getId());
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(entity.getId())));
-        if (entity.getSentimentData() != null && entity.getSentimentData().getSentiment() != null) {
-            addSentenceSentimentIntoStatements(statements, entity, sentenceIRI);
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(dto.getId())));
+        if (dto.getSentimentData() != null && dto.getSentimentData().getSentiment() != null) {
+            addSentenceSentimentIntoStatements(statements, dto, sentenceIRI);
         }
-        if (entity.getFeatureData() != null && entity.getFeatureData().getFeature() != null) {
-            addSenteceFeatureIntoStatements(statements, entity, sentenceIRI);
+        if (dto.getFeatureData() != null && dto.getFeatureData().getFeature() != null) {
+            addSenteceFeatureIntoStatements(statements, dto, sentenceIRI);
         }
         commitChanges(statements);
         return sentenceIRI;
@@ -145,7 +143,10 @@ public class SentenceRepositoryImpl implements SentenceRepository {
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getAdditionalPropertyIRI(), sentimentIRI));
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
         if (sentenceDTO.getSentimentData().getLanguageModel() != null) {
-            addSentimentLanguageModelIntoStatements(sentenceDTO.getFeatureData());
+            addLanguageModel(
+                    statements, 
+                    sentenceDTO.getSentimentData().getLanguageModel().getModelName(),
+                    sentimentIRI);
         }
     }
     private void addFeatureIntoStatements(final List<Statement> statements,
@@ -159,17 +160,22 @@ public class SentenceRepositoryImpl implements SentenceRepository {
         statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(feature)));
         statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
         if (sentenceDTO.getFeatureData().getLanguageModel() != null) {
-            addFeatureLanguageModelIntoStatements(sentenceDTO.getSentimentData());
+            addLanguageModel(
+                    statements,
+                    sentenceDTO.getFeatureData().getLanguageModel().getModelName(),
+                    featureIRI);
         }
     }
 
-    private void addFeatureLanguageModelIntoStatements(final SentimentDTO sentimentDTO) {
+    private void addLanguageModel(final List<Statement> statements,
+                                  final String languageModel,
+                                  final IRI iri) {
+        IRI languageModelIRI = factory.createIRI(schemaIRI.getSoftwareApplicationIRI() + "/" + languageModel);
+        statements.add(factory.createStatement(languageModelIRI, schemaIRI.getTypeIRI(), schemaIRI.getSoftwareApplicationIRI()));
+        statements.add(factory.createStatement(iri, schemaIRI.getDisambiguatingDescriptionIRI(), languageModelIRI));
 
     }
 
-    private void addSentimentLanguageModelIntoStatements(final FeatureDTO featureDTO) {
-
-    }
 
 
     private void commitChanges(final List<Statement> statements) {
