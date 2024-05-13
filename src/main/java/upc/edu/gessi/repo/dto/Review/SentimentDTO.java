@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import upc.edu.gessi.repo.dto.LanguageModel.LanguageModelDTO;
 
 import java.io.Serializable;
 
@@ -14,4 +15,5 @@ import java.io.Serializable;
 @Builder
 public class SentimentDTO implements Serializable {
     private String sentiment;
+    private LanguageModelDTO languageModelDTO;
 }
