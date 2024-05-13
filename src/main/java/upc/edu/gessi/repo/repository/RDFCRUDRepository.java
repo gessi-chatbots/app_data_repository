@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.repository;
 
+import org.eclipse.rdf4j.model.IRI;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
@@ -11,7 +12,7 @@ public interface RDFCRUDRepository<T extends Serializable> {
     List<T> findAll() throws NoObjectFoundException;
     List<T> findAllPaginated(final Integer page, final Integer size) throws NoObjectFoundException;
 
-    T insert(T entity);
+    IRI insert(T entity);
 
     T update(T entity);
 

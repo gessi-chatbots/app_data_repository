@@ -74,7 +74,7 @@ public class SentenceRepositoryImpl implements SentenceRepository {
     }
 
     @Override
-    public SentenceDTO insert(SentenceDTO entity) {
+    public IRI insert(SentenceDTO entity) {
         return null;
     }
 

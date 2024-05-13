@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.service.impl;
 
 
+import org.eclipse.rdf4j.model.IRI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,6 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<ReviewDTO> create(List<ReviewDTO> dtos) {
         for (ReviewDTO r : dtos) {
-            // Todo Extract Sentences and use Sentence Repository
             ((ReviewRepository) useRepository(ReviewRepository.class)).insert(r);
         }
         return dtos;
