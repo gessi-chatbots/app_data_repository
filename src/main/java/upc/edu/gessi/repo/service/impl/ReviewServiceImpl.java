@@ -29,6 +29,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<ReviewDTO> create(List<ReviewDTO> dtos) {
         for (ReviewDTO r : dtos) {
+            // Todo Extract Sentences and use Sentence Repository
             ((ReviewRepository) useRepository(ReviewRepository.class)).insert(r);
         }
         return dtos;

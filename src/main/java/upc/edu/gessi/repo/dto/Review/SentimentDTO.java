@@ -15,5 +15,5 @@ import java.io.Serializable;
 @Builder
 public class SentimentDTO implements Serializable {
     private String sentiment;
-    private LanguageModelDTO languageModelDTO;
+    private LanguageModelDTO languageModel;
 }

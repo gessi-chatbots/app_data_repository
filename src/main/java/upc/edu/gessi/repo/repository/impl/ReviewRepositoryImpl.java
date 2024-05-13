@@ -144,14 +144,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + entity.getPackageName());
         statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
         statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-
-        createReviewContent(statements, reviewIRI, entity.getReviewText(), entity.getSentences());
-
         statements.add(factory.createStatement(reviewIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(entity.getId())));
         statements.add(factory.createStatement(reviewIRI, schemaIRI.getAuthorIRI(), factory.createLiteral(entity.getAuthor())));
         statements.add(factory.createStatement(reviewIRI, schemaIRI.getReviewRatingIRI(), factory.createLiteral(entity.getRating())));
-
         commitChanges(statements);
+
+        addReviewSentencesIntoStatements(statements, reviewIRI, entity.getReviewText(), entity.getSentences());
         return entity;
     }
 
@@ -192,7 +190,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 }
                 if (r.getReviewText() != null) {
                     String reviewBody = r.getReviewText();
-                    createReviewContent(statements, reviewIRI, reviewBody, r.getSentences());
+                    addReviewSentencesIntoStatements(statements, reviewIRI, reviewBody, r.getSentences());
                 }
             }
         }
@@ -281,18 +279,19 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         repoConnection.add(statements);
         repoConnection.close();
     }
-    private void addSentimentToSentence(final List<Statement> statements,
-                                        final SentenceDTO sentenceDTO,
-                                        final IRI sentenceIRI) {
+    private void addSentimentIntoStatements(final List<Statement> statements,
+                                            final SentenceDTO sentenceDTO,
+                                            final IRI sentenceIRI) {
         IRI sentimentIRI = factory.createIRI(schemaIRI.getReactActionIRI() + "/" + sentenceDTO.getSentimentData().getSentiment());
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getTypeIRI(), schemaIRI.getReactActionIRI()));
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getPotentialActionIRI(), sentimentIRI));
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
     }
-    private void updateSentenceFeatures(final List<Statement> statements,
-                                        final SentenceDTO sentenceDTO,
-                                        final IRI sentenceIRI,
-                                        final String reviewId) {
+
+    private void addSenteceFeatureIntoStatements(final List<Statement> statements,
+                                                 final SentenceDTO sentenceDTO,
+                                                 final IRI sentenceIRI,
+                                                 final String reviewId) {
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), reviewQueryBuilder.hasReviewFeatures(reviewId));
         if (result.hasNext()) {
             BindingSet set = result.next();
@@ -304,12 +303,20 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             }
         }
         addFeatureToSentence(statements, sentenceDTO, sentenceIRI);
+
+        if (sentenceDTO.getFeatureData().getLanguageModel() != null) {
+            addFeatureLanguageModelIntoStatements(sentenceDTO.getSentimentData());
+        }
     }
 
-    private void updateSentenceSentiments(final List<Statement> statements,
-                                          final SentenceDTO sentenceDTO,
-                                          final IRI sentenceIRI,
-                                          final String reviewId) {
+    private void addFeatureLanguageModelIntoStatements(final SentimentDTO sentimentDTO) {
+
+    }
+
+    private void addSentenceSentimentIntoStatements(final List<Statement> statements,
+                                                    final SentenceDTO sentenceDTO,
+                                                    final IRI sentenceIRI,
+                                                    final String reviewId) {
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), reviewQueryBuilder.hasReviewSentiments(reviewId));
         if (result.hasNext()) {
             BindingSet set = result.next();
@@ -321,7 +328,15 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 }
             }
         }
-        addSentimentToSentence(statements, sentenceDTO, sentenceIRI);
+        addSentimentIntoStatements(statements, sentenceDTO, sentenceIRI);
+
+        if (sentenceDTO.getSentimentData().getLanguageModel() != null) {
+            addSentimentLanguageModelIntoStatements(sentenceDTO.getFeatureData());
+        }
+    }
+
+    private void addSentimentLanguageModelIntoStatements(final FeatureDTO featureDTO) {
+
     }
 
     private void addFeatureToSentence(final List<Statement> statements,
@@ -337,25 +352,25 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         // statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
     }
 
-    private void addSentenceToReview(final List<Statement> statements,
-                                     final SentenceDTO sentenceDTO,
-                                     final IRI reviewIRI) {
+    private void addSentenceIntoStatements(final List<Statement> statements,
+                                           final SentenceDTO sentenceDTO,
+                                           final IRI reviewIRI) {
         IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + sentenceDTO.getId());
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getTypeIRI(), schemaIRI.getCreativeWorkIRI()));
         statements.add(factory.createStatement(reviewIRI, schemaIRI.getHasPartIRI(), sentenceIRI));
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getId())));
         String reviewId = String.valueOf(reviewIRI).split(schemaIRI.getReviewIRI().stringValue()+"/")[1];
         if (sentenceDTO.getSentimentData() != null && sentenceDTO.getSentimentData().getSentiment() != null) {
-            updateSentenceSentiments(statements, sentenceDTO, sentenceIRI, reviewId);
+            addSentenceSentimentIntoStatements(statements, sentenceDTO, sentenceIRI, reviewId);
         }
         if (sentenceDTO.getFeatureData() != null && sentenceDTO.getFeatureData().getFeature() != null) {
-            updateSentenceFeatures(statements, sentenceDTO, sentenceIRI, reviewId);
+            addSenteceFeatureIntoStatements(statements, sentenceDTO, sentenceIRI, reviewId);
         }
     }
-    private void createReviewContent(final List<Statement> statements,
-                                     final IRI reviewIRI,
-                                     final String reviewBody,
-                                     final List<SentenceDTO> sentences) {
+    private void addReviewSentencesIntoStatements(final List<Statement> statements,
+                                                  final IRI reviewIRI,
+                                                  final String reviewBody,
+                                                  final List<SentenceDTO> sentences) {
         if (reviewBody != null) {
             byte[] reviewBytes = reviewBody.getBytes();
             String encoded_string = new String(reviewBytes, StandardCharsets.UTF_8);
@@ -363,7 +378,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             if (sentences != null) {
                 sentences.forEach(sentenceDTO -> {
                     if (sentenceDTO.getId() != null) {
-                        addSentenceToReview(statements, sentenceDTO, reviewIRI);
+                        addSentenceIntoStatements(statements, sentenceDTO, reviewIRI);
                     }
                 });
             }

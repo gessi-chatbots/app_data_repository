@@ -15,5 +15,5 @@ import java.io.Serializable;
 @Builder
 public class FeatureDTO implements Serializable {
     private String feature;
-    private LanguageModelDTO languageModelDTO;
+    private LanguageModelDTO languageModel;
 }
