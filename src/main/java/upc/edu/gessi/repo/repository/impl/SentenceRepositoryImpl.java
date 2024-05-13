@@ -2,38 +2,25 @@ package upc.edu.gessi.repo.repository.impl;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
 import upc.edu.gessi.repo.dto.Review.SentenceDTO;
-import upc.edu.gessi.repo.dto.Review.SentenceDTO;
 import upc.edu.gessi.repo.dto.Review.SentimentDTO;
-import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
-import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
-import upc.edu.gessi.repo.exception.Reviews.ReviewNotFoundException;
-import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.repository.SentenceRepository;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -109,6 +96,21 @@ public class SentenceRepositoryImpl implements SentenceRepository {
                                                     final SentenceDTO sentenceDTO,
                                                     final IRI sentenceIRI) {
         String reviewId = "";
+        deleteSentimentIfExisting(reviewId);
+        addSentimentIntoStatements(statements, sentenceDTO, sentenceIRI);
+    }
+
+
+    private void addSenteceFeatureIntoStatements(final List<Statement> statements,
+                                                 final SentenceDTO sentenceDTO,
+                                                 final IRI sentenceIRI) {
+        String reviewId = "";
+        deleteFeatureIfExists(reviewId);
+        addFeatureIntoStatements(statements, sentenceDTO, sentenceIRI);
+
+    }
+
+    private void deleteSentimentIfExisting(String reviewId) {
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), reviewQueryBuilder.hasReviewSentiments(reviewId));
         if (result.hasNext()) {
             BindingSet set = result.next();
@@ -120,17 +122,9 @@ public class SentenceRepositoryImpl implements SentenceRepository {
                 }
             }
         }
-        addSentimentIntoStatements(statements, sentenceDTO, sentenceIRI);
-
-        if (sentenceDTO.getSentimentData().getLanguageModel() != null) {
-            addSentimentLanguageModelIntoStatements(sentenceDTO.getFeatureData());
-        }
     }
 
-    private void addSenteceFeatureIntoStatements(final List<Statement> statements,
-                                                 final SentenceDTO sentenceDTO,
-                                                 final IRI sentenceIRI) {
-        String reviewId = "";
+    private void deleteFeatureIfExists(String reviewId) {
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), reviewQueryBuilder.hasReviewFeatures(reviewId));
         if (result.hasNext()) {
             BindingSet set = result.next();
@@ -141,23 +135,22 @@ public class SentenceRepositoryImpl implements SentenceRepository {
                 }
             }
         }
-        addFeatureToSentence(statements, sentenceDTO, sentenceIRI);
-
-        if (sentenceDTO.getFeatureData().getLanguageModel() != null) {
-            addFeatureLanguageModelIntoStatements(sentenceDTO.getSentimentData());
-        }
     }
+
     private void addSentimentIntoStatements(final List<Statement> statements,
                                             final SentenceDTO sentenceDTO,
                                             final IRI sentenceIRI) {
         IRI sentimentIRI = factory.createIRI(schemaIRI.getReactActionIRI() + "/" + sentenceDTO.getSentimentData().getSentiment());
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getTypeIRI(), schemaIRI.getReactActionIRI()));
-        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getPotentialActionIRI(), sentimentIRI));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getAdditionalPropertyIRI(), sentimentIRI));
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
+        if (sentenceDTO.getSentimentData().getLanguageModel() != null) {
+            addSentimentLanguageModelIntoStatements(sentenceDTO.getFeatureData());
+        }
     }
-    private void addFeatureToSentence(final List<Statement> statements,
-                                      final SentenceDTO sentenceDTO,
-                                      final IRI sentenceIRI) {
+    private void addFeatureIntoStatements(final List<Statement> statements,
+                                          final SentenceDTO sentenceDTO,
+                                          final IRI sentenceIRI) {
         String feature =  sentenceDTO.getFeatureData().getFeature();
         feature = feature.replace(" ", "_");
         IRI featureIRI = factory.createIRI(schemaIRI.getDefinedTermIRI() + "/" + feature);
@@ -165,7 +158,9 @@ public class SentenceRepositoryImpl implements SentenceRepository {
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getKeywordIRI(), featureIRI));
         statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(feature)));
         statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
-        // statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
+        if (sentenceDTO.getFeatureData().getLanguageModel() != null) {
+            addFeatureLanguageModelIntoStatements(sentenceDTO.getSentimentData());
+        }
     }
 
     private void addFeatureLanguageModelIntoStatements(final SentimentDTO sentimentDTO) {
