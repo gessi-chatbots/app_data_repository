@@ -27,6 +27,8 @@ public class SchemaIRI {
     private final IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
     private final IRI descriptionIRI = factory.createIRI("https://schema.org/description");
     private final IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
+    private final IRI additionalPropertyIRI = factory.createIRI("https://schema.org/additionalProperty");
+
     private final IRI textPropertyIRI = factory.createIRI("https://schema.org/text");
     private final IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
     private final IRI keywordIRI = factory.createIRI("https://schema.org/keywords");

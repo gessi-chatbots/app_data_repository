@@ -65,17 +65,12 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     @Override
     public List<MobileApplicationFullDataDTO> create(List<MobileApplicationFullDataDTO> dtos) {
         for (MobileApplicationFullDataDTO mobileApplicationFullDataDTO : dtos) {
-            // Insert App
-            ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).insert(mobileApplicationFullDataDTO);
-            // Insert App reviews
-            for (ReviewDTO reviewDTO : mobileApplicationFullDataDTO.getReviews()) {
-                reviewService.create(Collections.singletonList(reviewDTO));
-                ((ReviewRepository) useRepository(ReviewRepository.class)).insert(reviewDTO);
-                ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).addReviewToMobileApplication(mobileApplicationFullDataDTO.getPackageName(), reviewDTO.getId());
-            }
+            insertMobileApplication(mobileApplicationFullDataDTO);
+            insertMobileApplicationReviews(mobileApplicationFullDataDTO);
         }
         return dtos;
     }
+
 
     @Override
     public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException {
@@ -136,6 +131,20 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).delete(id);
     }
 
+    private void insertMobileApplication(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
+        ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).insert(mobileApplicationFullDataDTO);
+    }
+
+    private void insertMobileApplicationReviews(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
+        for (ReviewDTO reviewDTO : mobileApplicationFullDataDTO.getReviews()) {
+            ((ReviewRepository) useRepository(ReviewRepository.class)).insert(reviewDTO);
+            ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
+                    .addReviewToMobileApplication(
+                            mobileApplicationFullDataDTO.getPackageName(),
+                            reviewDTO.getId()
+                    );
+        }
+    }
     private void updateApp(int daysFromLastUpdate) {
         List<GraphApp> apps = getAllApps();
         for (GraphApp app : apps) {

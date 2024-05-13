@@ -16,6 +16,9 @@ public interface ReviewRepository extends RDFCRUDRepository<ReviewDTO> {
 
     List<String> getResultsContaining(String text);
 
+    void addSentenceToReview(String reviewId,
+                             String sentenceId);
+
     List<GraphReview> getReviews(String nodeId);
 
     SentenceDTO getSentenceDTO(TupleQueryResult result);

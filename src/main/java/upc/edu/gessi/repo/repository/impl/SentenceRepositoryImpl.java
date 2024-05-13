@@ -75,7 +75,18 @@ public class SentenceRepositoryImpl implements SentenceRepository {
 
     @Override
     public IRI insert(SentenceDTO entity) {
-        return null;
+        List<Statement> statements = new ArrayList<>();
+        IRI sentenceIRI = factory.createIRI(schemaIRI.getReviewBodyIRI() + "/" + entity.getId());
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(entity.getId())));
+        if (entity.getSentimentData() != null && entity.getSentimentData().getSentiment() != null) {
+            addSentenceSentimentIntoStatements(statements, entity, sentenceIRI);
+        }
+        if (entity.getFeatureData() != null && entity.getFeatureData().getFeature() != null) {
+            addSenteceFeatureIntoStatements(statements, entity, sentenceIRI);
+        }
+        commitChanges(statements);
+        return sentenceIRI;
     }
 
     @Override
@@ -91,5 +102,84 @@ public class SentenceRepositoryImpl implements SentenceRepository {
     @Override
     public SentenceDTO getSentenceDTO(TupleQueryResult result) {
         return null;
+    }
+
+
+    private void addSentenceSentimentIntoStatements(final List<Statement> statements,
+                                                    final SentenceDTO sentenceDTO,
+                                                    final IRI sentenceIRI) {
+        String reviewId = "";
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), reviewQueryBuilder.hasReviewSentiments(reviewId));
+        if (result.hasNext()) {
+            BindingSet set = result.next();
+            if (set.getBinding("hasSentiment") != null && set.getBinding("hasSentiment").getValue() != null) {
+                boolean hasSentiments = Boolean.parseBoolean(set.getBinding("hasSentiment").getValue().stringValue());
+                if (hasSentiments) {
+                    Utils.runSparqlUpdateQuery(repository.getConnection(),
+                            reviewQueryBuilder.deleteSentimentsFromReview(reviewId));
+                }
+            }
+        }
+        addSentimentIntoStatements(statements, sentenceDTO, sentenceIRI);
+
+        if (sentenceDTO.getSentimentData().getLanguageModel() != null) {
+            addSentimentLanguageModelIntoStatements(sentenceDTO.getFeatureData());
+        }
+    }
+
+    private void addSenteceFeatureIntoStatements(final List<Statement> statements,
+                                                 final SentenceDTO sentenceDTO,
+                                                 final IRI sentenceIRI) {
+        String reviewId = "";
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), reviewQueryBuilder.hasReviewFeatures(reviewId));
+        if (result.hasNext()) {
+            BindingSet set = result.next();
+            if (set.getBinding("hasKeyword") != null && set.getBinding("hasKeyword").getValue() != null) {
+                boolean hasFeatures = Boolean.parseBoolean(set.getBinding("hasKeyword").getValue().stringValue());
+                if (hasFeatures) {
+                    Utils.runSparqlUpdateQuery(repository.getConnection(), reviewQueryBuilder.deleteFeaturesFromReview(reviewId));
+                }
+            }
+        }
+        addFeatureToSentence(statements, sentenceDTO, sentenceIRI);
+
+        if (sentenceDTO.getFeatureData().getLanguageModel() != null) {
+            addFeatureLanguageModelIntoStatements(sentenceDTO.getSentimentData());
+        }
+    }
+    private void addSentimentIntoStatements(final List<Statement> statements,
+                                            final SentenceDTO sentenceDTO,
+                                            final IRI sentenceIRI) {
+        IRI sentimentIRI = factory.createIRI(schemaIRI.getReactActionIRI() + "/" + sentenceDTO.getSentimentData().getSentiment());
+        statements.add(factory.createStatement(sentimentIRI, schemaIRI.getTypeIRI(), schemaIRI.getReactActionIRI()));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getPotentialActionIRI(), sentimentIRI));
+        statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
+    }
+    private void addFeatureToSentence(final List<Statement> statements,
+                                      final SentenceDTO sentenceDTO,
+                                      final IRI sentenceIRI) {
+        String feature =  sentenceDTO.getFeatureData().getFeature();
+        feature = feature.replace(" ", "_");
+        IRI featureIRI = factory.createIRI(schemaIRI.getDefinedTermIRI() + "/" + feature);
+        statements.add(factory.createStatement(featureIRI, schemaIRI.getTypeIRI(), schemaIRI.getDefinedTermIRI()));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getKeywordIRI(), featureIRI));
+        statements.add(factory.createStatement(featureIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(feature)));
+        statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
+        // statements.add(factory.createStatement(featureIRI, schemaIRI.getNameIRI(), factory.createLiteral(feature)));
+    }
+
+    private void addFeatureLanguageModelIntoStatements(final SentimentDTO sentimentDTO) {
+
+    }
+
+    private void addSentimentLanguageModelIntoStatements(final FeatureDTO featureDTO) {
+
+    }
+
+
+    private void commitChanges(final List<Statement> statements) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        repoConnection.add(statements);
+        repoConnection.close();
     }
 }
