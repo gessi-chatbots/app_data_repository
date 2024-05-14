@@ -173,7 +173,6 @@ public class SentenceRepositoryImpl implements SentenceRepository {
         IRI languageModelIRI = factory.createIRI(schemaIRI.getSoftwareApplicationIRI() + "/" + languageModel);
         statements.add(factory.createStatement(languageModelIRI, schemaIRI.getTypeIRI(), schemaIRI.getSoftwareApplicationIRI()));
         statements.add(factory.createStatement(iri, schemaIRI.getDisambiguatingDescriptionIRI(), languageModelIRI));
-
     }
 
 
