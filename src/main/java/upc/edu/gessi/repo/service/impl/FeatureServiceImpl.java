@@ -333,7 +333,7 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public List<Feature> getListed(List<String> id) throws NoObjectFoundException {
+    public List<Feature> getListed(List<String> ids) throws NoObjectFoundException {
         return null;
     }
 

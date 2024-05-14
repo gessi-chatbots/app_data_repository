@@ -144,7 +144,7 @@ public class SentenceRepositoryImpl implements SentenceRepository {
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
         if (sentenceDTO.getSentimentData().getLanguageModel() != null) {
             addLanguageModel(
-                    statements, 
+                    statements,
                     sentenceDTO.getSentimentData().getLanguageModel().getModelName(),
                     sentimentIRI);
         }

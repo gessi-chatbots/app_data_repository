@@ -22,7 +22,6 @@ import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 

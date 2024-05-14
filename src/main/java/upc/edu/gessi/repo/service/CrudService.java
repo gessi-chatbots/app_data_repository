@@ -10,7 +10,7 @@ public interface CrudService<T> {
 
     T get(String id) throws ObjectNotFoundException;
 
-    List<T> getListed(List<String> id) throws NoObjectFoundException;
+    List<T> getListed(List<String> ids) throws NoObjectFoundException;
 
     List<T> getAllPaginated(Integer page,
                             Integer size)

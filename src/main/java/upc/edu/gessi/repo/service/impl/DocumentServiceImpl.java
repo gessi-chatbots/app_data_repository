@@ -71,7 +71,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public List<Document> getListed(List<String> id) throws NoObjectFoundException {
+    public List<Document> getListed(List<String> ids) throws NoObjectFoundException {
         return null;
     }
 
