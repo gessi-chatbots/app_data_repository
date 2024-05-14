@@ -22,11 +22,13 @@ public class SchemaIRI {
     private final IRI creativeWorkIRI = factory.createIRI("https://schema.org/CreativeWork");
     private final IRI reactActionIRI = factory.createIRI("https://schema.org/ReactAction");
 
-    //App properties
+    //Mobile App properties
     private final IRI identifierIRI = factory.createIRI("https://schema.org/identifier");
     private final IRI categoryIRI = factory.createIRI("https://schema.org/applicationCategory");
     private final IRI descriptionIRI = factory.createIRI("https://schema.org/description");
     private final IRI disambiguatingDescriptionIRI = factory.createIRI("https://schema.org/disambiguatingDescription");
+    private final IRI additionalPropertyIRI = factory.createIRI("https://schema.org/additionalProperty");
+
     private final IRI textPropertyIRI = factory.createIRI("https://schema.org/text");
     private final IRI summaryIRI = factory.createIRI("https://schema.org/abstract");
     private final IRI keywordIRI = factory.createIRI("https://schema.org/keywords");
@@ -37,6 +39,9 @@ public class SchemaIRI {
     private final IRI sameAsIRI = factory.createIRI("https://schema.org/sameAs");
     private final IRI softwareVersionIRI = factory.createIRI("https://schema.org/softwareVersion");
     private final IRI dateModifiedIRI = factory.createIRI("https://schema.org/dateModified");
+
+    //Software App properties
+    private final IRI softwareApplicationIRI = factory.createIRI("https://schema.org/softwareApplication");
 
     //Review properties
     private final IRI reviewBodyIRI = factory.createIRI("https://schema.org/reviewBody");

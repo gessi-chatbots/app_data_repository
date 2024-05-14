@@ -8,14 +8,17 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
+import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.service.AppDataScannerService;
 import upc.edu.gessi.repo.service.MobileApplicationService;
+import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.util.ArrayList;
@@ -30,11 +33,15 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     private final AppDataScannerService appDataScannerService;
 
+    private final ReviewService reviewService;
+
     @Autowired
     public MobileApplicationServiceImpl(final RepositoryFactory repoFact,
-                                        final AppDataScannerService appDataScannerSv) {
+                                        final AppDataScannerService appDataScannerSv,
+                                        final ReviewService reviewSv) {
         repositoryFactory = repoFact;
         appDataScannerService = appDataScannerSv;
+        reviewService = reviewSv;
     }
 
     @Override
@@ -56,21 +63,13 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
     @Override
     public List<MobileApplicationFullDataDTO> create(List<MobileApplicationFullDataDTO> dtos) {
-        List<MobileApplicationFullDataDTO> insertedApps = new ArrayList<>();
         for (MobileApplicationFullDataDTO mobileApplicationFullDataDTO : dtos) {
-            // Insert App
-            insertedApps.add(((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).insert(mobileApplicationFullDataDTO));
-            // Insert App reviews
-            // TODO use review Service
-
-            // Insert app Features
-            // TODO use Feature Service
-
-            // Insert App digital Documents
-            // TODO use digital document service
+            insertMobileApplication(mobileApplicationFullDataDTO);
+            insertMobileApplicationReviews(mobileApplicationFullDataDTO);
         }
-        return insertedApps;
+        return dtos;
     }
+
 
     @Override
     public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException {
@@ -131,6 +130,20 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).delete(id);
     }
 
+    private void insertMobileApplication(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
+        ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).insert(mobileApplicationFullDataDTO);
+    }
+
+    private void insertMobileApplicationReviews(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
+        for (ReviewDTO reviewDTO : mobileApplicationFullDataDTO.getReviews()) {
+            ((ReviewRepository) useRepository(ReviewRepository.class)).insert(reviewDTO);
+            ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
+                    .addReviewToMobileApplication(
+                            mobileApplicationFullDataDTO.getPackageName(),
+                            reviewDTO.getId()
+                    );
+        }
+    }
     private void updateApp(int daysFromLastUpdate) {
         List<GraphApp> apps = getAllApps();
         for (GraphApp app : apps) {

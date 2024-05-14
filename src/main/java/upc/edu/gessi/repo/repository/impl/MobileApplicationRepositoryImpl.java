@@ -88,7 +88,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public MobileApplicationFullDataDTO insert(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
+    public IRI insert(MobileApplicationFullDataDTO mobileApplicationFullDataDTO) {
         List<Statement> statements = new ArrayList<>();
 
         IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + mobileApplicationFullDataDTO.getPackageName());
@@ -106,11 +106,9 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         addChangelogToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
         addReviewDocumentToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
         addFeaturesToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
-        addReviewsToStatements(mobileApplicationFullDataDTO, statements, applicationIRI);
-
         commitChanges(statements);
+        return applicationIRI;
 
-        return mobileApplicationFullDataDTO;
     }
 
     @Override
@@ -250,8 +248,13 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         return similarApps;
     }
 
-    private void addReviewsToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
-        reviewRepository.addCompleteReviewsToApplication(mobileApplicationFullDataDTO, applicationIRI, statements);
+    @Override
+    public void addReviewToMobileApplication(String packageName, String reviewId) {
+        List<Statement> statements = new ArrayList<>();
+        IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + packageName);
+        IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + reviewId);
+        statements.add(factory.createStatement(applicationIRI, schemaIRI.getHasPartIRI(), reviewIRI));
+        commitChanges(statements);
     }
 
     private void addFeaturesToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {

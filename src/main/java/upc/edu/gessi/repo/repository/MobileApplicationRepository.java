@@ -5,9 +5,7 @@ import org.eclipse.rdf4j.model.Statement;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
-import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 
 import java.util.List;
 
@@ -15,6 +13,9 @@ public interface MobileApplicationRepository extends RDFCRUDRepository<MobileApp
     void addFeature(MobileApplicationFullDataDTO completeApplicationDataDTO,
                     IRI sub,
                     List<Statement> statements);
+
+    void addReviewToMobileApplication(String packageName,
+                                      String reviewId);
 
     List<GraphApp> getAllApps();
 
