@@ -138,10 +138,13 @@ public class SentenceRepositoryImpl implements SentenceRepository {
     private void addSentimentIntoStatements(final List<Statement> statements,
                                             final SentenceDTO sentenceDTO,
                                             final IRI sentenceIRI) {
-        IRI sentimentIRI = factory.createIRI(schemaIRI.getReactActionIRI() + "/" + sentenceDTO.getSentimentData().getSentiment());
+        String sentiment = sentenceDTO.getSentimentData().getSentiment();
+        IRI sentimentIRI = factory.createIRI(schemaIRI.getReactActionIRI() + "/" + sentiment);
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getTypeIRI(), schemaIRI.getReactActionIRI()));
         statements.add(factory.createStatement(sentenceIRI, schemaIRI.getAdditionalPropertyIRI(), sentimentIRI));
+        // TODO concat NLP model in identifier
         statements.add(factory.createStatement(sentimentIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(sentenceDTO.getSentimentData().getSentiment())));
+        statements.add(factory.createStatement(sentimentIRI, schemaIRI.getNameIRI(), factory.createLiteral(sentiment)));
         if (sentenceDTO.getSentimentData().getLanguageModel() != null) {
             addLanguageModel(
                     statements,
