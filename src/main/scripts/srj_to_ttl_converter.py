@@ -1,5 +1,5 @@
 import json
-from rdflib import Graph, URIRef, Literal, Namespace
+from rdflib import Graph, URIRef, Literal
 
 SRJ_FILE = 'query-result.srj'
 RESULT_FILE = 'dataset.ttl'
@@ -11,7 +11,7 @@ def load_file(file_name):
 def map_srj_to_graph(srj_data): 
     g = Graph()
     for result in srj_data['results']['bindings']:
-            subj = URIRef(result['app']['value'])
+            subj = URIRef(result['subject']['value'])
             pred = URIRef(result['predicate']['value'])
             obj = result['object']
             
