@@ -1,34 +1,30 @@
-import json
+import ijson
 from rdflib import Graph, URIRef, Literal
 
-SRJ_FILE = 'query-result.srj'
-RESULT_FILE = 'dataset.ttl'
+SRJ_FILE = 'reviews.srj'
+RESULT_FILE = 'reviews.ttl'
 
-def load_file(file_name):
-    with open(file_name, 'r') as file:
-        return json.load(file)
-
-def map_srj_to_graph(srj_data): 
-    g = Graph()
-    for result in srj_data['results']['bindings']:
-            subj = URIRef(result['subject']['value'])
-            pred = URIRef(result['predicate']['value'])
-            obj = result['object']
-            
+def map_srj_to_graph():
+    with open(SRJ_FILE, 'r', encoding="utf8") as srj_file:
+        g = Graph()
+        for binding in ijson.items(srj_file, "results.bindings.item"):
+            subj = URIRef(binding['subject']['value'])
+            pred = URIRef(binding['predicate']['value'])
+            obj = binding['object']
+                
             if obj['type'] == 'uri':
                 obj = URIRef(obj['value'])
             elif obj['type'] == 'literal':
                 obj = Literal(obj['value'])
-            
+                
             g.add((subj, pred, obj))
-    return g
+        return g
 
 def serialize_graph(graph): 
     graph.serialize(destination=RESULT_FILE, format='turtle')
 
 def srj_to_ttl():
-    srj_data = load_file(SRJ_FILE)
-    graph = map_srj_to_graph(srj_data)
+    graph = map_srj_to_graph()
     return serialize_graph(graph)
 
 
