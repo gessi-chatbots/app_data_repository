@@ -16,6 +16,7 @@ import upc.edu.gessi.repo.dto.graph.GraphNode;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -67,4 +68,14 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
 
+    @Override
+    public List<String> computeHierarchicalClustering() {
+        // Step 1 - Obtain all features
+        // Step 2 - Make a list and remove repeated ones
+        // Step 3 - Make a matrix N x N with all features
+        // Step 4 - Compute all cells distances using  Levenshtein distance
+        // Step 5 - Do complete linkage clustering algorithm
+        // Step 6 - Format output
+        return new ArrayList<>();
+    }
 }

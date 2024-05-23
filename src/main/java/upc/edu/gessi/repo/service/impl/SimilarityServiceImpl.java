@@ -61,6 +61,7 @@ public class SimilarityServiceImpl implements SimilarityService {
         }
     }
 
+    @Override
     public Map<String, List<SimilarityApp>> getTopKSimilarApps(List<String> apps, int k, DocumentType documentType) {
         Map<String, List<SimilarityApp>> res = new HashMap<>();
         for (String app : apps) {
@@ -84,6 +85,7 @@ public class SimilarityServiceImpl implements SimilarityService {
         return res;
     }
 
+    @Override
     public Map<String, List<SimilarityApp>> findAppsByFeature(List<String> features, Integer k, DocumentType documentType) {
         Map<String, List<SimilarityApp>> res = new HashMap<>();
         for (String feature : features) {
@@ -106,6 +108,8 @@ public class SimilarityServiceImpl implements SimilarityService {
         }
         return res;
     }
+
+    @Override
     public List<SimilarityApp> findAppsByFeatures(List<String> features, Integer k, DocumentType documentType) {
         Map<String, List<SimilarityApp>> res = findAppsByFeature(features, k, documentType);
         List<SimilarityApp> similarityApps = new ArrayList<>();
@@ -124,6 +128,7 @@ public class SimilarityServiceImpl implements SimilarityService {
         return similarityApps;
     }
 
+    @Override
     public void computeFeatureSimilarity(double synonymThreshold) {
         List<IRI> features = featureServiceImpl.getAllFeatures();
         int count = 0;
@@ -134,6 +139,7 @@ public class SimilarityServiceImpl implements SimilarityService {
         }
     }
 
+    @Override
     public void deleteFeatureSimilarities() {
         graphDBServiceImpl.deleteSameAsRelations();
     }
