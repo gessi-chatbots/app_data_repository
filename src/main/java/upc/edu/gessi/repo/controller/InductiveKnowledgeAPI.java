@@ -43,4 +43,7 @@ public interface InductiveKnowledgeAPI extends BaseAPI {
     List<SimilarityApp> findAppsByFeatures(@RequestBody List<String> features,
                                            @RequestParam Integer k,
                                            @RequestParam DocumentType documentType);
+
+    @GetMapping("/hierarchical-clustering")
+    List<String> getHierarchicalClustering();
 }

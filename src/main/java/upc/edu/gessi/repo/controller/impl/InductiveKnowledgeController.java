@@ -114,4 +114,9 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
         return similarityServiceImpl.findAppsByFeatures(features, k, documentType);
     }
 
+    @Override
+    public List<String> getHierarchicalClustering() {
+        return null;
+    }
+
 }
