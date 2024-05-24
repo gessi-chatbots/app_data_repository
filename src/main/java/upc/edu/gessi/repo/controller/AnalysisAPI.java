@@ -2,12 +2,6 @@ package upc.edu.gessi.repo.controller;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
-import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
-import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
-import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
