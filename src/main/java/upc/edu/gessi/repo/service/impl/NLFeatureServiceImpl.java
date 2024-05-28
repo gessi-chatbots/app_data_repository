@@ -27,7 +27,7 @@ public class NLFeatureServiceImpl implements NLFeatureService {
 
     private Logger logger = LoggerFactory.getLogger(NLFeatureServiceImpl.class);
 
-    @Value("${nl-feature-extraction.url}")
+    @Value("${transfeatex.url}")
     private String nlFeatureExtractionEndpoint;
 
     public List<AnalyzedDocument> getNLFeatures(List<AnalyzedDocument> documents) {

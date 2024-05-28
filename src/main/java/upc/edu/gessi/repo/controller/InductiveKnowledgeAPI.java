@@ -44,6 +44,4 @@ public interface InductiveKnowledgeAPI extends BaseAPI {
                                            @RequestParam Integer k,
                                            @RequestParam DocumentType documentType);
 
-    @GetMapping("/hierarchical-clustering")
-    List<String> getHierarchicalClustering();
 }

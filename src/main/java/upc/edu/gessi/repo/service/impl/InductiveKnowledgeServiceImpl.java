@@ -68,28 +68,5 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
 
-    @Override
-    public List<String> computeHierarchicalClustering() {
-        // Step 1 - Obtain all features
-        String[] features = {"video call", "secure video call", "secure efficient video call", "efficient video call", "random video call", "random secure video call"};
-        // Step 2 - Make a list and remove repeated ones
 
-        // Step 3 - Make a matrix N x N with all features
-        Integer columns = features.length;
-        Integer rows = columns;
-
-        Integer[][] distanceMatrix = new Integer[rows][columns];
-
-        // Step 4 - Compute all cells distances using  Levenshtein distance
-        for (int i = 0; i < rows; ++i) {
-            for (int j = 0; j < columns; ++j) {
-                if (i == j) {
-                    distanceMatrix[i][j] = 0;
-                }
-            }
-        }
-        // Step 5 - Do complete linkage clustering algorithm
-        // Step 6 - Format output
-        return new ArrayList<>();
-    }
 }

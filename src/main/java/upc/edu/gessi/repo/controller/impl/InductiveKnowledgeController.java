@@ -127,11 +127,6 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
         return ((SimilarityService) useService(SimilarityService.class)).findAppsByFeatures(features, k, documentType);
     }
 
-    @Override
-    public List<String> getHierarchicalClustering() {
-        return ((InductiveKnowledgeService) useService(InductiveKnowledgeService.class)).computeHierarchicalClustering();
-    }
-
     private Object useService(Class<?> clazz) {
         return serviceFactory.createService(clazz);
     }
