@@ -1,8 +1,8 @@
 import ijson
 from rdflib import Graph, URIRef, Literal
 
-SRJ_FILE = 'reviews.srj'
-RESULT_FILE = 'reviews.ttl'
+SRJ_FILE = 'summaries.srj'
+RESULT_FILE = 'summaries.ttl'
 
 def map_srj_to_graph():
     with open(SRJ_FILE, 'r', encoding="utf8") as srj_file:

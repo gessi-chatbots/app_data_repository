@@ -8,6 +8,7 @@ import upc.edu.gessi.repo.controller.InductiveKnowledgeAPI;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
 import upc.edu.gessi.repo.dto.SimilarityApp;
+import upc.edu.gessi.repo.service.FeatureService;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 import upc.edu.gessi.repo.service.ServiceFactory;
 import upc.edu.gessi.repo.service.SimilarityService;
@@ -53,22 +54,25 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
         if (documentType.equals(DocumentType.REVIEWS)) {
             logger.info("Deducting features from reviews...");
             try {
-                return 1;
-                //return dbConnection.extractFeaturesFromReviews(batchSize, from);
+                return ((FeatureService) useService(FeatureService.class)).extractFeaturesFromReviews(batchSize, from);
             } catch (Exception e) {
                 return dbConnection.getCount();
             }
         } else if (!documentType.equals(DocumentType.ALL)) {
             logger.info("Deducting features from " + documentType.getName());
-            //dbConnection.extractFeaturesByDocument(documentType,batchSize);
+            ((FeatureService) useService(FeatureService.class)).extractFeaturesByDocument(documentType, batchSize);
         } else {
             logger.info("Deducting features from descriptions...");
-            //dbConnection.extractFeaturesByDocument(DocumentType.DESCRIPTION,batchSize);
+            ((FeatureService) useService(FeatureService.class)).extractFeaturesByDocument(DocumentType.DESCRIPTION, batchSize);
+
             logger.info("Deducting features from changelogs...");
-            //dbConnection.extractFeaturesByDocument(DocumentType.CHANGELOG,batchSize);
+            ((FeatureService) useService(FeatureService.class)).extractFeaturesByDocument(DocumentType.CHANGELOG, batchSize);
+
             logger.info("Deducting features from summaries...");
-            //dbConnection.extractFeaturesByDocument(DocumentType.SUMMARY,batchSize);
-            //logger.info("Deducting features from reviews...");
+            ((FeatureService) useService(FeatureService.class)).extractFeaturesByDocument(DocumentType.SUMMARY, batchSize);
+
+
+            logger.info("Deducting features from reviews...");
             //dbConnection.extractFeaturesFromReviews();
         }
         return -1;

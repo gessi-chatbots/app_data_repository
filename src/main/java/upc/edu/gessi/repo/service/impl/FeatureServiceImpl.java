@@ -183,6 +183,8 @@ public class FeatureServiceImpl implements FeatureService {
         return -1;
 
     }
+
+    @Override
     public void extractFeaturesByDocument(DocumentType documentType, int batchSize) {
         String predicateQueue = null;
         switch(documentType) {
@@ -196,6 +198,7 @@ public class FeatureServiceImpl implements FeatureService {
         executeFeatureQuery(repository.getConnection(), query, batchSize, 0);
     }
 
+    @Override
     public int extractFeaturesFromReviews(int batchSize, int from) {
         String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
                 "?object <https://schema.org/reviewBody> ?text}";
