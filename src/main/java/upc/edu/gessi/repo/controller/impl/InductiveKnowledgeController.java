@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.InductiveKnowledgeAPI;
+import upc.edu.gessi.repo.dto.Document;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
 import upc.edu.gessi.repo.dto.SimilarityApp;
@@ -45,10 +46,10 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     }
 
     @Override
-    @PostMapping("/derivedNLFeatures")
-    public int derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType,
-                                 @RequestParam(value = "batch-size") Integer batchSize,
-                                 @RequestParam(value = "from") Integer from) {
+    @PostMapping("/derived-NL-Features")
+    public int derivedNLFeatures(@RequestParam(value = "documentType", defaultValue = "DESCRIPTION") DocumentType documentType,
+                                 @RequestParam(value = "batch-size", defaultValue = "10") Integer batchSize,
+                                 @RequestParam(value = "from", defaultValue = "0") Integer from) {
         logger.info("Generating derived deductive knowledge from natural language documents");
         logger.info("Document type: " + documentType);
         if (documentType.equals(DocumentType.REVIEWS)) {
