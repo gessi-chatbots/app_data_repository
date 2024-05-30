@@ -1,10 +1,9 @@
 import ijson
 import json
-import re
 from rdflib import URIRef
 
-SRJ_FILE = 'definedTerms.srj'
-RESULT_FILE = 'definedTerms.json'
+SRJ_FILE = 'OldestReviews.srj'
+RESULT_FILE = 'OldestReviews.json'
 
 
 def map_srj_to_json():
@@ -16,6 +15,8 @@ def map_srj_to_json():
                 term = uri.split("DefinedTerm/")[1]
                 if term not in definedTerms:
                     definedTerms.append(term)
+            else:
+                definedTerms.append(uri)
     return definedTerms
 
 
