@@ -89,3 +89,24 @@ App info includes, among other info:
 - Changelog
 - Reviews
 - Annotated features
+
+
+## Queries
+
+### Find most 100 000 recent reviews of a given market segment
+
+``` 
+PREFIX schema: <https://schema.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?subject ?predicate ?object
+WHERE {
+    ?mobileApp rdf:type schema:MobileApplication ;
+               schema:applicationCategory "COMMUNICATION" ;
+               schema:review ?subject .
+    ?subject rdf:type schema:Review ;
+             ?predicate ?object .
+}
+ORDER BY DESC(?datePublished)
+LIMIT 100000
+```

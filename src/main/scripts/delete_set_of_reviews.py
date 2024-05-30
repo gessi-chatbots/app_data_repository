@@ -2,7 +2,7 @@ import json
 import requests
 
 def main():
-    with open('OldestReviews.json') as f:
+    with open('oldestReviews.json') as f:
         uuids = json.load(f)
 
     url = "http://127.0.0.1:3003/reviews/{}"
