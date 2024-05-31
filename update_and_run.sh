@@ -1,8 +1,12 @@
 #!/bin/bash
 
-docker pull mtiessler/kg_repository:latest
+CONTAINER_NAME="kg_repository"
+IMAGE_NAME="mtiessler/kg_repository:latest"
 
-docker stop kg_repository
-docker rm kg_repository
+docker pull $IMAGE_NAME
 
-docker run -d --name kg_repository -p 3003:3003 mtiessler/kg_repository:latest
+
+docker stop $CONTAINER_NAME
+docker rm $CONTAINER_NAME
+
+docker run -d --name $CONTAINER_NAME -p 3003:3003 $IMAGE_NAME
