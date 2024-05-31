@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Script vars
 CONTAINER_NAME="kg_repository"
 IMAGE_NAME="mtiessler/kg_repository:latest"
 
