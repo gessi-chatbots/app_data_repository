@@ -1,6 +1,8 @@
 package upc.edu.gessi.repo.service.impl;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.util.List;
 @Lazy
 public class ReviewServiceImpl implements ReviewService {
     private final RepositoryFactory repositoryFactory;
+    private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
 
     @Autowired
@@ -29,8 +32,13 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<ReviewDTO> create(List<ReviewDTO> dtos) {
         for (ReviewDTO r : dtos) {
-            insertReview(r);
-            insertReviewSentences(r);
+            try {
+                insertReview(r);
+                insertReviewSentences(r);
+            } catch (Exception e) {
+                logger.error("Failed to save in Graph: " + r.toString());
+            }
+
         }
         return dtos;
     }
@@ -83,5 +91,6 @@ public class ReviewServiceImpl implements ReviewService {
     private Object useRepository(Class<?> clazz) {
         return repositoryFactory.createRepository(clazz);
     }
+
 
 }
