@@ -308,59 +308,8 @@ public class FeatureServiceImpl implements FeatureService {
         repoConnection.close();
     }
 
-    private int executeReviewFeatureQuery(final int batchSize,
-                                          final int from) {
-        String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
-                "?object <https://schema.org/reviewBody> ?text}";
-
-        Integer count;
-        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
-
-        List<ReviewDTO> reviewDTOList = new ArrayList<>();
-        List<IRI> source = new ArrayList<>();
-
-        count = 1;
-
-        while (result.hasNext()) {
-            BindingSet bindings = result.next();
-            if (count >= from) {
-                try {
-
-                    IRI appIRI = (IRI) bindings.getValue("subject");
-                    IRI documentIRI = (IRI) bindings.getValue("object");
-                    String text = bindings.getValue("text").stringValue();
-
-                    reviewDTOList.add(new ReviewDTO(documentIRI.toString(), text));
-
-                    if (documentIRI.toString().contains(schemaIRI.getReviewIRI().toString())) {
-                        String reviewSource = schemaIRI.getDigitalDocumentIRI().toString()
-                                + appIRI.toString().replace(schemaIRI.getAppIRI().toString(), "")
-                                + "-" + DocumentType.REVIEWS;
-                        documentIRI = factory.createIRI(reviewSource);
-                    }
-
-                    source.add(documentIRI);
-
-                    if (count % batchSize == 0) {
-                        runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
-
-                        analyzedDocuments = new ArrayList<>();
-                        source = new ArrayList<>();
-                    }
-                } catch (Exception e) {
-                    return count;
-                }
-
-            }
-            ++count;
-        }
-
-        // Run last batch
-        if (count % batchSize != 1)
-            runFeatureExtractionBatch(analyzedDocuments, source, count, schemaIRI.getAppIRI());
-
-        return -1;
-
+    private int executeReviewFeatureQuery() {
+       return 0;
     }
 
     private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
