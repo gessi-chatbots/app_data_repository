@@ -46,7 +46,6 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     }
 
     @Override
-    @PostMapping("/derived-NL-Features")
     public int derivedNLFeatures(@RequestParam(value = "documentType", defaultValue = "DESCRIPTION") DocumentType documentType,
                                  @RequestParam(value = "batch-size", defaultValue = "10") Integer batchSize,
                                  @RequestParam(value = "from", defaultValue = "0") Integer from) {

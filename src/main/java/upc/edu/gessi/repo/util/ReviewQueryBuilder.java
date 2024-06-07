@@ -19,6 +19,22 @@ public class ReviewQueryBuilder
         queryBuilder.append("}\n");
         return queryBuilder.toString();
     }
+    public String findAllQueryWithLimitOffset(int limit, int offset) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX sc: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?identifier ?text\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?subject rdf:type sc:Review ;\n");
+        queryBuilder.append("           sc:reviewBody ?text ;\n");
+        queryBuilder.append("           sc:datePublished ?date;\n");
+        queryBuilder.append("           sc:identifier ?identifier .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("ORDER BY DESC (?date)\n");
+        queryBuilder.append("LIMIT ").append(limit).append("\n");
+        queryBuilder.append("OFFSET ").append(offset).append("\n");
+        return queryBuilder.toString();
+    }
 
     public String findReviewsByIds(final List<String> ids) {
         StringBuilder queryBuilder = new StringBuilder();

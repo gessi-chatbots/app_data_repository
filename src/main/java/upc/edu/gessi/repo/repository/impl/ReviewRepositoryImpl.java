@@ -280,6 +280,13 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return sentenceDTO;
     }
 
+    @Override
+    public List<ReviewDTO> findBatched(int limit, int offset) {
+        String query = reviewQueryBuilder.findAllQueryWithLimitOffset(limit, offset);
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
+        return null;
+    }
+
     private void commitChanges(final List<Statement> statements) {
         RepositoryConnection repoConnection = repository.getConnection();
         repoConnection.add(statements);

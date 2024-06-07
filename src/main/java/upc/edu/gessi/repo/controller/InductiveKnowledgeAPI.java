@@ -15,31 +15,32 @@ public interface InductiveKnowledgeAPI extends BaseAPI {
     @GetMapping("/last-review")
     int getLastReview();
 
-    @PostMapping("/derived-NL-Features")
+    @PostMapping("/derived-nl-features")
     int derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType,
                           @RequestParam(value = "batch-size") Integer batchSize,
                           @RequestParam(value = "from") Integer from);
 
-    @PostMapping("/compute-Feature-Similarity")
+    @PostMapping("/compute-feature-similarity")
     void computeFeatureSimilarity(@RequestParam(defaultValue = "0.5", name = "threshold") double synonymThreshold);
 
-    @DeleteMapping("/Feature-Similarities")
+
+    @DeleteMapping("/feature-similarities")
     void deleteFeatureSimilarities();
 
-    @PostMapping("/compute-Similarity")
+    @PostMapping("/compute-similarity")
     void computeSimilarity(@RequestParam(defaultValue = "JACCARD") SimilarityAlgorithm algorithm);
 
-    @GetMapping("/find-Similar-Apps")
+    @GetMapping("/find-similar-apps")
     Map<String, List<SimilarityApp>> getTopKSimilarApps(@RequestBody List<String> apps,
                                                         @RequestParam Integer k,
                                                         @RequestParam DocumentType documentType);
 
-    @GetMapping("/find-Apps-By-Feature")
+    @GetMapping("/find-apps-by-feature")
     Map<String, List<SimilarityApp>> findAppsByFeature(@RequestBody List<String> features,
                                                        @RequestParam Integer k,
                                                        @RequestParam DocumentType documentType);
 
-    @GetMapping("/find-Apps-By-Features")
+    @GetMapping("/find-apps-by-features")
     List<SimilarityApp> findAppsByFeatures(@RequestBody List<String> features,
                                            @RequestParam Integer k,
                                            @RequestParam DocumentType documentType);

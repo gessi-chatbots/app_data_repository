@@ -92,5 +92,9 @@ public class ReviewServiceImpl implements ReviewService {
         return repositoryFactory.createRepository(clazz);
     }
 
+    @Override
+    public List<ReviewDTO> getBatched(int batch, int offset) {
+        return ((ReviewRepository) useRepository(ReviewRepository.class)).findBatched(batch, offset);
+    }
 
 }

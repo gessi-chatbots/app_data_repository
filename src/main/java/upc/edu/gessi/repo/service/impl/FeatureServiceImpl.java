@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.*;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
@@ -75,115 +76,6 @@ public class FeatureServiceImpl implements FeatureService {
         repositoryFactory = repoFact;
     }
 
-    private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
-        List<AnalyzedDocument> features = nlFeatureServiceImpl.getNLFeatures(analyzedDocuments);
-        List<Statement> statements = new ArrayList<>();
-
-        for (int i = 0; i < features.size(); ++i) {
-            MobileApplicationFullDataDTO completeApplicationDataDTO = new MobileApplicationFullDataDTO();
-            List<String> featureString = features.get(i).getFeatures();
-            List<Feature> featureList = new ArrayList<>();
-            for (String fs : featureString) {
-                featureList.add(new Feature(appIRI.toString(), fs));
-            }
-            completeApplicationDataDTO.setFeatures(
-                    featureList
-                            .stream()
-                            .map(Feature::getName)
-                            .toList());
-            try {
-                applicationService
-                        .addFeatures(
-                                completeApplicationDataDTO,
-                                source.get(i),
-                                statements);
-            } catch (Exception e) {
-                logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
-            }
-        }
-        commitChanges(statements);
-        logger.info(count + " documents already processed. Keep going...");
-    }
-    private List<GraphFeature> getFeatures(String nodeId) {
-        List<GraphFeature> features = new ArrayList<>();
-
-        String query = "PREFIX schema: <https://schema.org/>\n" +
-                "\n" +
-                "select ?feature ?name where {\n" +
-                "    <"+ nodeId +"> schema:feature ?keywords .\n" +
-                "    ?feature schema:name ?name\n" +
-                "} ";
-
-        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
-
-        while (result.hasNext()) {
-            BindingSet bindings = result.next();
-
-            IRI feature = (IRI) bindings.getValue("feature");
-            String name = bindings.getValue("name").stringValue();
-
-            GraphFeature graphFeature = new GraphFeature(feature.toString(), name);
-            features.add(graphFeature);
-        }
-
-        return features;
-    }
-    private void commitChanges(final List<Statement> statements) {
-        RepositoryConnection repoConnection = repository.getConnection();
-        repoConnection.add(statements);
-        repoConnection.close();
-    }
-    private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
-        Integer count;
-        TupleQueryResult result = Utils.runSparqlSelectQuery(repoConnection, query);
-
-        List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
-        List<IRI> source = new ArrayList<>();
-
-        count = 1;
-
-        while (result.hasNext()) {
-            BindingSet bindings = result.next();
-            if (count >= from) {
-                try {
-
-                    IRI appIRI = (IRI) bindings.getValue("subject");
-                    IRI documentIRI = (IRI) bindings.getValue("object");
-                    String text = bindings.getValue("text").stringValue();
-
-                    analyzedDocuments.add(new AnalyzedDocument(documentIRI.toString(), text));
-
-                    if (documentIRI.toString().contains(schemaIRI.getReviewIRI().toString())) {
-                        String reviewSource = schemaIRI.getDigitalDocumentIRI().toString()
-                                + appIRI.toString().replace(schemaIRI.getAppIRI().toString(), "")
-                                + "-" + DocumentType.REVIEWS;
-                        documentIRI = factory.createIRI(reviewSource);
-                    }
-
-                    source.add(documentIRI);
-
-                    if (count % batchSize == 0) {
-                        runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
-
-                        analyzedDocuments = new ArrayList<>();
-                        source = new ArrayList<>();
-                    }
-                } catch (Exception e) {
-                    return count;
-                }
-
-            }
-            ++count;
-        }
-
-        // Run last batch
-        if (count % batchSize != 1)
-            runFeatureExtractionBatch(analyzedDocuments, source, count, schemaIRI.getAppIRI());
-
-        return -1;
-
-    }
-
     @Override
     public void extractFeaturesByDocument(DocumentType documentType, int batchSize) {
         String predicateQueue = null;
@@ -200,12 +92,44 @@ public class FeatureServiceImpl implements FeatureService {
 
     @Override
     public int extractFeaturesFromReviews(int batchSize, int from) {
-        String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
-                "?object <https://schema.org/reviewBody> ?text}";
-
-        return executeFeatureQuery(repository.getConnection(), query, batchSize, from);
+        List<ReviewDTO> reviewDTOList = reviewServiceImpl.getBatched(batchSize, from);
+        return 0;
     }
 
+
+    @Override
+    public List<Feature> create(List<Feature> dtos) {
+        return null;
+    }
+
+    @Override
+    public Feature get(String id) throws ObjectNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Feature> getListed(List<String> ids) throws NoObjectFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Feature> getAllPaginated(Integer page, Integer size) throws NoObjectFoundException {
+        return null;
+    }
+
+    @Override
+    public List<Feature> getAll() {
+        return null;
+    }
+
+    @Override
+    public void update(Feature entity) {
+
+    }
+
+    @Override
+    public void delete(String id) {
+    }
     public List<IRI> getAllFeatures() {
         String query = featureQueryBuilder.findAllFeaturesQuery();
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
@@ -325,39 +249,172 @@ public class FeatureServiceImpl implements FeatureService {
         //return new Graph(nodes, edges);
     }
 
-    @Override
-    public List<Feature> create(List<Feature> dtos) {
-        return null;
+    private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
+        List<AnalyzedDocument> features = nlFeatureServiceImpl.getNLFeatures(analyzedDocuments);
+        List<Statement> statements = new ArrayList<>();
+
+        for (int i = 0; i < features.size(); ++i) {
+            MobileApplicationFullDataDTO completeApplicationDataDTO = new MobileApplicationFullDataDTO();
+            List<String> featureString = features.get(i).getFeatures();
+            List<Feature> featureList = new ArrayList<>();
+            for (String fs : featureString) {
+                featureList.add(new Feature(appIRI.toString(), fs));
+            }
+            completeApplicationDataDTO.setFeatures(
+                    featureList
+                            .stream()
+                            .map(Feature::getName)
+                            .toList());
+            try {
+                applicationService
+                        .addFeatures(
+                                completeApplicationDataDTO,
+                                source.get(i),
+                                statements);
+            } catch (Exception e) {
+                logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
+            }
+        }
+        commitChanges(statements);
+        logger.info(count + " documents already processed. Keep going...");
+    }
+    private List<GraphFeature> getFeatures(String nodeId) {
+        List<GraphFeature> features = new ArrayList<>();
+
+        String query = "PREFIX schema: <https://schema.org/>\n" +
+                "\n" +
+                "select ?feature ?name where {\n" +
+                "    <"+ nodeId +"> schema:feature ?keywords .\n" +
+                "    ?feature schema:name ?name\n" +
+                "} ";
+
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+            IRI feature = (IRI) bindings.getValue("feature");
+            String name = bindings.getValue("name").stringValue();
+
+            GraphFeature graphFeature = new GraphFeature(feature.toString(), name);
+            features.add(graphFeature);
+        }
+
+        return features;
+    }
+    private void commitChanges(final List<Statement> statements) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        repoConnection.add(statements);
+        repoConnection.close();
     }
 
-    @Override
-    public Feature get(String id) throws ObjectNotFoundException {
-        return null;
+    private int executeReviewFeatureQuery(final int batchSize,
+                                          final int from) {
+        String query = "SELECT ?subject ?object ?text WHERE {?subject <https://schema.org/review> ?object . " +
+                "?object <https://schema.org/reviewBody> ?text}";
+
+        Integer count;
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
+
+        List<ReviewDTO> reviewDTOList = new ArrayList<>();
+        List<IRI> source = new ArrayList<>();
+
+        count = 1;
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if (count >= from) {
+                try {
+
+                    IRI appIRI = (IRI) bindings.getValue("subject");
+                    IRI documentIRI = (IRI) bindings.getValue("object");
+                    String text = bindings.getValue("text").stringValue();
+
+                    reviewDTOList.add(new ReviewDTO(documentIRI.toString(), text));
+
+                    if (documentIRI.toString().contains(schemaIRI.getReviewIRI().toString())) {
+                        String reviewSource = schemaIRI.getDigitalDocumentIRI().toString()
+                                + appIRI.toString().replace(schemaIRI.getAppIRI().toString(), "")
+                                + "-" + DocumentType.REVIEWS;
+                        documentIRI = factory.createIRI(reviewSource);
+                    }
+
+                    source.add(documentIRI);
+
+                    if (count % batchSize == 0) {
+                        runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
+
+                        analyzedDocuments = new ArrayList<>();
+                        source = new ArrayList<>();
+                    }
+                } catch (Exception e) {
+                    return count;
+                }
+
+            }
+            ++count;
+        }
+
+        // Run last batch
+        if (count % batchSize != 1)
+            runFeatureExtractionBatch(analyzedDocuments, source, count, schemaIRI.getAppIRI());
+
+        return -1;
+
     }
 
-    @Override
-    public List<Feature> getListed(List<String> ids) throws NoObjectFoundException {
-        return null;
+    private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
+        Integer count;
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repoConnection, query);
+
+        List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
+        List<IRI> source = new ArrayList<>();
+
+        count = 1;
+
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if (count >= from) {
+                try {
+
+                    IRI appIRI = (IRI) bindings.getValue("subject");
+                    IRI documentIRI = (IRI) bindings.getValue("object");
+                    String text = bindings.getValue("text").stringValue();
+
+                    analyzedDocuments.add(new AnalyzedDocument(documentIRI.toString(), text));
+
+                    if (documentIRI.toString().contains(schemaIRI.getReviewIRI().toString())) {
+                        String reviewSource = schemaIRI.getDigitalDocumentIRI().toString()
+                                + appIRI.toString().replace(schemaIRI.getAppIRI().toString(), "")
+                                + "-" + DocumentType.REVIEWS;
+                        documentIRI = factory.createIRI(reviewSource);
+                    }
+
+                    source.add(documentIRI);
+
+                    if (count % batchSize == 0) {
+                        runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
+
+                        analyzedDocuments = new ArrayList<>();
+                        source = new ArrayList<>();
+                    }
+                } catch (Exception e) {
+                    return count;
+                }
+
+            }
+            ++count;
+        }
+
+        // Run last batch
+        if (count % batchSize != 1)
+            runFeatureExtractionBatch(analyzedDocuments, source, count, schemaIRI.getAppIRI());
+
+        return -1;
+
     }
 
-    @Override
-    public List<Feature> getAllPaginated(Integer page, Integer size) throws NoObjectFoundException {
-        return null;
-    }
 
-    @Override
-    public List<Feature> getAll() {
-        return null;
-    }
-
-    @Override
-    public void update(Feature entity) {
-
-    }
-
-    @Override
-    public void delete(String id) {
-    }
     private Object useRepository(Class<?> clazz) {
         return repositoryFactory.createRepository(clazz);
     }
