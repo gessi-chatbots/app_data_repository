@@ -1,5 +1,7 @@
 package upc.edu.gessi.repo.dto;
 
+import lombok.AllArgsConstructor;
+
 import java.io.Serializable;
 import java.util.List;
 

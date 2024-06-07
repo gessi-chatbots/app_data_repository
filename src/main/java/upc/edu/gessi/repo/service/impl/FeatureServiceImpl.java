@@ -29,6 +29,7 @@ import upc.edu.gessi.repo.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Lazy
@@ -91,8 +92,12 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public int extractFeaturesFromReviews(int batchSize, int from) {
+    public int extractFeaturesFromReviews(int batchSize, int from, String featureModel) {
         List<ReviewDTO> reviewDTOList = reviewServiceImpl.getBatched(batchSize, from);
+        List<AnalyzedDocument> analyzedDocuments = reviewDTOList.stream()
+                .map(reviewDTO -> new AnalyzedDocument(reviewDTO.getId(), reviewDTO.getReviewText()))
+                .collect(Collectors.toList());
+        nlFeatureServiceImpl.getNLFeatures(analyzedDocuments);
         return 0;
     }
 

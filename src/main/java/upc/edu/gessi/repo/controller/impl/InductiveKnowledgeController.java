@@ -46,15 +46,16 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     }
 
     @Override
-    public int derivedNLFeatures(@RequestParam(value = "documentType", defaultValue = "DESCRIPTION") DocumentType documentType,
-                                 @RequestParam(value = "batch-size", defaultValue = "10") Integer batchSize,
-                                 @RequestParam(value = "from", defaultValue = "0") Integer from) {
+    public int derivedNLFeatures(final DocumentType documentType,
+                                 final Integer batchSize,
+                                 final Integer from,
+                                 final String featureModel) {
         logger.info("Generating derived deductive knowledge from natural language documents");
         logger.info("Document type: " + documentType);
         if (documentType.equals(DocumentType.REVIEWS)) {
             logger.info("Deducting features from reviews...");
             try {
-                return ((FeatureService) useService(FeatureService.class)).extractFeaturesFromReviews(batchSize, from);
+                return ((FeatureService) useService(FeatureService.class)).extractFeaturesFromReviews(batchSize, from, featureModel);
             } catch (Exception e) {
                 return dbConnection.getCount();
             }
