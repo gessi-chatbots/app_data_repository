@@ -23,12 +23,12 @@ public class ReviewQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX sc: <https://schema.org/>\n");
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
-        queryBuilder.append("SELECT ?identifier ?text\n");
+        queryBuilder.append("SELECT ?id ?text\n");
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  ?subject rdf:type sc:Review ;\n");
         queryBuilder.append("           sc:reviewBody ?text ;\n");
         queryBuilder.append("           sc:datePublished ?date;\n");
-        queryBuilder.append("           sc:identifier ?identifier .\n");
+        queryBuilder.append("           sc:identifier ?id .\n");
         queryBuilder.append("}\n");
         queryBuilder.append("ORDER BY DESC (?date)\n");
         queryBuilder.append("LIMIT ").append(limit).append("\n");
