@@ -93,11 +93,33 @@ public class FeatureServiceImpl implements FeatureService {
 
     @Override
     public int extractFeaturesFromReviews(int batchSize, int from, String featureModel) {
-        List<ReviewDTO> reviewDTOList = reviewServiceImpl.getBatched(batchSize, from);
-        List<AnalyzedDocument> analyzedDocuments = reviewDTOList.stream()
-                .map(reviewDTO -> new AnalyzedDocument(reviewDTO.getId(), reviewDTO.getReviewText()))
-                .collect(Collectors.toList());
-        nlFeatureServiceImpl.getNLFeatures(analyzedDocuments);
+        List<ReviewDTO> reviewDTOList = new ArrayList<>();
+        if (batchSize == 0 && from == 0) {
+            int reviewCount = reviewServiceImpl.getReviewCount();
+            int batchSizeAux = 1000;
+            int fromAux = 0;
+            int totalReviewsProcessed = 0;
+            while (totalReviewsProcessed <= reviewCount) {
+                List<ReviewDTO> reviewAuxList = reviewServiceImpl.getBatched(batchSizeAux, fromAux);
+                if (reviewAuxList.isEmpty()) {
+                    break;
+                } else {
+                    reviewDTOList.addAll(reviewAuxList);
+                }
+                fromAux += batchSizeAux;
+                totalReviewsProcessed += reviewAuxList.size();
+                logger.info("Retrieved {} reviews, total reviews processed: {}", reviewAuxList.size(), totalReviewsProcessed);
+
+            }
+        } else {
+            reviewDTOList = reviewServiceImpl.getBatched(batchSize, from);
+            logger.info("Retrieved {} reviews starting from offset {}", reviewDTOList.size(), from);
+
+        }
+        List<ReviewDTO> analyzedReviewsDTOList = nlFeatureServiceImpl.getHUBFeatures(reviewDTOList, featureModel);
+        reviewServiceImpl.create(analyzedReviewsDTOList);
+        logger.info("Processed and created {} analyzed reviews", analyzedReviewsDTOList.size());
+
         return 0;
     }
 
@@ -254,8 +276,8 @@ public class FeatureServiceImpl implements FeatureService {
         //return new Graph(nodes, edges);
     }
 
-    private void runFeatureExtractionBatch(List<AnalyzedDocument> analyzedDocuments, List<IRI> source, int count, IRI appIRI) {
-        List<AnalyzedDocument> features = nlFeatureServiceImpl.getNLFeatures(analyzedDocuments);
+    private void runFeatureExtractionBatch(List<AnalyzedDocumentDTO> analyzedDocumentDTOS, List<IRI> source, int count, IRI appIRI) {
+        List<AnalyzedDocumentDTO> features = nlFeatureServiceImpl.getNLFeatures(analyzedDocumentDTOS);
         List<Statement> statements = new ArrayList<>();
 
         for (int i = 0; i < features.size(); ++i) {
@@ -321,7 +343,7 @@ public class FeatureServiceImpl implements FeatureService {
         Integer count;
         TupleQueryResult result = Utils.runSparqlSelectQuery(repoConnection, query);
 
-        List<AnalyzedDocument> analyzedDocuments = new ArrayList<>();
+        List<AnalyzedDocumentDTO> analyzedDocumentDTOS = new ArrayList<>();
         List<IRI> source = new ArrayList<>();
 
         count = 1;
@@ -335,7 +357,7 @@ public class FeatureServiceImpl implements FeatureService {
                     IRI documentIRI = (IRI) bindings.getValue("object");
                     String text = bindings.getValue("text").stringValue();
 
-                    analyzedDocuments.add(new AnalyzedDocument(documentIRI.toString(), text));
+                    analyzedDocumentDTOS.add(new AnalyzedDocumentDTO(documentIRI.toString(), text));
 
                     if (documentIRI.toString().contains(schemaIRI.getReviewIRI().toString())) {
                         String reviewSource = schemaIRI.getDigitalDocumentIRI().toString()
@@ -347,9 +369,9 @@ public class FeatureServiceImpl implements FeatureService {
                     source.add(documentIRI);
 
                     if (count % batchSize == 0) {
-                        runFeatureExtractionBatch(analyzedDocuments, source, count, appIRI);
+                        runFeatureExtractionBatch(analyzedDocumentDTOS, source, count, appIRI);
 
-                        analyzedDocuments = new ArrayList<>();
+                        analyzedDocumentDTOS = new ArrayList<>();
                         source = new ArrayList<>();
                     }
                 } catch (Exception e) {
@@ -362,7 +384,7 @@ public class FeatureServiceImpl implements FeatureService {
 
         // Run last batch
         if (count % batchSize != 1)
-            runFeatureExtractionBatch(analyzedDocuments, source, count, schemaIRI.getAppIRI());
+            runFeatureExtractionBatch(analyzedDocumentDTOS, source, count, schemaIRI.getAppIRI());
 
         return -1;
 

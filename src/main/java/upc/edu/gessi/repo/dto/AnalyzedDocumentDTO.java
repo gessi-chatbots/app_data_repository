@@ -1,22 +1,20 @@
 package upc.edu.gessi.repo.dto;
 
-import lombok.AllArgsConstructor;
-
 import java.io.Serializable;
 import java.util.List;
 
-public class AnalyzedDocument implements Serializable {
+public class AnalyzedDocumentDTO implements Serializable {
 
     private String id;
     private String text;
     private List<String> features;
 
-    public AnalyzedDocument(String id, List<String> features) {
+    public AnalyzedDocumentDTO(String id, List<String> features) {
         this.id = id;
         this.features = features;
     }
 
-    public AnalyzedDocument(String id, String text) {
+    public AnalyzedDocumentDTO(String id, String text) {
         this.id = id;
         this.text = text;
     }

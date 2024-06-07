@@ -6,4 +6,8 @@ import java.util.List;
 
 public interface ReviewService extends CrudService<ReviewDTO> {
     List<ReviewDTO> getBatched(final int batch, final int offset);
+
+    List<ReviewDTO> getAllSimplified();
+
+    Integer getReviewCount();
 }

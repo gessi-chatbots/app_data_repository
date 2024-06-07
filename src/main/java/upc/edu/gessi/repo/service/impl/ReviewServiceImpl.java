@@ -97,4 +97,12 @@ public class ReviewServiceImpl implements ReviewService {
         return ((ReviewRepository) useRepository(ReviewRepository.class)).findBatched(batch, offset);
     }
 
+    @Override
+    public List<ReviewDTO> getAllSimplified() {
+        return ((ReviewRepository) useRepository(ReviewRepository.class)).findAllSimplified();
+    }
+    @Override
+    public Integer getReviewCount() {
+        return ((ReviewRepository) useRepository(ReviewRepository.class)).getCount();
+    }
 }

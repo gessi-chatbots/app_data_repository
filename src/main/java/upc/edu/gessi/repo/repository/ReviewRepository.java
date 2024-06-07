@@ -24,4 +24,8 @@ public interface ReviewRepository extends RDFCRUDRepository<ReviewDTO> {
     SentenceDTO getSentenceDTO(TupleQueryResult result);
 
     List<ReviewDTO> findBatched(final int limit, final int offset);
+
+    List<ReviewDTO> findAllSimplified();
+
+    Integer getCount();
 }

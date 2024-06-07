@@ -36,6 +36,19 @@ public class ReviewQueryBuilder
         return queryBuilder.toString();
     }
 
+    public String findAllSimplifiedQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX sc: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?id ?text\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?subject rdf:type sc:Review ;\n");
+        queryBuilder.append("           sc:reviewBody ?text ;\n");
+        queryBuilder.append("           sc:identifier ?id .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+
     public String findReviewsByIds(final List<String> ids) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
@@ -218,4 +231,16 @@ public class ReviewQueryBuilder
         queryBuilder.append("}");
         return queryBuilder.toString();
     }
+    public String getCountQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX sc: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT (COUNT(?subject) AS ?count)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("    ?subject rdf:type sc:Review .\n");
+        queryBuilder.append("}");
+        return queryBuilder.toString();
+    }
+
+
 }

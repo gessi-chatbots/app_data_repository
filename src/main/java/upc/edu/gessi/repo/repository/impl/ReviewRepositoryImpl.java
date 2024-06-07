@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.repository.impl;
 
+import io.swagger.models.auth.In;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
@@ -142,7 +143,10 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         if (dto.getId() != null) {
             IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + dto.getId());
             statements.add(factory.createStatement(reviewIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI()));
-            IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + dto.getPackageName());
+            IRI applicationIRI = null;
+            if (dto.getPackageName() != null) {
+                applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + dto.getPackageName());
+            }
             if (applicationIRI != null) {
                 statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
             }
@@ -290,6 +294,40 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
         return reviewDTOList;
     }
+
+    @Override
+    public List<ReviewDTO> findAllSimplified() {
+        String query = reviewQueryBuilder.findAllSimplifiedQuery();
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
+        List<ReviewDTO> reviewDTOList = new ArrayList<>();
+        while (result.hasNext()) {
+            reviewDTOList.add(getReviewDTO(result.next()));
+        }
+        return reviewDTOList;
+    }
+
+
+    @Override
+    public Integer getCount() {
+        String query = reviewQueryBuilder.getCountQuery();
+        TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
+
+        try {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                String countStr = bindingSet.getValue("count").stringValue();
+                return Integer.parseInt(countStr);
+            } else {
+                return 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            result.close();
+        }
+    }
+
 
     private void commitChanges(final List<Statement> statements) {
         RepositoryConnection repoConnection = repository.getConnection();
