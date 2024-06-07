@@ -130,7 +130,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
         List<ReviewDTO> reviewDTOs = new ArrayList<>();
         while (reviewsResult.hasNext()) {
-            ReviewDTO reviewDTO = getReviewDTO(reviewsResult);
+            ReviewDTO reviewDTO = getReviewDTO(reviewsResult.next());
             reviewDTOs.add(reviewDTO);
         }
         return reviewDTOs;
@@ -284,7 +284,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     public List<ReviewDTO> findBatched(int limit, int offset) {
         String query = reviewQueryBuilder.findAllQueryWithLimitOffset(limit, offset);
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
-        return null;
+        List<ReviewDTO> reviewDTOList = new ArrayList<>();
+        while (result.hasNext()) {
+            reviewDTOList.add(getReviewDTO(result.next()));
+        }
+        return reviewDTOList;
     }
 
     private void commitChanges(final List<Statement> statements) {
@@ -295,16 +299,25 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
 
 
-    private ReviewDTO getReviewDTO(final TupleQueryResult result) {
+    private ReviewDTO getReviewDTO(final BindingSet bindings) {
         ReviewDTO ReviewDTO = new ReviewDTO();
-        BindingSet bindings = result.next();
         if (existsShortReviewBinding(bindings)) {
-            String idValue = bindings.getBinding("id").getValue().stringValue();
-            String textValue = bindings.getBinding("text").getValue().stringValue();
-            String appValue = bindings.getBinding("app_identifier").getValue().stringValue();
-            ReviewDTO.setId(idValue);
-            ReviewDTO.setReviewText(textValue);
-            ReviewDTO.setApplicationId(appValue);
+            if (bindings.getBinding("id") != null && bindings.getBinding("id").getValue() != null) {
+                String idValue = bindings.getBinding("id").getValue().stringValue();
+                ReviewDTO.setId(idValue);
+            }
+
+            if (bindings.getBinding("text") != null && bindings.getBinding("text").getValue() != null) {
+                String textValue = bindings.getBinding("text").getValue().stringValue();
+                ReviewDTO.setReviewText(textValue);
+            }
+
+            if (bindings.getBinding("app_identifier") != null && bindings.getBinding("app_identifier").getValue() != null) {
+                String appValue = bindings.getBinding("app_identifier").getValue().stringValue();
+                ReviewDTO.setApplicationId(appValue);
+
+            }
+
             if (bindings.getBinding("date") != null && bindings.getBinding("date").getValue() != null) {
                 String dateString = bindings.getBinding("date").getValue().stringValue();
                 try {
@@ -336,8 +349,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return bindings.getBinding("id") != null
                 && bindings.getBinding("id").getValue() != null
                 && bindings.getBinding("text") != null
-                && bindings.getBinding("text").getValue() != null
-                && bindings.getBinding("app_identifier") != null
-                && bindings.getBinding("app_identifier").getValue() != null;
+                && bindings.getBinding("text").getValue() != null;
     }
 }
