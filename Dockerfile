@@ -1,17 +1,14 @@
 FROM maven:3.8.6-openjdk-18-slim
 
-RUN mkdir app-repo
-
+RUN mkdir /app-repo
 ADD . /app-repo/
-
 WORKDIR /app-repo
 
 RUN mvn clean
-
 RUN mvn package spring-boot:repackage
 
 EXPOSE 3003
 
-ENTRYPOINT ["java"]
+ENV SPRING_PROFILES_ACTIVE=docker
 
-CMD ["-jar", "./target/repo-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "./target/repo-0.0.1-SNAPSHOT.jar"]
