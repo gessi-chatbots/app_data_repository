@@ -28,7 +28,9 @@ graphdb-data/data/*
 *.iws
 *.iml
 *.ipr
-
+*.ttl
+*.env
+*.log
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/

@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+
+  kg_repository:
+    image: mtiessler/kg_repository:latest
+    env_file:
+      - kg_repository.env
+    ports:
+      - "3003:3003"
+
+  re_miner_hub:
+    image: mtiessler/re_miner_hub:latest
+    env_file:
+      - hub.env
+    ports:
+      - "3002:3002"
+  
+  transfeatex:
+    image: mtiessler/transfeatex:latest
+    ports:
+      - "3004:3004"
+
+volumes:
+  pgdata: {}
