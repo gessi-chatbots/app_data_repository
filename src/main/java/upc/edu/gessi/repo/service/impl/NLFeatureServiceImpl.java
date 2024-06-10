@@ -1,5 +1,7 @@
 package upc.edu.gessi.repo.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import jakarta.json.JsonObject;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -17,6 +19,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import upc.edu.gessi.repo.dto.AnalyzedDocumentDTO;
 import upc.edu.gessi.repo.dto.Review.HUBResponseDTO;
@@ -24,6 +27,7 @@ import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.service.NLFeatureService;
 import upc.edu.gessi.repo.util.Utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +101,7 @@ public class NLFeatureServiceImpl implements NLFeatureService {
         }
     }
 
+
     public List<ReviewDTO> getHUBFeatures(List<ReviewDTO> reviews, String featureModel) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -104,11 +109,34 @@ public class NLFeatureServiceImpl implements NLFeatureService {
         HttpEntity<List<ReviewDTO>> requestBody = new HttpEntity<>(reviews, headers);
 
         String url = hubFeatureAnalysisEndpoint + "?feature_model=" + featureModel;
+        int retryLimit = 3;
+        int retryCount = 0;
+        RestTemplate restTemplate = new RestTemplate();
 
-        HUBResponseDTO responseDTO = restTemplate.postForObject(
-                url, requestBody, HUBResponseDTO.class);
-
-        return responseDTO.getAnalyzed_reviews();
+        while (retryCount < retryLimit) {
+            try {
+                HUBResponseDTO responseDTO = restTemplate.postForObject(
+                        url, requestBody, HUBResponseDTO.class);
+                return responseDTO.getAnalyzed_reviews();
+            } catch (HttpServerErrorException e) {
+                if (e.getStatusCode().is5xxServerError()) {
+                    retryCount++;
+                    logger.error("Received {} response, retrying {}/{}.", e.getStatusCode(), retryCount, retryLimit);
+                    if (retryCount == retryLimit) {
+                        Utils.serializeReviews(reviews, logger);
+                        logger.error("Max retries reached. Serialized the reviews to reviewsDTOList.json");
+                    }
+                } else {
+                    throw e;
+                }
+            } catch (Exception e) {
+                logger.error("An unexpected error occurred: {}", e.getMessage(), e);
+                Utils.serializeReviews(reviews, logger);
+                throw e;
+            }
+        }
+        throw new RuntimeException("Failed to get a valid response from HUB after " + retryLimit + " attempts.");
     }
+
 
 }

@@ -1,5 +1,7 @@
 package upc.edu.gessi.repo.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -27,6 +29,7 @@ import upc.edu.gessi.repo.util.FeatureQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -99,17 +102,21 @@ public class FeatureServiceImpl implements FeatureService {
             int batchSizeAux = 1000;
             int fromAux = 0;
             int totalReviewsProcessed = 0;
-            while (totalReviewsProcessed <= reviewCount) {
-                List<ReviewDTO> reviewAuxList = reviewServiceImpl.getBatched(batchSizeAux, fromAux);
-                if (reviewAuxList.isEmpty()) {
-                    break;
-                } else {
-                    reviewDTOList.addAll(reviewAuxList);
+            try {
+                while (totalReviewsProcessed <= reviewCount) {
+                    List<ReviewDTO> reviewAuxList = reviewServiceImpl.getBatched(batchSizeAux, fromAux);
+                    if (reviewAuxList.isEmpty()) {
+                        break;
+                    } else {
+                        reviewDTOList.addAll(reviewAuxList);
+                    }
+                    fromAux += batchSizeAux;
+                    totalReviewsProcessed += reviewAuxList.size();
+                    logger.info("Retrieved {} reviews, total reviews processed: {}", reviewAuxList.size(), totalReviewsProcessed);
                 }
-                fromAux += batchSizeAux;
-                totalReviewsProcessed += reviewAuxList.size();
-                logger.info("Retrieved {} reviews, total reviews processed: {}", reviewAuxList.size(), totalReviewsProcessed);
 
+            } catch (Exception e) {
+                Utils.serializeReviews(reviewDTOList, logger);
             }
         } else {
             reviewDTOList = reviewServiceImpl.getBatched(batchSize, from);
@@ -122,6 +129,9 @@ public class FeatureServiceImpl implements FeatureService {
 
         return 0;
     }
+
+
+
 
 
     @Override

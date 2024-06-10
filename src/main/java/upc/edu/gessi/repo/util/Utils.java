@@ -2,12 +2,16 @@ package upc.edu.gessi.repo.util;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.Graph;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
@@ -58,6 +62,17 @@ public class Utils {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public static void serializeReviews(List<ReviewDTO> reviews, Logger logger) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            File jsonFile = new File("src/main/resources/reviewsDTOList.json");
+            objectMapper.writeValue(jsonFile, reviews);
+        } catch (Exception jsonException) {
+            logger.error("Failed to serialize reviewsDTOList: {}", jsonException.getMessage(), jsonException);
         }
     }
 
