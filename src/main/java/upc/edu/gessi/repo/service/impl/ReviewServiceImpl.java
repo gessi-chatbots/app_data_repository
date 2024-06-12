@@ -34,7 +34,9 @@ public class ReviewServiceImpl implements ReviewService {
         for (ReviewDTO r : dtos) {
             try {
                 insertReview(r);
+                logger.info("Inserted review {} ", r.getId());
                 insertReviewSentences(r);
+                logger.info("Inserted review {} sentences", r.getId());
             } catch (Exception e) {
                 logger.error("Failed to save in Graph: " + r.toString());
             }

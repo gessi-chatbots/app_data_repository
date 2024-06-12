@@ -14,24 +14,22 @@ public class AnalysisQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?feature\n");
+        queryBuilder.append("SELECT DISTINCT ?feature\n");
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  VALUES ?appName { \"" + appName + "\" }\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
         queryBuilder.append("       schema:name ?appName;\n");
         queryBuilder.append("       schema:review ?review .\n");
         queryBuilder.append("  ?review rdf:type schema:Review;\n");
-        queryBuilder.append("          schema:hasPart ?part .\n");
-        queryBuilder.append("  ?part rdf:type schema:CreativeWork;\n");
-        queryBuilder.append("        schema:keywords ?keyword.\n");
+        queryBuilder.append("          schema:additionalProperty ?part .\n");
+        queryBuilder.append("  ?part rdf:type schema:Review;\n");
+        queryBuilder.append("        schema:keywords ?keyword .\n");
         queryBuilder.append("  ?keyword rdf:type schema:DefinedTerm; \n");
-        queryBuilder.append("           schema:identifier ?feature.\n");
+        queryBuilder.append("           schema:identifier ?feature .\n");
         queryBuilder.append("}\n");
-        queryBuilder.append("GROUP BY ?feature\n");
 
         return queryBuilder.toString();
     }
-
     public static String findStatisticBetweenDates(String appName, Date startDate, Date endDate) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 

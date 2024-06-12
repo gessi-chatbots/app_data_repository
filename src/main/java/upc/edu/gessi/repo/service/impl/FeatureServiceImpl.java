@@ -124,6 +124,7 @@ public class FeatureServiceImpl implements FeatureService {
 
         }
         List<ReviewDTO> analyzedReviewsDTOList = nlFeatureServiceImpl.getHUBFeatures(reviewDTOList, featureModel);
+        logger.info("Obtained {} analyzed reviews from HUB ", analyzedReviewsDTOList.size());
         reviewServiceImpl.create(analyzedReviewsDTOList);
         logger.info("Processed and created {} analyzed reviews", analyzedReviewsDTOList.size());
 
