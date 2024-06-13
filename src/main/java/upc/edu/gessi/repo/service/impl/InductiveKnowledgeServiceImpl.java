@@ -104,6 +104,21 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         }
     }
 
+    private void insertDistinctFeatures(final Workbook workbook) {
+        logger.info("Obtaining #distinct_features");
+        Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Features");
+        generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);
+        List<String> distinctFeatures = getAllDistinctFeatures();
+        Integer rowIndex = 1;
+        for (String distinctFeature : distinctFeatures) {
+            ArrayList<String> featureData = new ArrayList<>();
+            featureData.add(distinctFeature);
+            insertRowInSheet(distinctFeaturesSheet, featureData, rowIndex);
+            rowIndex++;
+        }
+    }
+
+
     private void generateTotalFeaturesHeader(Workbook workbook, Sheet totalFeaturesSheet) {
         List<String> totalFeaturesTitles = new ArrayList<>();
         totalFeaturesTitles.add("Feature Name");
@@ -114,40 +129,99 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 totalFeaturesTitles);
     }
 
-
+    private void generateDistinctFeaturesHeader(Workbook workbook, Sheet distinctFeaturesSheet) {
+        List<String> totalFeaturesTitles = new ArrayList<>();
+        totalFeaturesTitles.add("Feature Name");
+        insertHeaderRowInSheet(distinctFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                totalFeaturesTitles);
+    }
 
     private Map<String, Integer> getTotalFeatures() {
         return new HashMap<>();
     }
-    private void insertDistinctFeatures(final Workbook workbook) {
-        logger.info("Obtaining #distinct_features");
+
+    private List<String> getAllDistinctFeatures() {
+        return new ArrayList<>();
     }
 
     private void insertAllApplicationsStatistics(final Workbook workbook) {
-        getAllApplicationIdentifiers();
-        List<String> applicationIdentifiers = new ArrayList<>();
+        List<String> applicationIdentifiers = getAllApplicationIdentifiers();
         applicationIdentifiers.forEach(applicationIdentifier -> {
-            getApplicationTotalFeatures();
-            getApplicationDistinctFeatures();
+            insertTotalApplicationFeatures(workbook, applicationIdentifier);
+            insertDistinctApplicationFeatures(workbook, applicationIdentifier);
         });
     }
 
-    private void getAllApplicationIdentifiers() {
+    private List<String> getAllApplicationIdentifiers() {
         logger.info("Obtaining all application identifiers");
+        return new ArrayList<>();
     }
 
-    private void getApplicationTotalFeatures() {
-        String app_identifier = "";
-        logger.info("Obtaining #total_features for {}", app_identifier);
+    private void insertTotalApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
+        logger.info("Obtaining #total_features for {}", applicationIdentifier);
+        Sheet totalApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + " Total Features");
+        generateTotalApplicationFeaturesHeader(workbook, totalApplicationFeaturesSheet);
+        Map<String, Integer> totalApplicationFeatures = getTotalApplicationFeatures(applicationIdentifier);
+        Integer rowIndex = 1;
+        for (Map.Entry<String, Integer> feature : totalApplicationFeatures.entrySet()) {
+            String featureName = feature.getKey();
+            Integer featureOccurrences = feature.getValue();
+            ArrayList<String> featureData = new ArrayList<>();
+            featureData.add(featureName);
+            featureData.add(String.valueOf(featureOccurrences));
+            insertRowInSheet(totalApplicationFeaturesSheet, featureData, rowIndex);
+            rowIndex++;
+        }
     }
 
-    private void getApplicationDistinctFeatures() {
-        String app_identifier = "";
-        logger.info("Obtaining #distinct_features for {}", app_identifier);
+    private void generateTotalApplicationFeaturesHeader(final Workbook workbook, final Sheet totalFeaturesSheet) {
+        List<String> totalApplicationFeaturesTitles = new ArrayList<>();
+        totalApplicationFeaturesTitles.add("Feature Name");
+        totalApplicationFeaturesTitles.add("Feature Occurrences");
+        insertHeaderRowInSheet(
+                totalFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                totalApplicationFeaturesTitles);
+    }
+
+    private void insertDistinctApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
+        logger.info("Obtaining #distinct_features for {}", applicationIdentifier);
+        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + "Distinct Features");
+        generateDistinctApplicationFeaturesHeader(workbook, distinctApplicationFeaturesSheet);
+        List<String> distinctApplicationFeatures = getAllDistinctApplicationFeatures(applicationIdentifier);
+        Integer rowIndex = 1;
+        for (String distinctFeature : distinctApplicationFeatures) {
+            ArrayList<String> featureData = new ArrayList<>();
+            featureData.add(distinctFeature);
+            insertRowInSheet(distinctApplicationFeaturesSheet, featureData, rowIndex);
+            rowIndex++;
+        }
+    }
+
+
+    private void generateDistinctApplicationFeaturesHeader(final Workbook workbook, final Sheet totalFeaturesSheet) {
+        List<String> distinctApplicationFeaturesTitles = new ArrayList<>();
+        distinctApplicationFeaturesTitles.add("Feature Name");
+        insertHeaderRowInSheet(
+                totalFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                distinctApplicationFeaturesTitles);
     }
 
     private void insertAllDocumentTypesStatistics(final Workbook workbook) {
 
+    }
+
+    private List<String> getAllDistinctApplicationFeatures(String appIdentifier) {
+        return new ArrayList<>();
+    }
+
+    private Map<String, Integer> getTotalApplicationFeatures(String appIdentifier) {
+        return new HashMap<>();
     }
 
     private void getAllDocumentTypes() {
