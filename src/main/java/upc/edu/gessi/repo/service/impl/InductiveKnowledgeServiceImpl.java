@@ -84,10 +84,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertAllApplicationsStatistics(workbook);
         logger.info("Step 5: Inserting all proprietary documents statistics in KG");
         insertAllDocumentTypesStatistics(workbook);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        workbook.write(outputStream);
-        workbook.close();
-        return outputStream.toByteArray();
+        logger.info("Step 6: Generating File in Byte[] format");
+        return createByteArrayFromWorkbook(workbook);
     }
 
 
