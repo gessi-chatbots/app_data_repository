@@ -68,5 +68,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
 
-
+    @Override
+    public byte[] generateAnalyticalExcel() {
+        return new byte[0];
+    }
 }
