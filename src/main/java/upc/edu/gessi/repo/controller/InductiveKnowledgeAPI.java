@@ -47,8 +47,4 @@ public interface InductiveKnowledgeAPI extends BaseAPI {
     List<SimilarityApp> findAppsByFeatures(@RequestBody List<String> features,
                                            @RequestParam Integer k,
                                            @RequestParam DocumentType documentType);
-
-    @GetMapping("/analysis/excel")
-    ResponseEntity<byte[]> generateAnalyticalExcel() throws IOException;
-
 }

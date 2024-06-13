@@ -1,12 +1,14 @@
 package upc.edu.gessi.repo.controller;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
 import upc.edu.gessi.repo.exception.MissingBodyException;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -36,4 +38,6 @@ public interface AnalysisAPI extends BaseAPI {
     @ResponseBody
     TopFeaturesDTO getTopFeaturesByAppNames(@RequestBody List<String> appNames) throws MissingBodyException;
 
+    @GetMapping("/excel")
+    ResponseEntity<byte[]> generateAnalyticalExcel() throws IOException;
 }

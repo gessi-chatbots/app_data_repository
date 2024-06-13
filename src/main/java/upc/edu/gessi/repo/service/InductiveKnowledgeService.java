@@ -1,6 +1,8 @@
 package upc.edu.gessi.repo.service;
 
 
+import java.io.IOException;
+
 public interface InductiveKnowledgeService {
-    byte[] generateAnalyticalExcel();
+    byte[] generateAnalyticalExcel() throws IOException;
 }

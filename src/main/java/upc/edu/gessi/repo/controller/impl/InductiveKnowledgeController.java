@@ -132,16 +132,7 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
         return ((SimilarityService) useService(SimilarityService.class)).findAppsByFeatures(features, k, documentType);
     }
 
-    @Override
-    public ResponseEntity<byte[]> generateAnalyticalExcel() throws IOException {
-        byte[] spreadsheet = ((InductiveKnowledgeService) useService(InductiveKnowledgeService.class)).generateAnalyticalExcel();
-        String spreadsheetFileName = "KG_Feature_Analysis_" + java.time.LocalDateTime.now().toString() + ".xlsx";
-        String attachmentHeader = "attachment; filename="+spreadsheetFileName;
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, attachmentHeader);
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        return ResponseEntity.ok().headers(headers).body(spreadsheet);
-    }
+
 
     private Object useService(Class<?> clazz) {
         return serviceFactory.createService(clazz);

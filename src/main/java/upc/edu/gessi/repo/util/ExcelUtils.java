@@ -5,6 +5,8 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 @Component
@@ -51,5 +53,12 @@ public class ExcelUtils {
         sheet.setColumnWidth(0, 6000);
         sheet.setColumnWidth(1, 6000);
         return sheet;
+    }
+
+    public static byte[] createByteArrayFromWorkbook(final Workbook workbook) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        return outputStream.toByteArray();
     }
 }
