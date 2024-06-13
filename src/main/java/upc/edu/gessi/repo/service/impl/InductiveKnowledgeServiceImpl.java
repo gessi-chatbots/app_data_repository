@@ -6,7 +6,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,11 +77,11 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         // Step 1 #Features Total
         insertTotalFeatures(workbook);
         // Step 2 #Features Distinct
-        insertDistinctFeatures();
+        insertDistinctFeatures(workbook);
         // Step 3 Get all apps
-        insertAllApplicationStatistics();
+        insertAllApplicationsStatistics(workbook);
         // Step 4 Get all document types
-        insertAllDocumentTtypeStatistics();
+        insertAllDocumentTypesStatistics(workbook);
         return new byte[0];
     }
 
@@ -120,11 +119,11 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private Map<String, Integer> getTotalFeatures() {
         return new HashMap<>();
     }
-    private void insertDistinctFeatures() {
+    private void insertDistinctFeatures(final Workbook workbook) {
         logger.info("Obtaining #distinct_features");
     }
 
-    private void insertAllApplicationStatistics() {
+    private void insertAllApplicationsStatistics(final Workbook workbook) {
         getAllApplicationIdentifiers();
         List<String> applicationIdentifiers = new ArrayList<>();
         applicationIdentifiers.forEach(applicationIdentifier -> {
@@ -147,7 +146,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Obtaining #distinct_features for {}", app_identifier);
     }
 
-    private void insertAllDocumentTtypeStatistics() {
+    private void insertAllDocumentTypesStatistics(final Workbook workbook) {
 
     }
 
