@@ -16,6 +16,8 @@ import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -71,7 +73,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
 
     @Override
-    public byte[] generateAnalyticalExcel() {
+    public byte[] generateAnalyticalExcel() throws IOException {
         logger.info("Step 1: Generating Analytical Excel");
         Workbook workbook = generateExcelSheet();
         logger.info("Step 2: Inserting all features found in KG");
@@ -82,7 +84,10 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertAllApplicationsStatistics(workbook);
         logger.info("Step 5: Inserting all proprietary documents statistics in KG");
         insertAllDocumentTypesStatistics(workbook);
-        return new byte[0];
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        return outputStream.toByteArray();
     }
 
 

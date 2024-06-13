@@ -3,6 +3,9 @@ package upc.edu.gessi.repo.controller.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.AnalysisAPI;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
@@ -10,8 +13,10 @@ import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
 import upc.edu.gessi.repo.exception.MissingBodyException;
 import upc.edu.gessi.repo.service.AnalysisService;
+import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 import upc.edu.gessi.repo.service.ServiceFactory;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -51,6 +56,17 @@ public class AnalysisController implements AnalysisAPI {
     }
 
     @Override
+    public ResponseEntity<byte[]> generateAnalyticalExcel() throws IOException {
+        byte[] spreadsheet = ((InductiveKnowledgeService) useService(InductiveKnowledgeService.class)).generateAnalyticalExcel();
+        String spreadsheetFileName = "KG_Feature_Analysis.xlsx";
+        String attachmentHeader = "attachment; filename="+spreadsheetFileName;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, attachmentHeader);
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok().headers(headers).body(spreadsheet);
+    }
+
+    @Override
     public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName,
                                                                       final Date startDate,
                                                                       final Date endDate) {
@@ -66,5 +82,11 @@ public class AnalysisController implements AnalysisAPI {
     private AnalysisService useAnalysisService() {
         return (AnalysisService) serviceFactory.createService(AnalysisService.class);
     }
+
+    private Object useService(Class<?> clazz) {
+        return serviceFactory.createService(clazz);
+    }
+
+
 
 }
