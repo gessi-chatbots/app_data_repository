@@ -5,6 +5,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.poi.ss.usermodel.*;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +17,9 @@ import upc.edu.gessi.repo.dto.graph.GraphNode;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import static upc.edu.gessi.repo.util.ExcelUtils.*;
 
 @Service
 @Lazy
@@ -68,5 +70,163 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
 
+    @Override
+    public byte[] generateAnalyticalExcel() {
+        logger.info("Generating Analytical Excel");
+        Workbook workbook = generateExcelSheet();
+        // Step 1 #Features Total
+        insertTotalFeatures(workbook);
+        // Step 2 #Features Distinct
+        insertDistinctFeatures(workbook);
+        // Step 3 Get all apps
+        insertAllApplicationsStatistics(workbook);
+        // Step 4 Get all document types
+        insertAllDocumentTypesStatistics(workbook);
+        return new byte[0];
+    }
+
+
+
+    private void insertTotalFeatures(Workbook workbook) {
+        logger.info("Obtaining #total_features");
+        Sheet totalFeaturesSheet = createWorkbookSheet(workbook, "Total Features");
+        generateTotalFeaturesHeader(workbook, totalFeaturesSheet);
+        Map<String, Integer> totalFeatures = getTotalFeatures();
+        Integer rowIndex = 1;
+        for (Map.Entry<String, Integer> feature : totalFeatures.entrySet()) {
+            String featureName = feature.getKey();
+            Integer featureOccurrences = feature.getValue();
+            ArrayList<String> featureData = new ArrayList<>();
+            featureData.add(featureName);
+            featureData.add(String.valueOf(featureOccurrences));
+            insertRowInSheet(totalFeaturesSheet, featureData, rowIndex);
+            rowIndex++;
+        }
+    }
+
+    private void insertDistinctFeatures(final Workbook workbook) {
+        logger.info("Obtaining #distinct_features");
+        Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Features");
+        generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);
+        List<String> distinctFeatures = getAllDistinctFeatures();
+        Integer rowIndex = 1;
+        for (String distinctFeature : distinctFeatures) {
+            ArrayList<String> featureData = new ArrayList<>();
+            featureData.add(distinctFeature);
+            insertRowInSheet(distinctFeaturesSheet, featureData, rowIndex);
+            rowIndex++;
+        }
+    }
+
+
+    private void generateTotalFeaturesHeader(Workbook workbook, Sheet totalFeaturesSheet) {
+        List<String> totalFeaturesTitles = new ArrayList<>();
+        totalFeaturesTitles.add("Feature Name");
+        totalFeaturesTitles.add("Feature Occurrences");
+        insertHeaderRowInSheet(totalFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                totalFeaturesTitles);
+    }
+
+    private void generateDistinctFeaturesHeader(Workbook workbook, Sheet distinctFeaturesSheet) {
+        List<String> totalFeaturesTitles = new ArrayList<>();
+        totalFeaturesTitles.add("Feature Name");
+        insertHeaderRowInSheet(distinctFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                totalFeaturesTitles);
+    }
+
+    private Map<String, Integer> getTotalFeatures() {
+        return new HashMap<>();
+    }
+
+    private List<String> getAllDistinctFeatures() {
+        return new ArrayList<>();
+    }
+
+    private void insertAllApplicationsStatistics(final Workbook workbook) {
+        List<String> applicationIdentifiers = getAllApplicationIdentifiers();
+        applicationIdentifiers.forEach(applicationIdentifier -> {
+            insertTotalApplicationFeatures(workbook, applicationIdentifier);
+            insertDistinctApplicationFeatures(workbook, applicationIdentifier);
+        });
+    }
+
+    private List<String> getAllApplicationIdentifiers() {
+        logger.info("Obtaining all application identifiers");
+        return new ArrayList<>();
+    }
+
+    private void insertTotalApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
+        logger.info("Obtaining #total_features for {}", applicationIdentifier);
+        Sheet totalApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + " Total Features");
+        generateTotalApplicationFeaturesHeader(workbook, totalApplicationFeaturesSheet);
+        Map<String, Integer> totalApplicationFeatures = getTotalApplicationFeatures(applicationIdentifier);
+        Integer rowIndex = 1;
+        for (Map.Entry<String, Integer> feature : totalApplicationFeatures.entrySet()) {
+            String featureName = feature.getKey();
+            Integer featureOccurrences = feature.getValue();
+            ArrayList<String> featureData = new ArrayList<>();
+            featureData.add(featureName);
+            featureData.add(String.valueOf(featureOccurrences));
+            insertRowInSheet(totalApplicationFeaturesSheet, featureData, rowIndex);
+            rowIndex++;
+        }
+    }
+
+    private void generateTotalApplicationFeaturesHeader(final Workbook workbook, final Sheet totalFeaturesSheet) {
+        List<String> totalApplicationFeaturesTitles = new ArrayList<>();
+        totalApplicationFeaturesTitles.add("Feature Name");
+        totalApplicationFeaturesTitles.add("Feature Occurrences");
+        insertHeaderRowInSheet(
+                totalFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                totalApplicationFeaturesTitles);
+    }
+
+    private void insertDistinctApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
+        logger.info("Obtaining #distinct_features for {}", applicationIdentifier);
+        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + "Distinct Features");
+        generateDistinctApplicationFeaturesHeader(workbook, distinctApplicationFeaturesSheet);
+        List<String> distinctApplicationFeatures = getAllDistinctApplicationFeatures(applicationIdentifier);
+        Integer rowIndex = 1;
+        for (String distinctFeature : distinctApplicationFeatures) {
+            ArrayList<String> featureData = new ArrayList<>();
+            featureData.add(distinctFeature);
+            insertRowInSheet(distinctApplicationFeaturesSheet, featureData, rowIndex);
+            rowIndex++;
+        }
+    }
+
+
+    private void generateDistinctApplicationFeaturesHeader(final Workbook workbook, final Sheet totalFeaturesSheet) {
+        List<String> distinctApplicationFeaturesTitles = new ArrayList<>();
+        distinctApplicationFeaturesTitles.add("Feature Name");
+        insertHeaderRowInSheet(
+                totalFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                distinctApplicationFeaturesTitles);
+    }
+
+    private void insertAllDocumentTypesStatistics(final Workbook workbook) {
+
+    }
+
+    private List<String> getAllDistinctApplicationFeatures(String appIdentifier) {
+        return new ArrayList<>();
+    }
+
+    private Map<String, Integer> getTotalApplicationFeatures(String appIdentifier) {
+        return new HashMap<>();
+    }
+
+    private void getAllDocumentTypes() {
+        logger.info("Obtaining all document types");
+        logger.info("Obtained the following document types");
+    }
 
 }

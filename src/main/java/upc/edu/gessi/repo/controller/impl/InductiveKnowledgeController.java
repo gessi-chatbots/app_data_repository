@@ -3,6 +3,9 @@ package upc.edu.gessi.repo.controller.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.InductiveKnowledgeAPI;
 import upc.edu.gessi.repo.dto.Document;
@@ -16,6 +19,7 @@ import upc.edu.gessi.repo.service.SimilarityService;
 import upc.edu.gessi.repo.service.impl.GraphDBServiceImpl;
 import upc.edu.gessi.repo.service.impl.SimilarityServiceImpl;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -126,6 +130,17 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
                                                   @RequestParam Integer k,
                                                   @RequestParam DocumentType documentType) {
         return ((SimilarityService) useService(SimilarityService.class)).findAppsByFeatures(features, k, documentType);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> generateAnalyticalExcel() throws IOException {
+        byte[] spreadsheet = ((InductiveKnowledgeService) useService(InductiveKnowledgeService.class)).generateAnalyticalExcel();
+        String spreadsheetFileName = "KG_Feature_Analysis_" + java.time.LocalDateTime.now().toString() + ".xlsx";
+        String attachmentHeader = "attachment; filename="+spreadsheetFileName;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, attachmentHeader);
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok().headers(headers).body(spreadsheet);
     }
 
     private Object useService(Class<?> clazz) {

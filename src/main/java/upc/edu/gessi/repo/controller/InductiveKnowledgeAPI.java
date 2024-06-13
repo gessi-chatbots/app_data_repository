@@ -1,10 +1,12 @@
 package upc.edu.gessi.repo.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
 import upc.edu.gessi.repo.dto.SimilarityApp;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,5 +47,8 @@ public interface InductiveKnowledgeAPI extends BaseAPI {
     List<SimilarityApp> findAppsByFeatures(@RequestBody List<String> features,
                                            @RequestParam Integer k,
                                            @RequestParam DocumentType documentType);
+
+    @GetMapping("/analysis/excel")
+    ResponseEntity<byte[]> generateAnalyticalExcel() throws IOException;
 
 }
