@@ -70,6 +70,60 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     @Override
     public byte[] generateAnalyticalExcel() {
+        generateExcelSheet();
+        // Step 1 #Features Total
+        insertTotalFeatures();
+        // Step 2 #Features Distinct
+        insertDistinctFeatures();
+        // Step 3 Get all apps
+        insertAllApplicationStatistics();
+        // Step 4 Get all document types
+        insertAllDocumentTtypeStatistics();
         return new byte[0];
     }
+
+    private void generateExcelSheet() {
+        logger.info("Generating Analytical Excel");
+    }
+
+    private void insertTotalFeatures() {
+        logger.info("Obtaining #total_features");
+    }
+
+    private void insertDistinctFeatures() {
+        logger.info("Obtaining #distinct_features");
+    }
+
+    private void insertAllApplicationStatistics() {
+        getAllApplicationIdentifiers();
+        List<String> applicationIdentifiers = new ArrayList<>();
+        applicationIdentifiers.forEach(applicationIdentifier -> {
+            getApplicationTotalFeatures();
+            getApplicationDistinctFeatures();
+        });
+    }
+
+    private void getAllApplicationIdentifiers() {
+        logger.info("Obtaining all application identifiers");
+    }
+
+    private void getApplicationTotalFeatures() {
+        String app_identifier = "";
+        logger.info("Obtaining #total_features for {}", app_identifier);
+    }
+
+    private void getApplicationDistinctFeatures() {
+        String app_identifier = "";
+        logger.info("Obtaining #distinct_features for {}", app_identifier);
+    }
+
+    private void insertAllDocumentTtypeStatistics() {
+
+    }
+
+    private void getAllDocumentTypes() {
+        logger.info("Obtaining all document types");
+        logger.info("Obtained the following document types");
+    }
+
 }
