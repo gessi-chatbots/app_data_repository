@@ -15,7 +15,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
+import upc.edu.gessi.repo.exception.NoObjectFoundException;
+import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.repository.FeatureRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
+import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 
 import java.io.ByteArrayOutputStream;
@@ -132,13 +136,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
 
 
-    private Map<String, Integer> getTotalFeatures() {
-        return new HashMap<>();
-    }
 
-    private List<String> getAllDistinctFeatures() {
-        return new ArrayList<>();
-    }
 
     private void insertAllApplicationsStatistics(final Workbook workbook) {
         List<String> applicationIdentifiers = getAllApplicationIdentifiers();
@@ -269,6 +267,13 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         return new ArrayList<>();
     }
 
+    private Map<String, Integer> getTotalFeatures() {
+        return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllWithOccurrences();
+    }
+
+    private List<String> getAllDistinctFeatures() {
+        return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllDistinct();
+    }
     private Object useRepository(Class<?> clazz) {
         return repositoryFactory.createRepository(clazz);
     }
