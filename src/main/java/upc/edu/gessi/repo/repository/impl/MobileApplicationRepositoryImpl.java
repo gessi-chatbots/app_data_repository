@@ -20,10 +20,7 @@ import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFound
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.ReviewRepository;
-import upc.edu.gessi.repo.util.MobileApplicationsQueryBuilder;
-import upc.edu.gessi.repo.util.ReviewQueryBuilder;
-import upc.edu.gessi.repo.util.SchemaIRI;
-import upc.edu.gessi.repo.util.Utils;
+import upc.edu.gessi.repo.util.*;
 
 import java.sql.Date;
 import java.util.*;
@@ -237,11 +234,33 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     public List<String> findAllIdentifiers() {
         TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
                 .findAllMobileAppIdentifiersQuery());
-        while (result.hasNext()) {
+        List<String> appIdentifiers = new ArrayList<>();
+        while(result.hasNext()) {
             BindingSet bindings = result.next();
-
+            if(bindings.getBinding("appIdentifier") != null
+                    && bindings.getBinding("appIdentifier").getValue() != null) {
+                appIdentifiers
+                        .add(
+                                extractLastIdentifierSegment(
+                                        ExcelUtils.cleanInputForExcel(
+                                                bindings
+                                                        .getBinding("appIdentifier")
+                                                        .getValue()
+                                                        .toString()
+                                ))
+                        );
+            }
         }
-        return new ArrayList<>();
+        return appIdentifiers;
+    }
+    private String extractLastIdentifierSegment(final String identifier) {
+        if (identifier == null) return null;
+        String[] parts = identifier.split("\\.");
+        if (parts.length < 2) {
+            return identifier;
+        }
+        String lastTwoSegments = parts[parts.length - 2] + "." + parts[parts.length - 1];
+        return lastTwoSegments;
     }
 
     @Override

@@ -33,10 +33,7 @@ import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class FeatureRepositoryImpl implements FeatureRepository {
@@ -87,11 +84,11 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
     @Override
     public Map<String, Integer> findAllWithOccurrences() {
-        return null;
+        return new HashMap<>();
     }
 
     @Override
     public List<String> findAllDistinct() {
-        return null;
+        return new ArrayList<>();
     }
 }

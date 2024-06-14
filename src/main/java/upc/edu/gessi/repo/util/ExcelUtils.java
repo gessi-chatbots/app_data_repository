@@ -61,4 +61,9 @@ public class ExcelUtils {
         workbook.close();
         return outputStream.toByteArray();
     }
+
+    public static String cleanInputForExcel(String input) {
+        if (input == null) return null;
+        return input.replaceAll("[\"',\n\r\t]", "");
+    }
 }

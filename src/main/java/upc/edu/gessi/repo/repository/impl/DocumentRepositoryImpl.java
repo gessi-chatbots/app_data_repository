@@ -13,6 +13,8 @@ import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.DocumentRepository;
 import upc.edu.gessi.repo.repository.FeatureRepository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,12 +36,12 @@ public class DocumentRepositoryImpl implements DocumentRepository {
 
     @Override
     public Map<String, Integer> findAllDocumentTypeFeaturesWithOccurrences(String documentType) {
-        return null;
+        return new HashMap<>();
     }
 
     @Override
     public List<String> findAllDistinctDocumentTypeFeatures(String documentType) {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
