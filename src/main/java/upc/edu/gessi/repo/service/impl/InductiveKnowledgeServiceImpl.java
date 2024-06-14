@@ -9,11 +9,13 @@ import org.apache.poi.ss.usermodel.*;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
+import upc.edu.gessi.repo.repository.RepositoryFactory;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 
 import java.io.ByteArrayOutputStream;
@@ -26,8 +28,13 @@ import static upc.edu.gessi.repo.util.ExcelUtils.*;
 @Service
 @Lazy
 public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService {
-
+    private final RepositoryFactory repositoryFactory;
     private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
+
+    @Autowired
+    public InductiveKnowledgeServiceImpl(final RepositoryFactory repoFact) {
+        repositoryFactory = repoFact;
+    }
 
     @Value("${inductive-knowledge-service.url}")
     private String url;
@@ -262,4 +269,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         return new ArrayList<>();
     }
 
+    private Object useRepository(Class<?> clazz) {
+        return repositoryFactory.createRepository(clazz);
+    }
 }
