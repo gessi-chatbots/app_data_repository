@@ -29,6 +29,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class MobileApplicationRepositoryImpl implements MobileApplicationRepository {
@@ -211,6 +212,16 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
             applicationDTOS.add(basicDataDTO);
         }
         return applicationDTOS;
+    }
+
+    @Override
+    public Map<String, Integer> findAllMobileApplicationFeaturesWithOccurrences(String applicationIdentifier) {
+        return null;
+    }
+
+    @Override
+    public List<String> findAllDistinctMobileApplicationFeatures(String applicationIdentifier) {
+        return null;
     }
 
     @Override

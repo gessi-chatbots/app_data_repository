@@ -8,6 +8,7 @@ import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MobileApplicationRepository extends RDFCRUDRepository<MobileApplicationFullDataDTO> {
     void addFeature(MobileApplicationFullDataDTO completeApplicationDataDTO,
@@ -22,4 +23,8 @@ public interface MobileApplicationRepository extends RDFCRUDRepository<MobileApp
     List<MobileApplicationBasicDataDTO> findAllBasicDataPaginated(Integer page, Integer size) throws NoMobileApplicationsFoundException;
 
     List<MobileApplicationBasicDataDTO> findAllApplicationsBasicData() throws NoMobileApplicationsFoundException;
+
+    Map<String, Integer> findAllMobileApplicationFeaturesWithOccurrences(String applicationIdentifier);
+
+    List<String> findAllDistinctMobileApplicationFeatures(String applicationIdentifier);
 }
