@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dto.DocumentType;
+import upc.edu.gessi.repo.dto.Feature;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
@@ -27,10 +28,7 @@ import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.FeatureRepository;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.ReviewRepository;
-import upc.edu.gessi.repo.util.MobileApplicationsQueryBuilder;
-import upc.edu.gessi.repo.util.ReviewQueryBuilder;
-import upc.edu.gessi.repo.util.SchemaIRI;
-import upc.edu.gessi.repo.util.Utils;
+import upc.edu.gessi.repo.util.*;
 
 import java.sql.Date;
 import java.util.*;
@@ -40,13 +38,17 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
     private final HTTPRepository repository;
 
+    private final FeatureQueryBuilder featureQueryBuilder;
+
 
     @Autowired
     public FeatureRepositoryImpl(final @Value("${db.url}") String url,
                                  final @Value("${db.username}") String username,
-                                 final @Value("${db.password}") String password) {
+                                 final @Value("${db.password}") String password,
+                                 final FeatureQueryBuilder featureQueryBuild) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
+        featureQueryBuilder = featureQueryBuild;
 
 
     }
@@ -82,13 +84,43 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
     }
 
+    private TupleQueryResult runSparqlQuery(final String query) {
+        RepositoryConnection repoConnection = repository.getConnection();
+        TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
+        return tupleQuery.evaluate();
+    }
+
     @Override
     public Map<String, Integer> findAllWithOccurrences() {
-        return new HashMap<>();
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAllFeaturesWithOccurrencesQuery());
+        Map<String, Integer> featureOcurrencesDict = new HashMap<>();
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if(bindings.getBinding("feature") != null
+                    && bindings.getBinding("feature").getValue() != null
+                    && bindings.getBinding("count") != null
+                    && bindings.getBinding("count").getValue() != null) {
+                featureOcurrencesDict.put(
+                        bindings.getBinding("feature").getValue().stringValue(),
+                        Integer.valueOf(bindings.getBinding("count").getValue().stringValue())
+                );
+            }
+        }
+        return featureOcurrencesDict;
     }
 
     @Override
     public List<String> findAllDistinct() {
-        return new ArrayList<>();
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAllDistinctFeaturesQuery());
+        List<String> featuresList = new ArrayList<>();
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if(bindings.getBinding("feature") != null
+                    && bindings.getBinding("feature").getValue() != null) {
+                featuresList.add(
+                        bindings.getBinding("feature").getValue().stringValue());
+            }
+        }
+        return featuresList;
     }
 }

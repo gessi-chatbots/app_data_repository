@@ -212,22 +212,36 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     public Map<String, Integer> findAllMobileApplicationFeaturesWithOccurrences(final String applicationIdentifier) {
         TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
                 .findAllFeaturesWithOccurrencesAppNameQuery(applicationIdentifier));
+        Map<String, Integer> featureOcurrencesDict = new HashMap<>();
         while (result.hasNext()) {
             BindingSet bindings = result.next();
-
+            if(bindings.getBinding("feature") != null
+                    && bindings.getBinding("feature").getValue() != null
+                    && bindings.getBinding("count") != null
+                    && bindings.getBinding("count").getValue() != null) {
+                featureOcurrencesDict.put(
+                        bindings.getBinding("feature").getValue().stringValue(),
+                        Integer.valueOf(bindings.getBinding("count").getValue().stringValue())
+                );
+            }
         }
-        return new HashMap<>();
+        return featureOcurrencesDict;
     }
 
     @Override
     public List<String> findAllDistinctMobileApplicationFeatures(final String applicationIdentifier) {
         TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
-                .findAllFeaturesWithOccurrencesAppNameQuery(applicationIdentifier));
+                .findAllDistinctFeaturesByAppNameQuery(applicationIdentifier));
+        List<String> featuresList = new ArrayList<>();
         while (result.hasNext()) {
             BindingSet bindings = result.next();
-
+            if(bindings.getBinding("feature") != null
+                    && bindings.getBinding("feature").getValue() != null) {
+                featuresList.add(
+                        bindings.getBinding("feature").getValue().stringValue());
+            }
         }
-        return new ArrayList<>();
+        return featuresList;
     }
 
     @Override

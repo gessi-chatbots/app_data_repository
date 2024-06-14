@@ -135,7 +135,7 @@ public class MobileApplicationsQueryBuilder
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  VALUES ?appName { \"").append(appName).append("\" }\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
-        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:identifier ?appName;\n");
         queryBuilder.append("       schema:review ?review .\n");
         queryBuilder.append("  ?review rdf:type schema:Review;\n");
         queryBuilder.append("          schema:additionalProperty ?part .\n");
@@ -155,7 +155,7 @@ public class MobileApplicationsQueryBuilder
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  VALUES ?appName { \"").append(appName).append("\" }\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
-        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:identifier ?appName;\n");
         queryBuilder.append("       schema:review ?review .\n");
         queryBuilder.append("  ?review rdf:type schema:Review;\n");
         queryBuilder.append("          schema:additionalProperty ?part .\n");
