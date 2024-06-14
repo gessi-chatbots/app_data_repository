@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class FeatureQueryBuilder
 {
-    public String findAllFeaturesQuery() {
+    public String findAllDocumentFeaturesQuery() {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
         queryBuilder.append("\n");

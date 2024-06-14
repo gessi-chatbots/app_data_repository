@@ -127,6 +127,59 @@ public class MobileApplicationsQueryBuilder
         return queryBuilder.toString();
     }
 
+    public String findAllDistinctFeaturesByAppNameQuery(final String appName) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT DISTINCT ?feature\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?appName { \"").append(appName).append("\" }\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:additionalProperty ?part .\n");
+        queryBuilder.append("  ?part rdf:type schema:Review;\n");
+        queryBuilder.append("        schema:keywords ?keyword .\n");
+        queryBuilder.append("  ?keyword rdf:type schema:DefinedTerm;\n");
+        queryBuilder.append("           schema:identifier ?feature .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+
+    public String findAllFeaturesWithOccurrencesAppNameQuery(final String appName) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT ?feature (COUNT(?feature) AS ?count)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?appName { \"").append(appName).append("\" }\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:additionalProperty ?part .\n");
+        queryBuilder.append("  ?part rdf:type schema:Review;\n");
+        queryBuilder.append("        schema:keywords ?keyword .\n");
+        queryBuilder.append("  ?keyword rdf:type schema:DefinedTerm;\n");
+        queryBuilder.append("           schema:identifier ?feature .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?feature\n");
+        return queryBuilder.toString();
+    }
+
+    public String findAllMobileAppIdentifiersQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?appIdentifier\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("    ?mobileApp rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("               schema:identifier ?appIdentifier.\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+
 
 
 

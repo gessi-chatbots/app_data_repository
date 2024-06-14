@@ -135,10 +135,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         });
     }
 
-    private List<String> getAllApplicationIdentifiers() {
-        logger.info("Obtaining all application identifiers");
-        return new ArrayList<>();
-    }
 
     private void insertTotalApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
         logger.info("Obtaining #total_features for {}", applicationIdentifier);
@@ -241,6 +237,10 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 .stream(DocumentType.values())
                 .map(DocumentType::getName)
                 .toList();
+    }
+    private List<String> getAllApplicationIdentifiers() {
+        logger.info("Obtaining all application identifiers");
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllIdentifiers();
     }
 
     private Map<String, Integer> getTotalFeatures() {

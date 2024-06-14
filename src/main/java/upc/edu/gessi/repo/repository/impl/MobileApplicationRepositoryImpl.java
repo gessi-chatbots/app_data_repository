@@ -26,10 +26,7 @@ import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class MobileApplicationRepositoryImpl implements MobileApplicationRepository {
@@ -215,13 +212,36 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
-    public Map<String, Integer> findAllMobileApplicationFeaturesWithOccurrences(String applicationIdentifier) {
-        return null;
+    public Map<String, Integer> findAllMobileApplicationFeaturesWithOccurrences(final String applicationIdentifier) {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
+                .findAllFeaturesWithOccurrencesAppNameQuery(applicationIdentifier));
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+        }
+        return new HashMap<>();
     }
 
     @Override
-    public List<String> findAllDistinctMobileApplicationFeatures(String applicationIdentifier) {
-        return null;
+    public List<String> findAllDistinctMobileApplicationFeatures(final String applicationIdentifier) {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
+                .findAllFeaturesWithOccurrencesAppNameQuery(applicationIdentifier));
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<String> findAllIdentifiers() {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
+                .findAllMobileAppIdentifiersQuery());
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+
+        }
+        return new ArrayList<>();
     }
 
     @Override
@@ -284,7 +304,9 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
                 DocumentType.REVIEWS);
     }
 
-    private void addChangelogToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addChangelogToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                          List<Statement> statements,
+                                          IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getChangelog() != null) {
             addDigitalDocument(
                     mobileApplicationFullDataDTO.getPackageName(),
@@ -297,7 +319,9 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         }
     }
 
-    private void addSummaryToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addSummaryToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                        List<Statement> statements,
+                                        IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getSummary() != null) {
             addDigitalDocument(
                     mobileApplicationFullDataDTO.getPackageName(),
@@ -310,7 +334,9 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         }
     }
 
-    private void addDescriptionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addDescriptionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                            List<Statement> statements,
+                                            IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getDescription() != null) {
             addDigitalDocument(
                     mobileApplicationFullDataDTO.getPackageName(),
@@ -323,20 +349,39 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         }
     }
 
-    private void addPackageNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addPackageNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                            List<Statement> statements,
+                                            IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getPackageName() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getPackageName())));
+            statements.add(
+                    factory.createStatement(
+                            applicationIRI,
+                            schemaIRI.getIdentifierIRI(),
+                            factory.createLiteral(mobileApplicationFullDataDTO.getPackageName()
+                            )
+                    )
+            );
         }
     }
 
-    private void addAppNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addAppNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                        List<Statement> statements,
+                                        IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getAppName() != null) {
             String sanitizedName = Utils.sanitizeString(mobileApplicationFullDataDTO.getAppName());
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getNameIRI(), factory.createLiteral(sanitizedName)));
+            statements.add(
+                    factory.createStatement(
+                            applicationIRI,
+                            schemaIRI.getNameIRI(),
+                            factory.createLiteral(sanitizedName)
+                    )
+            );
         }
     }
 
-    private void addVersionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addVersionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                        List<Statement> statements,
+                                        IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getVersion() != null) {
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getVersion())));
         }

@@ -27,4 +27,6 @@ public interface MobileApplicationRepository extends RDFCRUDRepository<MobileApp
     Map<String, Integer> findAllMobileApplicationFeaturesWithOccurrences(String applicationIdentifier);
 
     List<String> findAllDistinctMobileApplicationFeatures(String applicationIdentifier);
+
+    List<String> findAllIdentifiers();
 }
