@@ -55,7 +55,9 @@ public class NLFeatureServiceImpl implements NLFeatureService {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         List<AnalyzedDocumentDTO> analyzedDocumentDTOS = new ArrayList<>();
         try {
+            logger.info("Sending {} documents of type {} to Transfeatex for analysis", documents.size(), nlFeatureExtractionEndpoint);
             HttpPost request = new HttpPost(nlFeatureExtractionEndpoint);
+
             request.addHeader("Content-Type", "application/json");
 
             JSONArray array = new JSONArray();
@@ -74,7 +76,7 @@ public class NLFeatureServiceImpl implements NLFeatureService {
             HttpResponse response = httpClient.execute(request);
 
             JSONArray responseBody = new JSONArray(EntityUtils.toString(response.getEntity()));
-
+            logger.info("Got responseBody of size {}", responseBody.length());
             for (int i = 0; i < responseBody.length(); ++i) {
                 JSONObject document = responseBody.getJSONObject(i);
 
@@ -83,7 +85,6 @@ public class NLFeatureServiceImpl implements NLFeatureService {
                 for (int j = 0; j < featureJSONArray.length(); ++j) {
                     features.add(featureJSONArray.getString(j));
                 }
-
                 AnalyzedDocumentDTO analyzedDoc =
                         new AnalyzedDocumentDTO(document.getString("id"), features);
                 analyzedDocumentDTOS.add(analyzedDoc);
