@@ -115,9 +115,13 @@ public class NLFeatureServiceImpl implements NLFeatureService {
 
         while (retryCount < retryLimit) {
             try {
+                logger.info("Sending {} reviews to HUB for analysis", reviews.size());
                 HUBResponseDTO responseDTO = restTemplate.postForObject(
                         url, requestBody, HUBResponseDTO.class);
-                return responseDTO.getAnalyzed_reviews();
+                if (responseDTO != null && responseDTO.getAnalyzed_reviews() != null) {
+                    logger.info("Received {} analyzed reviews from HUB", responseDTO.getAnalyzed_reviews().size());
+                    return responseDTO.getAnalyzed_reviews();
+                }
             } catch (HttpServerErrorException e) {
                 if (e.getStatusCode().is5xxServerError()) {
                     retryCount++;
