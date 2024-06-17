@@ -29,4 +29,6 @@ public interface MobileApplicationRepository extends RDFCRUDRepository<MobileApp
     List<String> findAllDistinctMobileApplicationFeatures(String applicationIdentifier);
 
     List<String> findAllIdentifiers();
+
+    List<MobileApplicationBasicDataDTO> findAllFromMarketSegment(String marketSegment);
 }

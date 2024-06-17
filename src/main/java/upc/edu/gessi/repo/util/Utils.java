@@ -17,7 +17,11 @@ import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
 
 import java.io.*;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,6 +37,19 @@ public class Utils {
         update.execute();
     }
 
+    public static Date convertStringToDate(String dateString) {
+        // Define the input date format
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+
+        // Parse the date string to a ZonedDateTime object
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(dateString, inputFormatter);
+
+        // Convert ZonedDateTime to Instant
+        Instant instant = zonedDateTime.toInstant();
+
+        // Convert Instant to java.util.Date
+        return Date.from(instant);
+    }
     public static String sanitizeString(String name) {
         String sanitizedName = name.replace(" ","_");
         sanitizedName = sanitizedName.replace("|","");

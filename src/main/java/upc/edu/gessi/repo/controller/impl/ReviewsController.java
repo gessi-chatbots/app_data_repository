@@ -4,12 +4,16 @@ package upc.edu.gessi.repo.controller.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.ReviewsAPI;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.exception.*;
+import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.service.ServiceFactory;
 
@@ -68,8 +72,19 @@ public class ReviewsController implements ReviewsAPI {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Override
+    public ResponseEntity<byte[]> extractReviews(final Integer size, final String marketSegment) {
+        byte[] ttlFile = ((MobileApplicationService) useService(MobileApplicationService.class)).getAllFromMarketSegment(size, marketSegment);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/turtle"));
+        headers.setContentDispositionFormData("attachment", "reviews.ttl");
+        headers.setContentLength(ttlFile.length);
+        return new ResponseEntity<>(ttlFile, HttpStatus.OK);
+    }
+
     private Object useService(Class<?> clazz) {
         return serviceFactory.createService(clazz);
     }
+
 
 }

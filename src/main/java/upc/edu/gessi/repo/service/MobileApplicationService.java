@@ -28,4 +28,6 @@ public interface MobileApplicationService extends CrudService<MobileApplicationF
 
 
     void updateOld(int daysFromLastUpdate);
+
+    byte[] getAllFromMarketSegment(Integer size, String marketSegment);
 }

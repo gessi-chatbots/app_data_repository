@@ -28,4 +28,8 @@ public interface ReviewRepository extends RDFCRUDRepository<ReviewDTO> {
     List<ReviewDTO> findAllSimplified();
 
     Integer getCount();
+
+    List<ReviewDTO> getReviewsByAppNameAndIdentifierWithLimit(String appName,
+                                                              String appIdentifier,
+                                                              Integer limit);
 }

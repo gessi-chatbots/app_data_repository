@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.repository.impl;
 
 import io.swagger.models.auth.In;
+import jdk.jshell.execution.Util;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
@@ -21,6 +22,7 @@ import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.exception.Reviews.ReviewNotFoundException;
 import upc.edu.gessi.repo.repository.ReviewRepository;
+import upc.edu.gessi.repo.util.ExcelUtils;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
@@ -326,6 +328,52 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         } finally {
             result.close();
         }
+    }
+
+    @Override
+    public List<ReviewDTO> getReviewsByAppNameAndIdentifierWithLimit(final String appName,
+                                                                     final String appIdentifier,
+                                                                     final Integer limit) {
+        TupleQueryResult result = Utils
+                .runSparqlSelectQuery(
+                        repository.getConnection(),
+                        reviewQueryBuilder.findReviewsByAppNameAndIdentifierWithLimitQuery(
+                                appName,
+                                appIdentifier,
+                                limit));
+
+        List<ReviewDTO> extractedReviews = new ArrayList<>();
+        while(result.hasNext()) {
+            BindingSet bindings = result.next();
+            ReviewDTO review = new ReviewDTO();
+            if(bindings.getBinding("id") != null
+                    && bindings.getBinding("id").getValue() != null) {
+                review.setId(bindings.getBinding("id").getValue().stringValue());
+            }
+            if(bindings.getBinding("author") != null
+                    && bindings.getBinding("author").getValue() != null) {
+                review.setAuthor(bindings.getBinding("author").getValue().stringValue());
+
+            }
+            if(bindings.getBinding("reviewText") != null
+                    && bindings.getBinding("reviewText").getValue() != null) {
+                review.setReviewText(bindings.getBinding("reviewText").getValue().stringValue());
+            }
+            if(bindings.getBinding("date") != null
+                    && bindings.getBinding("date").getValue() != null) {
+                review.setDate(Utils
+                        .convertStringToDate(
+                                bindings
+                                        .getBinding("date")
+                                        .getValue()
+                                        .stringValue())
+                );
+            }
+            if(review.getId() != null) {
+               extractedReviews.add(review);
+            }
+        }
+        return extractedReviews;
     }
 
 

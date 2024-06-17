@@ -13,7 +13,8 @@ graphdb-data/data/*
 !graphdb-data/logs/
 !graphdb-data/graphdb-import/readme.md
 !graphdb-data/work/
-
+*.ttl
+*.xlsx
 ### STS ###
 .apt_generated
 .classpath
