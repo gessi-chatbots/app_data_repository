@@ -231,6 +231,30 @@ public class ReviewQueryBuilder
         queryBuilder.append("}");
         return queryBuilder.toString();
     }
+    public String findReviewsByAppNameAndIdentifierWithLimitQuery(
+            final String appName,
+            final String appIdentifier,
+            final int size) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?id ?author ?date ?reviewText\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?subject rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("           schema:identifier \"").append(appIdentifier).append("\" ;\n");
+        queryBuilder.append("           schema:name \"").append(appName).append("\" ;\n");
+        queryBuilder.append("           schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review ;\n");
+        queryBuilder.append("          schema:identifier ?id ;\n");
+        queryBuilder.append("          schema:author ?author ;\n");
+        queryBuilder.append("          schema:datePublished ?date ;\n");
+        queryBuilder.append("          schema:reviewBody ?reviewText .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("ORDER BY ASC(?date)\n");
+        queryBuilder.append("LIMIT ").append(size).append("\n");
+        return queryBuilder.toString();
+    }
+
     public String getCountQuery() {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX sc: <https://schema.org/>\n");

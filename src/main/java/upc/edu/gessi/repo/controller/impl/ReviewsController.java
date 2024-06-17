@@ -72,8 +72,7 @@ public class ReviewsController implements ReviewsAPI {
 
     @Override
     public ResponseEntity<byte[]> extractReviews(final Integer size, final String marketSegment) {
-        //Step 1 look for all app ids in that market segment.
-        List<MobileApplicationBasicDataDTO> list = ((MobileApplicationService) useService(MobileApplicationService.class)).getAllFromMarketSegment(marketSegment);
+        byte[] ttlFile = ((MobileApplicationService) useService(MobileApplicationService.class)).getAllFromMarketSegment(size, marketSegment);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

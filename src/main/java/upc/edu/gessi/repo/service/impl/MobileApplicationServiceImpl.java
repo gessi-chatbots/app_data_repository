@@ -130,12 +130,34 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     }
 
     @Override
-    public List<MobileApplicationBasicDataDTO> getAllFromMarketSegment(final String marketSegment) {
+    public byte[] getAllFromMarketSegment(final Integer size, final String marketSegment) {
         List<MobileApplicationBasicDataDTO> apps =
                 ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
                         .findAllFromMarketSegment(marketSegment);
         logger.info("Extracted {} applications from Market Segment {}", apps.size(), marketSegment);
-        return apps;
+
+        Integer reviewsToExtractPerApp = size/apps.size();
+        logger.info("Proceeding to extract {} reviews per mobile application", reviewsToExtractPerApp);
+
+        List<ReviewDTO> extractedReviews = new ArrayList<>();
+
+        for(MobileApplicationBasicDataDTO app : apps) {
+            try {
+                List<ReviewDTO> rev = ((ReviewRepository) useRepository(ReviewRepository.class))
+                        .getReviewsByAppNameAndIdentifierWithLimit(app.getAppName(),
+                                app.getPackageName(),
+                                reviewsToExtractPerApp);
+                logger.info("Extracted {} reviews from Mobile Application {}", rev.size(), app.getAppName());
+                extractedReviews.addAll(rev);
+            } catch (Exception e) {
+                logger.error("There was an error extracting the reviews from application {}", app.getAppName());
+            }
+        }
+
+        
+
+
+        return null;
     }
 
     @Override
