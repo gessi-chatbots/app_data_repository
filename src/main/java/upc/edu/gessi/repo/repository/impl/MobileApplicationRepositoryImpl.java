@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
@@ -267,6 +268,39 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         }
         return appIdentifiers;
     }
+
+    @Override
+    public List<MobileApplicationBasicDataDTO> findAllFromMarketSegment(final String marketSegment) {
+        TupleQueryResult result = runSparqlQuery(
+                mobileApplicationsQueryBuilder
+                        .findAllReviewsByMarketSegmentQuery(marketSegment)
+        );
+        List<MobileApplicationBasicDataDTO> mobileApplicationBasicDataDTOS = new ArrayList<>();
+        while(result.hasNext()) {
+            BindingSet bindings = result.next();
+            MobileApplicationBasicDataDTO mobileApp = new MobileApplicationBasicDataDTO();
+            if(bindings.getBinding("app_name") != null
+                    && bindings.getBinding("app_name").getValue() != null) {
+                mobileApp.setAppName(bindings.getBinding("app_name").getValue().stringValue());
+            }
+            if(bindings.getBinding("package_name") != null
+                    && bindings.getBinding("package_name").getValue() != null) {
+                mobileApp.setPackageName(bindings.getBinding("package_name").getValue().stringValue());
+            }
+            if(bindings.getBinding("reviewCount") != null
+                    && bindings.getBinding("reviewCount").getValue() != null) {
+                mobileApp.setReviewCount(Integer.valueOf(
+                        bindings.getBinding("reviewCount").getValue().stringValue())
+                );
+            }
+            if (mobileApp.getAppName() != null || mobileApp.getPackageName() != null) {
+                mobileApplicationBasicDataDTOS.add(mobileApp);
+            }
+        }
+
+        return mobileApplicationBasicDataDTOS;
+    }
+
     private String extractLastIdentifierSegment(final String identifier) {
         if (identifier == null) return null;
         String[] parts = identifier.split("\\.");

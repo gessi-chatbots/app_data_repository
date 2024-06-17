@@ -28,4 +28,6 @@ public interface MobileApplicationService extends CrudService<MobileApplicationF
 
 
     void updateOld(int daysFromLastUpdate);
+
+    List<MobileApplicationBasicDataDTO> getAllFromMarketSegment(String marketSegment);
 }

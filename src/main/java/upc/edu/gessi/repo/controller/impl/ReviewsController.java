@@ -8,8 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.ReviewsAPI;
+import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.exception.*;
+import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.service.ServiceFactory;
 
@@ -70,7 +72,9 @@ public class ReviewsController implements ReviewsAPI {
 
     @Override
     public ResponseEntity<byte[]> extractReviews(final Integer size, final String marketSegment) {
-        return null;
+        //Step 1 look for all app ids in that market segment.
+        List<MobileApplicationBasicDataDTO> list = ((MobileApplicationService) useService(MobileApplicationService.class)).getAllFromMarketSegment(marketSegment);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private Object useService(Class<?> clazz) {

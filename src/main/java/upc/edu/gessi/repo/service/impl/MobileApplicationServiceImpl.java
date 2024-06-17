@@ -3,6 +3,8 @@ package upc.edu.gessi.repo.service.impl;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,8 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     private final AppDataScannerService appDataScannerService;
 
     private final ReviewService reviewService;
+
+    private final Logger logger = LoggerFactory.getLogger(MobileApplicationService.class);
 
     @Autowired
     public MobileApplicationServiceImpl(final RepositoryFactory repoFact,
@@ -123,6 +127,15 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
     @Override
     public void updateOld(int daysFromLastUpdate) {
         updateApp(daysFromLastUpdate);
+    }
+
+    @Override
+    public List<MobileApplicationBasicDataDTO> getAllFromMarketSegment(final String marketSegment) {
+        List<MobileApplicationBasicDataDTO> apps =
+                ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
+                        .findAllFromMarketSegment(marketSegment);
+        logger.info("Extracted {} applications from Market Segment {}", apps.size(), marketSegment);
+        return apps;
     }
 
     @Override

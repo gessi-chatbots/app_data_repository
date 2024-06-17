@@ -13,6 +13,6 @@ public interface ReviewsAPI extends CrudAPI<ReviewDTO> {
     @ApiOperation("Generates a .ttl file")
     @GetMapping(value = "/extract")
     ResponseEntity<byte[]> extractReviews(
-            @RequestParam(name = "size", defaultValue = "100000", required = false) Integer size,
+            @RequestParam(name = "size", defaultValue = "10000", required = false) Integer size,
             @RequestParam(name = "market-segment", defaultValue = "Communication", required = false) String marketSegment);
 }

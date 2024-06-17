@@ -180,6 +180,23 @@ public class MobileApplicationsQueryBuilder
         return queryBuilder.toString();
     }
 
+    public String findAllReviewsByMarketSegmentQuery(final String marketSegment) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?app_name ?package_name (COUNT(?review) AS ?reviewCount)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?subject rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("           schema:review ?review ;\n");
+        queryBuilder.append("           schema:identifier ?package_name ;\n");
+        queryBuilder.append("           schema:name ?app_name ;\n");
+        queryBuilder.append("           schema:applicationCategory \"").append(marketSegment).append("\" .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?app_name ?package_name\n");
+        return queryBuilder.toString();
+    }
+
+
 
 
 
