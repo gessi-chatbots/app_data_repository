@@ -177,7 +177,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
         logger.info("Generating file...");
         String pathname = marketSegment + size + "ExtractedReviews.ttl";
-        File ttlFile = new File("src/main/resources/ttl/" + pathname);
+        File ttlFile = new File("src/main/resources/static/ttl/" + pathname);
         try (FileWriter out = new FileWriter(ttlFile)) {
             model.write(out, "TURTLE");
         } catch (Exception e) {
