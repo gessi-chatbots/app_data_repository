@@ -95,12 +95,14 @@ public class FeatureServiceImpl implements FeatureService {
         List<ReviewDTO> reviewDTOList = new ArrayList<>();
         if (batchSize == 0 && from == 0) {
             int reviewCount = reviewServiceImpl.getReviewCount();
+            logger.info("Obtained a total of {} reviews for analysis", reviewCount);
             int batchSizeAux = 1000;
             int fromAux = 0;
             int totalReviewsProcessed = 0;
             try {
                 while (totalReviewsProcessed <= reviewCount) {
                     List<ReviewDTO> reviewAuxList = reviewServiceImpl.getBatched(batchSizeAux, fromAux);
+                    logger.info("Obtained a total of {} batched reviews for analysis", reviewAuxList.size());
                     if (reviewAuxList.isEmpty()) {
                         break;
                     } else {
