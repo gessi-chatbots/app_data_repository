@@ -1,7 +1,13 @@
 package upc.edu.gessi.repo.service.impl;
 
 
+
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SchemaDO;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +29,9 @@ import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.util.Utils;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -154,10 +163,35 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
             }
         }
 
-        
 
+        logger.info("Proceeding to write in file...");
+        org.apache.jena.rdf.model.Model model
+                = org.apache.jena.rdf.model.ModelFactory.createDefaultModel();
+        for (ReviewDTO review : extractedReviews) {
+            org.apache.jena.rdf.model.Resource reviewResource = model.createResource("https://schema.org/Review/" + review.getId())
+                    .addProperty(RDF.type, SchemaDO.Review)
+                    .addProperty(SchemaDO.author, review.getAuthor())
+                    .addProperty(SchemaDO.datePublished, review.getDate().toString())
+                    .addProperty(SchemaDO.reviewBody, review.getReviewText());
+        }
 
-        return null;
+        logger.info("Generating file...");
+        String pathname = marketSegment + size + "ExtractedReviews.ttl";
+        File ttlFile = new File("src/main/resources/ttl/" + pathname);
+        try (FileWriter out = new FileWriter(ttlFile)) {
+            model.write(out, "TURTLE");
+        } catch (Exception e) {
+            logger.error("Error writing to TTL file", e);
+        }
+
+        byte[] fileContent = null;
+        try {
+            fileContent = Files.readAllBytes(ttlFile.toPath());
+        } catch (Exception e) {
+            logger.error("Error reading TTL file into byte array", e);
+        }
+        logger.info("Done");
+        return fileContent;
     }
 
     @Override
