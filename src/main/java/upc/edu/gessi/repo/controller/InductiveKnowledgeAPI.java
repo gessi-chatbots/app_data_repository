@@ -18,7 +18,7 @@ public interface InductiveKnowledgeAPI extends BaseAPI {
     int getLastReview();
 
     @PostMapping("/derived-nl-features")
-    int derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType,
+    ResponseEntity<String> derivedNLFeatures(@RequestParam(value = "documentType") DocumentType documentType,
                           @RequestParam(value = "batch-size", defaultValue = "0") Integer batchSize,
                           @RequestParam(value = "from", defaultValue = "0") Integer from,
                           @RequestParam(value = "feature-model", defaultValue = "transfeatex") String featureModel);
