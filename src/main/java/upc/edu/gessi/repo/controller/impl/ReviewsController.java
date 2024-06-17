@@ -68,8 +68,14 @@ public class ReviewsController implements ReviewsAPI {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Override
+    public ResponseEntity<byte[]> extractReviews(final Integer size, final String marketSegment) {
+        return null;
+    }
+
     private Object useService(Class<?> clazz) {
         return serviceFactory.createService(clazz);
     }
+
 
 }
