@@ -9,14 +9,15 @@ import org.apache.poi.ss.usermodel.*;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
+import upc.edu.gessi.repo.repository.*;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -26,8 +27,13 @@ import static upc.edu.gessi.repo.util.ExcelUtils.*;
 @Service
 @Lazy
 public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService {
-
+    private final RepositoryFactory repositoryFactory;
     private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
+
+    @Autowired
+    public InductiveKnowledgeServiceImpl(final RepositoryFactory repoFact) {
+        repositoryFactory = repoFact;
+    }
 
     @Value("${inductive-knowledge-service.url}")
     private String url;
@@ -71,7 +77,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         }
     }
 
-
     @Override
     public byte[] generateAnalyticalExcel() throws IOException {
         logger.info("Step 1: Generating Analytical Excel");
@@ -88,11 +93,9 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         return createByteArrayFromWorkbook(workbook);
     }
 
-
-
     private void insertTotalFeatures(Workbook workbook) {
         logger.info("Obtaining #total_features");
-        Sheet totalFeaturesSheet = createWorkbookSheet(workbook, "Total Features");
+        Sheet totalFeaturesSheet = createWorkbookSheet(workbook, "TF");
         generateTotalFeaturesHeader(workbook, totalFeaturesSheet);
         Map<String, Integer> totalFeatures = getTotalFeatures();
         insertFeaturesAndOcurrencesInSheet(totalFeaturesSheet, totalFeatures);
@@ -100,7 +103,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertDistinctFeatures(final Workbook workbook) {
         logger.info("Obtaining #distinct_features");
-        Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Features");
+        Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "DF");
         generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);
         List<String> distinctFeatures = getAllDistinctFeatures();
         Integer rowIndex = 1;
@@ -112,7 +115,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         }
     }
 
-
     private void generateTotalFeaturesHeader(Workbook workbook, Sheet totalFeaturesSheet) {
         List<String> totalFeaturesTitles = new ArrayList<>();
         totalFeaturesTitles.add("Feature Name");
@@ -121,16 +123,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 generateTitleCellStyle(workbook),
                 generateTitleArial16Font(workbook),
                 totalFeaturesTitles);
-    }
-
-
-
-    private Map<String, Integer> getTotalFeatures() {
-        return new HashMap<>();
-    }
-
-    private List<String> getAllDistinctFeatures() {
-        return new ArrayList<>();
     }
 
     private void insertAllApplicationsStatistics(final Workbook workbook) {
@@ -143,14 +135,10 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         });
     }
 
-    private List<String> getAllApplicationIdentifiers() {
-        logger.info("Obtaining all application identifiers");
-        return new ArrayList<>();
-    }
 
     private void insertTotalApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
         logger.info("Obtaining #total_features for {}", applicationIdentifier);
-        Sheet totalApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + " Total Features");
+        Sheet totalApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + " TF");
         generateTotalApplicationFeaturesHeader(workbook, totalApplicationFeaturesSheet);
         Map<String, Integer> totalApplicationFeatures = getTotalApplicationFeatures(applicationIdentifier);
         insertFeaturesAndOcurrencesInSheet(totalApplicationFeaturesSheet, totalApplicationFeatures);
@@ -158,17 +146,16 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertTotalDocumentTypeFeatures(final Workbook workbook, final String documentType) {
         logger.info("Obtaining #total_features for {}", documentType);
-        Sheet totalDocumentTypeFeaturesSheet = workbook.createSheet(documentType + " Total Features");
+        Sheet totalDocumentTypeFeaturesSheet = workbook.createSheet(documentType + " TF");
         generateTotalApplicationFeaturesHeader(workbook, totalDocumentTypeFeaturesSheet);
-        Map<String, Integer> totalApplicationFeatures = getTotalApplicationFeatures(documentType);
-        insertFeaturesAndOcurrencesInSheet(totalDocumentTypeFeaturesSheet, totalApplicationFeatures);
+        Map<String, Integer> totalDocumentTypeFeatures = getTotalDocumentTypeFeatures(documentType);
+        insertFeaturesAndOcurrencesInSheet(totalDocumentTypeFeaturesSheet, totalDocumentTypeFeatures);
     }
 
-
     private void insertFeaturesAndOcurrencesInSheet(Sheet totalApplicationFeaturesSheet,
-                                                    Map<String, Integer> totalApplicationFeatures) {
+                                                    Map<String, Integer> featuresAndOccurrences) {
         Integer rowIndex = 1;
-        for (Map.Entry<String, Integer> feature : totalApplicationFeatures.entrySet()) {
+        for (Map.Entry<String, Integer> feature : featuresAndOccurrences.entrySet()) {
             String featureName = feature.getKey();
             Integer featureOccurrences = feature.getValue();
             ArrayList<String> featureData = new ArrayList<>();
@@ -192,7 +179,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertDistinctApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
         logger.info("Obtaining #distinct_features for {}", applicationIdentifier);
-        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + "Distinct Features");
+        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + " DF");
         generateDistinctFeaturesHeader(workbook, distinctApplicationFeaturesSheet);
         List<String> distinctApplicationFeatures = getAllDistinctApplicationFeatures(applicationIdentifier);
         Integer rowIndex = 1;
@@ -206,7 +193,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertDistinctDocumentTypeFeatures(final Workbook workbook, final String documentType) {
         logger.info("Obtaining #distinct_features for {}", documentType);
-        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(documentType + "Distinct Features");
+        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(documentType + "DF");
         generateDistinctFeaturesHeader(workbook, distinctApplicationFeaturesSheet);
         List<String> distinctApplicationFeatures = getAllDistinctDocumentTypeFeatures(documentType);
         Integer rowIndex = 1;
@@ -241,25 +228,49 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         });
     }
 
-    private List<String> getAllDistinctApplicationFeatures(String appIdentifier) {
-        return new ArrayList<>();
-    }
 
-    private Map<String, Integer> getTotalApplicationFeatures(String appIdentifier) {
-        return new HashMap<>();
-    }
 
-    private Map<String, Integer> getTotalDocumentTypeFeatures(String documentType) {
-        return new HashMap<>();
-    }
-
-    private List<String> getAllDistinctDocumentTypeFeatures(String appIdentifier) {
-        return new ArrayList<>();
-    }
     private List<String> getAllDocumentTypes() {
         logger.info("Obtaining all document types");
-        logger.info("Obtained the following document types");
-        return new ArrayList<>();
+        // TODO this should be done via repository (enum should not exist i believe)
+        return Arrays
+                .stream(DocumentType.values())
+                .map(DocumentType::getName)
+                .toList();
+    }
+    private List<String> getAllApplicationIdentifiers() {
+        logger.info("Obtaining all application identifiers");
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findAllIdentifiers();
     }
 
+    private Map<String, Integer> getTotalFeatures() {
+        return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllWithOccurrences();
+    }
+
+    private List<String> getAllDistinctFeatures() {
+        return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllDistinct();
+    }
+
+    private List<String> getAllDistinctApplicationFeatures(final String appIdentifier) {
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
+                .findAllDistinctMobileApplicationFeatures(appIdentifier);
+    }
+
+    private Map<String, Integer> getTotalApplicationFeatures(final String appIdentifier) {
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
+                .findAllMobileApplicationFeaturesWithOccurrences(appIdentifier);
+    }
+
+    private Map<String, Integer> getTotalDocumentTypeFeatures(final String documentType) {
+        return ((DocumentRepository) useRepository(DocumentRepository.class))
+                .findAllDocumentTypeFeaturesWithOccurrences(documentType);
+    }
+
+    private List<String> getAllDistinctDocumentTypeFeatures(final String documentType) {
+        return ((DocumentRepository) useRepository(DocumentRepository.class))
+                .findAllDistinctDocumentTypeFeatures(documentType);
+    }
+    private Object useRepository(Class<?> clazz) {
+        return repositoryFactory.createRepository(clazz);
+    }
 }

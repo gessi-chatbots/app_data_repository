@@ -20,15 +20,10 @@ import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFound
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.ReviewRepository;
-import upc.edu.gessi.repo.util.MobileApplicationsQueryBuilder;
-import upc.edu.gessi.repo.util.ReviewQueryBuilder;
-import upc.edu.gessi.repo.util.SchemaIRI;
-import upc.edu.gessi.repo.util.Utils;
+import upc.edu.gessi.repo.util.*;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Repository
 public class MobileApplicationRepositoryImpl implements MobileApplicationRepository {
@@ -214,6 +209,75 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
     }
 
     @Override
+    public Map<String, Integer> findAllMobileApplicationFeaturesWithOccurrences(final String applicationIdentifier) {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
+                .findAllFeaturesWithOccurrencesAppNameQuery(applicationIdentifier));
+        Map<String, Integer> featureOcurrencesDict = new HashMap<>();
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if(bindings.getBinding("feature") != null
+                    && bindings.getBinding("feature").getValue() != null
+                    && bindings.getBinding("count") != null
+                    && bindings.getBinding("count").getValue() != null) {
+                featureOcurrencesDict.put(
+                        bindings.getBinding("feature").getValue().stringValue(),
+                        Integer.valueOf(bindings.getBinding("count").getValue().stringValue())
+                );
+            }
+        }
+        return featureOcurrencesDict;
+    }
+
+    @Override
+    public List<String> findAllDistinctMobileApplicationFeatures(final String applicationIdentifier) {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
+                .findAllDistinctFeaturesByAppNameQuery(applicationIdentifier));
+        List<String> featuresList = new ArrayList<>();
+        while (result.hasNext()) {
+            BindingSet bindings = result.next();
+            if(bindings.getBinding("feature") != null
+                    && bindings.getBinding("feature").getValue() != null) {
+                featuresList.add(
+                        bindings.getBinding("feature").getValue().stringValue());
+            }
+        }
+        return featuresList;
+    }
+
+    @Override
+    public List<String> findAllIdentifiers() {
+        TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder
+                .findAllMobileAppIdentifiersQuery());
+        List<String> appIdentifiers = new ArrayList<>();
+        while(result.hasNext()) {
+            BindingSet bindings = result.next();
+            if(bindings.getBinding("appIdentifier") != null
+                    && bindings.getBinding("appIdentifier").getValue() != null) {
+                appIdentifiers
+                        .add(
+                                extractLastIdentifierSegment(
+                                        ExcelUtils.cleanInputForExcel(
+                                                bindings
+                                                        .getBinding("appIdentifier")
+                                                        .getValue()
+                                                        .toString()
+                                ))
+                        );
+            }
+        }
+        return appIdentifiers;
+    }
+    private String extractLastIdentifierSegment(final String identifier) {
+        if (identifier == null) return null;
+        String[] parts = identifier.split("\\.");
+        if (parts.length < 2) {
+            return identifier;
+        }
+        String lastTwoSegments = parts[parts.length - 2] + "." + parts[parts.length - 1];
+        return lastTwoSegments;
+    }
+
+    @Override
     public MobileApplicationFullDataDTO findById(final String appName) throws MobileApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findByNameQuery(appName));
         if (!result.hasNext()) {
@@ -273,7 +337,9 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
                 DocumentType.REVIEWS);
     }
 
-    private void addChangelogToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addChangelogToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                          List<Statement> statements,
+                                          IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getChangelog() != null) {
             addDigitalDocument(
                     mobileApplicationFullDataDTO.getPackageName(),
@@ -286,7 +352,9 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         }
     }
 
-    private void addSummaryToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addSummaryToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                        List<Statement> statements,
+                                        IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getSummary() != null) {
             addDigitalDocument(
                     mobileApplicationFullDataDTO.getPackageName(),
@@ -299,7 +367,9 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         }
     }
 
-    private void addDescriptionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addDescriptionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                            List<Statement> statements,
+                                            IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getDescription() != null) {
             addDigitalDocument(
                     mobileApplicationFullDataDTO.getPackageName(),
@@ -312,20 +382,39 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         }
     }
 
-    private void addPackageNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addPackageNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                            List<Statement> statements,
+                                            IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getPackageName() != null) {
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getPackageName())));
+            statements.add(
+                    factory.createStatement(
+                            applicationIRI,
+                            schemaIRI.getIdentifierIRI(),
+                            factory.createLiteral(mobileApplicationFullDataDTO.getPackageName()
+                            )
+                    )
+            );
         }
     }
 
-    private void addAppNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addAppNameToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                        List<Statement> statements,
+                                        IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getAppName() != null) {
             String sanitizedName = Utils.sanitizeString(mobileApplicationFullDataDTO.getAppName());
-            statements.add(factory.createStatement(applicationIRI, schemaIRI.getNameIRI(), factory.createLiteral(sanitizedName)));
+            statements.add(
+                    factory.createStatement(
+                            applicationIRI,
+                            schemaIRI.getNameIRI(),
+                            factory.createLiteral(sanitizedName)
+                    )
+            );
         }
     }
 
-    private void addVersionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO, List<Statement> statements, IRI applicationIRI) {
+    private void addVersionToStatements(MobileApplicationFullDataDTO mobileApplicationFullDataDTO,
+                                        List<Statement> statements,
+                                        IRI applicationIRI) {
         if (mobileApplicationFullDataDTO.getVersion() != null) {
             statements.add(factory.createStatement(applicationIRI, schemaIRI.getSoftwareVersionIRI(), factory.createLiteral(mobileApplicationFullDataDTO.getVersion())));
         }

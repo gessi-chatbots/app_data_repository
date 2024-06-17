@@ -1,7 +1,5 @@
 package upc.edu.gessi.repo.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -29,10 +27,8 @@ import upc.edu.gessi.repo.util.FeatureQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Lazy
@@ -169,7 +165,7 @@ public class FeatureServiceImpl implements FeatureService {
     public void delete(String id) {
     }
     public List<IRI> getAllFeatures() {
-        String query = featureQueryBuilder.findAllFeaturesQuery();
+        String query = featureQueryBuilder.findAllDocumentFeaturesQuery();
         TupleQueryResult result = Utils.runSparqlSelectQuery(repository.getConnection(), query);
         List<IRI> features = new ArrayList<>();
         while (result.hasNext()) {

@@ -3,23 +3,19 @@ package upc.edu.gessi.repo.controller.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.InductiveKnowledgeAPI;
-import upc.edu.gessi.repo.dto.Document;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.SimilarityAlgorithm;
 import upc.edu.gessi.repo.dto.SimilarityApp;
 import upc.edu.gessi.repo.service.FeatureService;
-import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 import upc.edu.gessi.repo.service.ServiceFactory;
 import upc.edu.gessi.repo.service.SimilarityService;
 import upc.edu.gessi.repo.service.impl.GraphDBServiceImpl;
 import upc.edu.gessi.repo.service.impl.SimilarityServiceImpl;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -50,37 +46,36 @@ public class InductiveKnowledgeController implements InductiveKnowledgeAPI {
     }
 
     @Override
-    public int derivedNLFeatures(final DocumentType documentType,
-                                 final Integer batchSize,
-                                 final Integer from,
-                                 final String featureModel) {
+    public ResponseEntity<String> derivedNLFeatures(final DocumentType documentType,
+                                                    final Integer batchSize,
+                                                    final Integer from,
+                                                    final String featureModel) {
         logger.info("Generating derived deductive knowledge from natural language documents");
-        logger.info("Document type: " + documentType);
-        if (documentType.equals(DocumentType.REVIEWS)) {
-            logger.info("Deducting features from reviews...");
-            try {
-                return ((FeatureService) useService(FeatureService.class)).extractFeaturesFromReviews(batchSize, from, featureModel);
-            } catch (Exception e) {
-                return dbConnection.getCount();
-            }
-        } else if (!documentType.equals(DocumentType.ALL)) {
+        if (documentType.equals(DocumentType.ALL)
+                || documentType.equals(DocumentType.DESCRIPTION)) {
             logger.info("Deducting features from " + documentType.getName());
-            ((FeatureService) useService(FeatureService.class)).extractFeaturesByDocument(documentType, batchSize);
-        } else {
-            logger.info("Deducting features from descriptions...");
             ((FeatureService) useService(FeatureService.class)).extractFeaturesByDocument(DocumentType.DESCRIPTION, batchSize);
-
+        }
+        if (documentType.equals(DocumentType.ALL)
+                || documentType.equals(DocumentType.CHANGELOG)) {
             logger.info("Deducting features from changelogs...");
             ((FeatureService) useService(FeatureService.class)).extractFeaturesByDocument(DocumentType.CHANGELOG, batchSize);
-
+        }
+        if (documentType.equals(DocumentType.ALL)
+                || documentType.equals(DocumentType.SUMMARY)) {
             logger.info("Deducting features from summaries...");
             ((FeatureService) useService(FeatureService.class)).extractFeaturesByDocument(DocumentType.SUMMARY, batchSize);
-
-
-            logger.info("Deducting features from reviews...");
-            //dbConnection.extractFeaturesFromReviews();
         }
-        return -1;
+        if (documentType.equals(DocumentType.ALL)
+                || documentType.equals(DocumentType.REVIEWS)) {
+            logger.info("Deducting features from reviews...");
+            try {
+                ((FeatureService) useService(FeatureService.class)).extractFeaturesFromReviews(batchSize, from, featureModel);
+            } catch (Exception e) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
