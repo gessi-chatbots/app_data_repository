@@ -9,6 +9,6 @@ RUN mvn package spring-boot:repackage
 
 EXPOSE 3003
 
-ENV SPRING_PROFILES_ACTIVE=docker-windows
+ENV SPRING_PROFILES_ACTIVE=gessi
 
 ENTRYPOINT ["java", "-jar", "./target/repo-0.0.1-SNAPSHOT.jar"]

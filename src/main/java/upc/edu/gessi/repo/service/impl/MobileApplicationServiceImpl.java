@@ -170,6 +170,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         for (ReviewDTO review : extractedReviews) {
             org.apache.jena.rdf.model.Resource reviewResource = model.createResource("https://schema.org/Review/" + review.getId())
                     .addProperty(RDF.type, SchemaDO.Review)
+                    .addProperty(SchemaDO.identifier, review.getId())
                     .addProperty(SchemaDO.author, review.getAuthor())
                     .addProperty(SchemaDO.datePublished, review.getDate().toString())
                     .addProperty(SchemaDO.reviewBody, review.getReviewText());
