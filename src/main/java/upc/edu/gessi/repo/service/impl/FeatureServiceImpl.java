@@ -87,7 +87,7 @@ public class FeatureServiceImpl implements FeatureService {
         String predicate1 = "https://schema.org/" + predicateQueue;
         String predicate2 = "https://schema.org/text";
         String query = "SELECT ?subject ?object ?text WHERE { ?subject <" + predicate1 + "> ?object . ?object <"+ predicate2 +"> ?text}";
-        executeFeatureQuery(repository.getConnection(), query, batchSize, 0);
+        executeFeatureQuery(repository.getConnection(), query, false, batchSize, 0);
     }
 
     @Override
@@ -286,12 +286,12 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     private void runFeatureExtractionBatch(List<AnalyzedDocumentDTO> analyzedDocumentDTOS, List<IRI> source, int count, IRI appIRI) {
-        List<AnalyzedDocumentDTO> features = nlFeatureServiceImpl.getNLFeatures(analyzedDocumentDTOS);
+        List<AnalyzedDocumentDTO> analyzedDocuments = nlFeatureServiceImpl.getNLFeatures(analyzedDocumentDTOS);
         List<Statement> statements = new ArrayList<>();
 
-        for (int i = 0; i < features.size(); ++i) {
+        for (int i = 0; i < analyzedDocuments.size(); ++i) {
             MobileApplicationFullDataDTO completeApplicationDataDTO = new MobileApplicationFullDataDTO();
-            List<String> featureString = features.get(i).getFeatures();
+            List<String> featureString = analyzedDocuments.get(i).getFeatures();
             List<Feature> featureList = new ArrayList<>();
             for (String fs : featureString) {
                 featureList.add(new Feature(appIRI.toString(), fs));
@@ -308,7 +308,7 @@ public class FeatureServiceImpl implements FeatureService {
                                 source.get(i),
                                 statements);
             } catch (Exception e) {
-                logger.error("There was some problem inserting features for app " + appIRI.toString() + ". Please try again later.");
+                logger.error("There was some problem inserting analyzedDocuments for app " + appIRI.toString() + ". Please try again later.");
             }
         }
         commitChanges(statements);
@@ -348,7 +348,7 @@ public class FeatureServiceImpl implements FeatureService {
        return 0;
     }
 
-    private int executeFeatureQuery(RepositoryConnection repoConnection, String query, int batchSize, int from) {
+    private int executeFeatureQuery(RepositoryConnection repoConnection, String query,  boolean batched, Integer batchSize, Integer from) {
         Integer count;
         TupleQueryResult result = Utils.runSparqlSelectQuery(repoConnection, query);
 
@@ -377,11 +377,13 @@ public class FeatureServiceImpl implements FeatureService {
 
                     source.add(documentIRI);
 
-                    if (count % batchSize == 0) {
+                    if (batched && (count % batchSize == 0)) {
                         runFeatureExtractionBatch(analyzedDocumentDTOS, source, count, appIRI);
 
                         analyzedDocumentDTOS = new ArrayList<>();
                         source = new ArrayList<>();
+                    } else {
+                        runFeatureExtractionBatch(analyzedDocumentDTOS, source, count, appIRI);
                     }
                 } catch (Exception e) {
                     return count;
@@ -392,8 +394,9 @@ public class FeatureServiceImpl implements FeatureService {
         }
 
         // Run last batch
-        if (count % batchSize != 1)
+        if (batched && (count % batchSize != 1)) {
             runFeatureExtractionBatch(analyzedDocumentDTOS, source, count, schemaIRI.getAppIRI());
+        }
 
         return -1;
 

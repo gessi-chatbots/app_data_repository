@@ -19,5 +19,6 @@ public class SentenceDTO implements Serializable {
     private String id;
     private SentimentDTO sentimentData;
     private FeatureDTO featureData;
+    private String text;
 
 }
