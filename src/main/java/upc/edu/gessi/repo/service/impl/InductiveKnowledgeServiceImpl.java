@@ -149,7 +149,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertTotalDocumentTypeFeatures(final Workbook workbook, final String documentType) {
         logger.info("Obtaining #total_features for {}", documentType);
-        Sheet totalDocumentTypeFeaturesSheet = workbook.createSheet(documentType + " TF");
+        Sheet totalDocumentTypeFeaturesSheet = workbook.createSheet("DP. " + documentType + " TF");
         generateTotalApplicationFeaturesHeader(workbook, totalDocumentTypeFeaturesSheet);
         Map<String, Integer> totalDocumentTypeFeatures = getTotalDocumentTypeFeatures(documentType);
         insertFeaturesAndOcurrencesInSheet(totalDocumentTypeFeaturesSheet, totalDocumentTypeFeatures);
@@ -197,7 +197,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertDistinctDocumentTypeFeatures(final Workbook workbook, final String documentType) {
         logger.info("Obtaining #distinct_features for {}", documentType);
-        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(documentType + " DF");
+        Sheet distinctApplicationFeaturesSheet = workbook.createSheet("DP." + documentType + " DF");
         generateDistinctFeaturesHeader(workbook, distinctApplicationFeaturesSheet);
         List<String> distinctApplicationFeatures = getAllDistinctDocumentTypeFeatures(documentType);
         Integer rowIndex = 1;
@@ -236,11 +236,9 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private List<String> getAllDocumentTypes() {
         logger.info("Obtaining all document types");
-        // TODO this should be done via repository (enum should not exist i believe)
         return Arrays.asList(
                 DocumentType.DESCRIPTION.getName(),
                 DocumentType.SUMMARY.getName(),
-                DocumentType.DESCRIPTION.getName(),
                 DocumentType.CHANGELOG.getName());
     }
     private List<String> getAllApplicationIdentifiers() {
