@@ -197,7 +197,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertDistinctDocumentTypeFeatures(final Workbook workbook, final String documentType) {
         logger.info("Obtaining #distinct_features for {}", documentType);
-        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(documentType + "DF");
+        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(documentType + " DF");
         generateDistinctFeaturesHeader(workbook, distinctApplicationFeaturesSheet);
         List<String> distinctApplicationFeatures = getAllDistinctDocumentTypeFeatures(documentType);
         Integer rowIndex = 1;
