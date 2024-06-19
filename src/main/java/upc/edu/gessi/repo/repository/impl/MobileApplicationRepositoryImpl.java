@@ -292,17 +292,6 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
         return mobileApplicationBasicDataDTOS;
     }
-
-    private String extractLastIdentifierSegment(final String identifier) {
-        if (identifier == null) return null;
-        String[] parts = identifier.split("\\.");
-        if (parts.length < 2) {
-            return identifier;
-        }
-        String lastTwoSegments = parts[parts.length - 2] + "." + parts[parts.length - 1];
-        return lastTwoSegments;
-    }
-
     @Override
     public MobileApplicationFullDataDTO findById(final String appName) throws MobileApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findByNameQuery(appName));

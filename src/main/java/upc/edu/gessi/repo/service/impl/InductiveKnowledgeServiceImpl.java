@@ -97,7 +97,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertTotalFeatures(Workbook workbook) {
         logger.info("Obtaining #total_features");
-        Sheet totalFeaturesSheet = createWorkbookSheet(workbook, "TF");
+        Sheet totalFeaturesSheet = createWorkbookSheet(workbook, "Total Ft.");
         generateTotalFeaturesHeader(workbook, totalFeaturesSheet);
         Map<String, Integer> totalFeatures = getTotalFeatures();
         insertFeaturesAndOcurrencesInSheet(totalFeaturesSheet, totalFeatures);
@@ -105,7 +105,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertDistinctFeatures(final Workbook workbook) {
         logger.info("Obtaining #distinct_features");
-        Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "DF");
+        Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Ft.");
         generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);
         List<String> distinctFeatures = getAllDistinctFeatures();
         Integer rowIndex = 1;
@@ -237,10 +237,11 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private List<String> getAllDocumentTypes() {
         logger.info("Obtaining all document types");
         // TODO this should be done via repository (enum should not exist i believe)
-        return Arrays
-                .stream(DocumentType.values())
-                .map(DocumentType::getName)
-                .toList();
+        return Arrays.asList(
+                DocumentType.DESCRIPTION.getName(),
+                DocumentType.SUMMARY.getName(),
+                DocumentType.DESCRIPTION.getName(),
+                DocumentType.CHANGELOG.getName());
     }
     private List<String> getAllApplicationIdentifiers() {
         logger.info("Obtaining all application identifiers");

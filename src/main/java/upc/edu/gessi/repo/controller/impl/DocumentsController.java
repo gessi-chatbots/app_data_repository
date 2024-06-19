@@ -33,7 +33,7 @@ public class DocumentsController implements DocumentsAPI {
     }
 
     @Override
-    public ResponseEntity<List<String>> getAllPaginated(Integer page, Integer size) throws NoObjectFoundException {
+    public ResponseEntity<List<String>> getAllPaginated(final Integer page, final Integer size) throws NoObjectFoundException {
         return null;
     }
 

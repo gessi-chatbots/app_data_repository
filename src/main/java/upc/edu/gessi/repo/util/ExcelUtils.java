@@ -17,7 +17,7 @@ public class ExcelUtils {
     }
     public static CellStyle generateTitleCellStyle(final Workbook workbook) {
         CellStyle headerStyle = workbook.createCellStyle();
-        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_ORANGE.getIndex());
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         return headerStyle;
     }
@@ -38,7 +38,10 @@ public class ExcelUtils {
         }
     }
 
-    public static void insertHeaderRowInSheet(Sheet sheet, CellStyle headerCellStyle, XSSFFont titleFont, final List<String> titles) {
+    public static void insertHeaderRowInSheet(final Sheet sheet,
+                                              final CellStyle headerCellStyle,
+                                              final XSSFFont titleFont,
+                                              final List<String> titles) {
         Row row = sheet.createRow(0);
         headerCellStyle.setFont(titleFont);
         for (String title : titles) {
@@ -50,8 +53,8 @@ public class ExcelUtils {
 
     public static Sheet createWorkbookSheet(final Workbook workbook, final String sheetTitle) {
         Sheet sheet = workbook.createSheet(sheetTitle);
-        sheet.setColumnWidth(0, 6000);
-        sheet.setColumnWidth(1, 6000);
+        sheet.setColumnWidth(0, 10000);
+        sheet.setColumnWidth(1, 10000);
         return sheet;
     }
 
