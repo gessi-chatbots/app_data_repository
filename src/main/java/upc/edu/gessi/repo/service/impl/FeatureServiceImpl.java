@@ -91,7 +91,9 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public int extractFeaturesFromReviews(int batchSize, int from, String featureModel) {
+    public Integer extractFeaturesFromReviews(final Integer batchSize,
+                                              final Integer from,
+                                              final String featureModel) {
         List<ReviewDTO> reviewDTOList = new ArrayList<>();
         if (batchSize == 0 && from == 0) {
             int reviewCount = reviewServiceImpl.getReviewCount();
