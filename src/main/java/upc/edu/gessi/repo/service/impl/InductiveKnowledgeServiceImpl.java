@@ -18,6 +18,8 @@ import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
 import upc.edu.gessi.repo.repository.*;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
+import upc.edu.gessi.repo.util.ExcelUtils;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -138,7 +140,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertTotalApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
         logger.info("Obtaining #total_features for {}", applicationIdentifier);
-        Sheet totalApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + " TF");
+        Sheet totalApplicationFeaturesSheet = workbook.createSheet(
+                ExcelUtils.extractLastIdentifierSegment(applicationIdentifier) + " TF");
         generateTotalApplicationFeaturesHeader(workbook, totalApplicationFeaturesSheet);
         Map<String, Integer> totalApplicationFeatures = getTotalApplicationFeatures(applicationIdentifier);
         insertFeaturesAndOcurrencesInSheet(totalApplicationFeaturesSheet, totalApplicationFeatures);
@@ -179,7 +182,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertDistinctApplicationFeatures(final Workbook workbook, final String applicationIdentifier) {
         logger.info("Obtaining #distinct_features for {}", applicationIdentifier);
-        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(applicationIdentifier + " DF");
+        Sheet distinctApplicationFeaturesSheet = workbook.createSheet(
+                ExcelUtils.extractLastIdentifierSegment(applicationIdentifier) + " DF");
         generateDistinctFeaturesHeader(workbook, distinctApplicationFeaturesSheet);
         List<String> distinctApplicationFeatures = getAllDistinctApplicationFeatures(applicationIdentifier);
         Integer rowIndex = 1;

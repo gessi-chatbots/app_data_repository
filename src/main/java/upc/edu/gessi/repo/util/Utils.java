@@ -50,6 +50,8 @@ public class Utils {
         // Convert Instant to java.util.Date
         return Date.from(instant);
     }
+
+
     public static String sanitizeString(String name) {
         String sanitizedName = name.replace(" ","_");
         sanitizedName = sanitizedName.replace("|","");

@@ -66,4 +66,14 @@ public class ExcelUtils {
         if (input == null) return null;
         return input.replaceAll("[\"',\n\r\t]", "");
     }
+
+    public static String extractLastIdentifierSegment(final String identifier) {
+        if (identifier == null) return null;
+        String[] parts = identifier.split("\\.");
+        if (parts.length < 2) {
+            return identifier;
+        }
+        String lastTwoSegments = parts[parts.length - 2] + "." + parts[parts.length - 1];
+        return lastTwoSegments;
+    }
 }

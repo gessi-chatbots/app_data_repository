@@ -254,16 +254,8 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
             BindingSet bindings = result.next();
             if(bindings.getBinding("appIdentifier") != null
                     && bindings.getBinding("appIdentifier").getValue() != null) {
-                appIdentifiers
-                        .add(
-                                extractLastIdentifierSegment(
-                                        ExcelUtils.cleanInputForExcel(
-                                                bindings
-                                                        .getBinding("appIdentifier")
-                                                        .getValue()
-                                                        .toString()
-                                ))
-                        );
+                String identifier = bindings.getBinding("appIdentifier").getValue().stringValue();
+                appIdentifiers.add(identifier);
             }
         }
         return appIdentifiers;
