@@ -96,13 +96,13 @@ public class FeatureRepositoryImpl implements FeatureRepository {
         Map<String, Integer> featureOcurrencesDict = new HashMap<>();
         while (result.hasNext()) {
             BindingSet bindings = result.next();
-            if(bindings.getBinding("feature") != null
-                    && bindings.getBinding("feature").getValue() != null
-                    && bindings.getBinding("count") != null
-                    && bindings.getBinding("count").getValue() != null) {
+            if(bindings.getBinding("identifier") != null
+                    && bindings.getBinding("identifier").getValue() != null
+                    && bindings.getBinding("totalOccurrences") != null
+                    && bindings.getBinding("totalOccurrences").getValue() != null) {
                 featureOcurrencesDict.put(
-                        bindings.getBinding("feature").getValue().stringValue(),
-                        Integer.valueOf(bindings.getBinding("count").getValue().stringValue())
+                        bindings.getBinding("identifier").getValue().stringValue(),
+                        Integer.valueOf(bindings.getBinding("totalOccurrences").getValue().stringValue())
                 );
             }
         }

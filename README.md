@@ -40,12 +40,26 @@ To deploy the service in a Docker container, run the following commands from pro
 ```docker run -d -p {port#}:{port#} {image-name}```
 
 
-## How to deploy
+## How to deploy (old)
 1. 
     `docker build -t knowledge_graph_repository:latest .`
 2. 
     `docker run -d --name KG_Repository -p 3003:3003 knowledge_graph_repository:latest`
 
+## How to deploy (new)
+
+### Step 1: Pull image
+`docker pull mtiessler/kg_repository:latest`
+### Step 2: Build image
+`docker build -t mtiessler/kg_repository:latest .`
+### Step 3: Create kg_repository.env file
+Here go the credentials to access the SPARQL Database. 
+The .env file has to be in the directory where the commands are being run. 
+
+```
+DB_USERNAME=username
+DB_PASSWORD=password 
+```
 ## Features
 
 The API of the App Data Repository is available here: http://localhost:8080/swagger-ui/. Below we provide a brief summarization of the main functionalities integrated in the last version of this service.

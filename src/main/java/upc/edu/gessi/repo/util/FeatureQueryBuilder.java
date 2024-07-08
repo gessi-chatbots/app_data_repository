@@ -18,14 +18,34 @@ public class FeatureQueryBuilder
 
     public String findAllFeaturesWithOccurrencesQuery() {
         StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?feature (COUNT(?feature) AS ?count)\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?identifier (SUM(?occurrences) AS ?totalOccurrences)\n");
         queryBuilder.append("WHERE {\n");
-        queryBuilder.append("  ?keyword rdf:type schema:DefinedTerm;\n");
-        queryBuilder.append("           schema:identifier ?feature .\n");
+        queryBuilder.append("  {\n");
+        queryBuilder.append("    SELECT ?identifierDigitalDocument (COUNT(?identifierDigitalDocument) AS ?occurrences)\n");
+        queryBuilder.append("    WHERE {\n");
+        queryBuilder.append("      ?digitalDocument rdf:type schema:DigitalDocument ;\n");
+        queryBuilder.append("                       schema:keywords ?keywords .\n");
+        queryBuilder.append("      ?keywords rdf:type schema:DefinedTerm ;\n");
+        queryBuilder.append("                schema:identifier ?identifierDigitalDocument .\n");
+        queryBuilder.append("    }\n");
+        queryBuilder.append("    GROUP BY ?identifierDigitalDocument\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  UNION\n");
+        queryBuilder.append("  {\n");
+        queryBuilder.append("    SELECT ?identifierReview (COUNT(?identifierReview) AS ?occurrences)\n");
+        queryBuilder.append("    WHERE {\n");
+        queryBuilder.append("      ?review rdf:type schema:Review;\n");
+        queryBuilder.append("              schema:keywords ?definedReviewTerm.\n");
+        queryBuilder.append("      ?definedReviewTerm rdf:type schema:DefinedTerm;\n");
+        queryBuilder.append("                         schema:identifier ?identifierReview .\n");
+        queryBuilder.append("    }\n");
+        queryBuilder.append("    GROUP BY ?identifierReview\n");
+        queryBuilder.append("  }\n");
         queryBuilder.append("}\n");
-        queryBuilder.append("GROUP BY ?feature\n");
+        queryBuilder.append("GROUP BY (COALESCE(?identifierDigitalDocument, ?identifierReview) AS ?identifier)\n");
+        queryBuilder.append("ORDER BY DESC(?totalOccurrences)\n");
         return queryBuilder.toString();
     }
 

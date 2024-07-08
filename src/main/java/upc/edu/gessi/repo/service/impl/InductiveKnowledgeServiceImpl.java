@@ -91,7 +91,13 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertAllApplicationsStatistics(workbook);
         logger.info("Step 5: Inserting all proprietary documents statistics in KG");
         insertAllDocumentTypesStatistics(workbook);
-        logger.info("Step 6: Generating File in Byte[] format");
+        logger.info("Step 6: Inserting 50 most mentioned terms");
+        // TODO
+        logger.info("Step 7: Inserting 50 most mentioned verbs");
+        // TODO
+        logger.info("Step 8: Inserting 50 most mentioned nouns");
+        // TODO
+        logger.info("Step 9: Generating File in Byte[] format");
         return createByteArrayFromWorkbook(workbook);
     }
 
