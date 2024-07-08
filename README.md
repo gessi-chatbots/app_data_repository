@@ -124,3 +124,48 @@ WHERE {
 ORDER BY DESC(?datePublished)
 LIMIT 100000
 ```
+
+### Feature Occurrences
+```
+PREFIX schema: <https://schema.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?identifier (SUM(?occurrences) AS ?totalOccurrences)
+WHERE {
+  {
+    SELECT ?identifierDigitalDocument (COUNT(?identifierDigitalDocument) AS ?occurrences)
+    WHERE {
+      ?digitalDocument rdf:type schema:DigitalDocument ;
+                       schema:keywords ?keywords .
+      ?keywords rdf:type schema:DefinedTerm ;
+                schema:identifier ?identifierDigitalDocument .
+    }
+    GROUP BY ?identifierDigitalDocument
+  }
+  UNION
+  {
+    SELECT ?identifierReview (COUNT(?identifierReview) AS ?occurrences)
+    WHERE {
+      ?review rdf:type schema:Review;
+              schema:keywords ?definedReviewTerm.
+      ?definedReviewTerm rdf:type schema:DefinedTerm;
+                         schema:identifier ?identifierReview .
+    }
+    GROUP BY ?identifierReview
+  }
+}
+GROUP BY (COALESCE(?identifierDigitalDocument, ?identifierReview) AS ?identifier)
+ORDER BY DESC(?totalOccurrences)
+
+```
+### Clean unrefenced reviews
+```
+PREFIX schema: <https://schema.org/>
+DELETE {
+    ?mobileApp schema:review ?emptyReview .
+}
+WHERE {
+    ?mobileApp schema:review ?emptyReview .
+    FILTER NOT EXISTS { ?emptyReview ?p ?o }
+}
+```
