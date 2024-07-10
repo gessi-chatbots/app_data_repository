@@ -33,11 +33,8 @@ for text in text_list:
 
 verb_freq = Counter(all_verbs)
 
-# Get the 50 most common verbs with their frequencies
 top_50_verbs = verb_freq.most_common(50)
 
-# Prepare the output list with verb and frequency
 top_50_verbs_list = [{'verb': verb, 'frequency': freq} for verb, freq in top_50_verbs]
 
-# Print the top 50 verbs as a JSON array with frequencies
 print(json.dumps(top_50_verbs_list))
