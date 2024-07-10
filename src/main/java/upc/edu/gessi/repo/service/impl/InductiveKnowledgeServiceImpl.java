@@ -7,8 +7,15 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xddf.usermodel.chart.*;
+import org.apache.poi.xssf.usermodel.XSSFChart;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.eclipse.rdf4j.query.algebra.Str;
 import org.json.JSONArray;
+import org.odftoolkit.simple.chart.Chart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,6 +180,34 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
             rowIndex++;
         }
 
+        XSSFSheet sheet = (XSSFSheet) top50NounsSheet;
+        XSSFDrawing drawing = sheet.createDrawingPatriarch();
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 20);
+
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText("Top 50 Nouns Frequencies");
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.BOTTOM);
+
+        XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        bottomAxis.setTitle("Nouns");
+
+        XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+        leftAxis.setTitle("Frequency");
+
+        XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(sheet,
+                new CellRangeAddress(1, top50Nouns.size(), 0, 0));
+        XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
+                new CellRangeAddress(1, top50Nouns.size(), 1, 1));
+
+        XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
+        ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
+
+        XDDFChartData.Series series = data.addSeries(categories, values);
+        series.setTitle("Frequency", null);
+
+        chart.plot(data);
+
     }
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
@@ -187,6 +222,34 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
             insertRowInSheet(top50VerbsSheet, verbData, rowIndex);
             rowIndex++;
         }
+
+        XSSFSheet sheet = (XSSFSheet) top50VerbsSheet;
+        XSSFDrawing drawing = sheet.createDrawingPatriarch();
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 20);
+
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText("Top 50 Verbs Frequencies");
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.BOTTOM);
+
+        XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        bottomAxis.setTitle("Verbs");
+
+        XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+        leftAxis.setTitle("Frequency");
+
+        XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(sheet,
+                new CellRangeAddress(1, top50Verbs.size(), 0, 0));
+        XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
+                new CellRangeAddress(1, top50Verbs.size(), 1, 1));
+
+        XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
+        ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
+
+        XDDFChartData.Series series = data.addSeries(categories, values);
+        series.setTitle("Verb distribution", null);
+
+        chart.plot(data);
     }
 
 
