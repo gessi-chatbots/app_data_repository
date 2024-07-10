@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.poi.ss.usermodel.*;
+import org.eclipse.rdf4j.query.algebra.Str;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.DocumentType;
+import upc.edu.gessi.repo.dto.TermDTO;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
 import upc.edu.gessi.repo.repository.*;
@@ -34,6 +36,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
 
     private List<String> distinctFeatures = new ArrayList<>();
+
+
 
     @Autowired
     public InductiveKnowledgeServiceImpl(final RepositoryFactory repoFact) {
@@ -116,7 +120,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertSummary(final Workbook workbook) {
     }
-    private List<String> executePythonScript(final String scriptPath) {
+    private List<TermDTO> executePythonScript(final String scriptPath) {
         try {
             ClassPathResource resource = new ClassPathResource(scriptPath);
             String absoluteScriptPath = resource.getFile().getAbsolutePath();
@@ -141,11 +145,13 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
                 ObjectMapper mapper = new ObjectMapper();
-                // TODO Generify result data type (it should be generic)
-                List<String> result = mapper.readValue(output.toString(), List.class);
-                return result;
+                List<TermDTO> termDTOList = mapper
+                        .readValue(
+                                output.toString(),
+                                mapper.getTypeFactory().constructCollectionType(List.class, TermDTO.class));
+                return termDTOList;
             } else {
-                System.err.println("Python script exited with code: " + exitCode);
+                logger.error("Python script exited with code: " + exitCode);
                 return new ArrayList<>();
             }
 
@@ -156,11 +162,13 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
     public void insert50TopNouns(final Workbook workbook) {
         Sheet top50NounsSheet = createWorkbookSheet(workbook, "Top 50 Nouns");
-        List<String> top50Nouns = executePythonScript("scripts/top50Nouns.py");
+        generateTop50NounsHeader(workbook, top50NounsSheet);
+        List<TermDTO> top50Nouns = executePythonScript("scripts/top50Nouns.py");
         Integer rowIndex = 1;
-        for (String noun : top50Nouns) {
+        for (TermDTO noun : top50Nouns) {
             ArrayList<String> nounData = new ArrayList<>();
-            nounData.add(noun);
+            nounData.add(noun.getTerm());
+            nounData.add(String.valueOf(noun.getFrequency()));
             insertRowInSheet(top50NounsSheet, nounData, rowIndex);
             rowIndex++;
         }
@@ -168,13 +176,15 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
-        List<String> top50Verbs = executePythonScript("scripts/top50Verbs.py");
+        generateTop50VerbsHeader(workbook, top50VerbsSheet);
+        List<TermDTO> top50Verbs = executePythonScript("scripts/top50Verbs.py");
         Integer rowIndex = 1;
         // TODO extract method
-        for (String noun : top50Verbs) {
-            ArrayList<String> nounData = new ArrayList<>();
-            nounData.add(noun);
-            insertRowInSheet(top50VerbsSheet, nounData, rowIndex);
+        for (TermDTO verb : top50Verbs) {
+            ArrayList<String> verbData = new ArrayList<>();
+            verbData.add(verb.getTerm());
+            verbData.add(String.valueOf(verb.getFrequency()));
+            insertRowInSheet(top50VerbsSheet, verbData, rowIndex);
             rowIndex++;
         }
     }
@@ -212,6 +222,26 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 generateTitleArial16Font(workbook),
                 totalFeaturesTitles);
     }
+
+    private void generateTop50NounsHeader(Workbook workbook, Sheet totalFeaturesSheet) {
+        List<String> totalFeaturesTitles = new ArrayList<>();
+        totalFeaturesTitles.add("Noun");
+        totalFeaturesTitles.add("Occurrences");
+        insertHeaderRowInSheet(totalFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                totalFeaturesTitles);
+    }
+    private void generateTop50VerbsHeader(Workbook workbook, Sheet totalFeaturesSheet) {
+        List<String> totalFeaturesTitles = new ArrayList<>();
+        totalFeaturesTitles.add("Verb");
+        totalFeaturesTitles.add("Occurrences");
+        insertHeaderRowInSheet(totalFeaturesSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                totalFeaturesTitles);
+    }
+
 
     private void insertAllApplicationsStatistics(final Workbook workbook) {
         List<String> applicationIdentifiers = getAllApplicationIdentifiers();

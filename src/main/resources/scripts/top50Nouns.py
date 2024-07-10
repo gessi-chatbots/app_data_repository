@@ -3,7 +3,6 @@ import json
 from collections import Counter
 import nltk
 
-# Ensure required NLTK resources are available
 try:
     nltk.data.find('tokenizers/punkt')
     nltk.data.find('taggers/averaged_perceptron_tagger')
@@ -39,6 +38,6 @@ noun_freq = Counter(all_nouns)
 
 top_50_nouns = noun_freq.most_common(50)
 
-top_50_nouns_list = [{'noun': noun, 'frequency': freq} for noun, freq in top_50_nouns]
+top_50_nouns_list = [{'term': noun, 'frequency': freq} for noun, freq in top_50_nouns]
 
 print(json.dumps(top_50_nouns_list))

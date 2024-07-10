@@ -3,7 +3,6 @@ import json
 from collections import Counter
 import nltk
 
-# Ensure required NLTK resources are available
 try:
     nltk.data.find('tokenizers/punkt')
     nltk.data.find('taggers/averaged_perceptron_tagger')
@@ -35,6 +34,6 @@ verb_freq = Counter(all_verbs)
 
 top_50_verbs = verb_freq.most_common(50)
 
-top_50_verbs_list = [{'verb': verb, 'frequency': freq} for verb, freq in top_50_verbs]
+top_50_verbs_list = [{'term': verb, 'frequency': freq} for verb, freq in top_50_verbs]
 
 print(json.dumps(top_50_verbs_list))
