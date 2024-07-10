@@ -83,15 +83,17 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     public byte[] generateAnalyticalExcel() throws IOException {
         logger.info("Step 1: Generating Analytical Excel");
         Workbook workbook = generateExcelSheet();
-        logger.info("Step 2: Inserting all features found in KG");
+        logger.info("Step 2: Inserting summary");
+        // TODO
+        logger.info("Step 3: Inserting all features found in KG");
         insertTotalFeatures(workbook);
-        logger.info("Step 3: Inserting all distinct features found in KG");
+        logger.info("Step 4: Inserting all distinct features found in KG");
         insertDistinctFeatures(workbook);
-        logger.info("Step 4: Inserting all applications statistics in KG");
+        logger.info("Step 5: Inserting all applications statistics in KG");
         insertAllApplicationsStatistics(workbook);
-        logger.info("Step 5: Inserting all proprietary documents statistics in KG");
+        logger.info("Step 6: Inserting all proprietary documents statistics in KG");
         insertAllDocumentTypesStatistics(workbook);
-        logger.info("Step 6: Inserting 50 most mentioned terms");
+        logger.info("Step 7: Inserting 50 most mentioned terms");
         // TODO
         logger.info("Step 7: Inserting 50 most mentioned verbs");
         // TODO
