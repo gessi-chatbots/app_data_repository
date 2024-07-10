@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
@@ -20,8 +22,7 @@ import upc.edu.gessi.repo.repository.*;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
 import upc.edu.gessi.repo.util.ExcelUtils;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.*;
 
 import static upc.edu.gessi.repo.util.ExcelUtils.*;
@@ -31,6 +32,8 @@ import static upc.edu.gessi.repo.util.ExcelUtils.*;
 public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService {
     private final RepositoryFactory repositoryFactory;
     private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
+
+    private List<String> distinctFeatures = new ArrayList<>();
 
     @Autowired
     public InductiveKnowledgeServiceImpl(final RepositoryFactory repoFact) {
@@ -84,7 +87,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Step 1: Generating Analytical Excel");
         Workbook workbook = generateExcelSheet();
         logger.info("Step 2: Inserting summary");
-        // TODO
+        insertSummary(workbook);
         logger.info("Step 3: Inserting all features found in KG");
         insertTotalFeatures(workbook);
         logger.info("Step 4: Inserting all distinct features found in KG");
@@ -93,15 +96,90 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertAllApplicationsStatistics(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
         insertAllDocumentTypesStatistics(workbook);
-        logger.info("Step 7: Inserting 50 most mentioned terms");
-        // TODO
         logger.info("Step 7: Inserting 50 most mentioned verbs");
-        // TODO
-        logger.info("Step 8: Inserting 50 most mentioned nouns");
-        // TODO
-        logger.info("Step 9: Generating File in Byte[] format");
+        insert50TopVerbs(workbook);
+        logger.info("Step 8: Inserting histogram for 50 most mentioned verbs");
+        insert50TopVerbsHistogram(workbook);
+        logger.info("Step 9: Inserting 50 most mentioned nouns");
+        insert50TopNouns(workbook);
+        logger.info("Step 10: Inserting histogram for 50 most mentioned nouns");
+        insert50TopNounsHistogram(workbook);
+        logger.info("Step 11: Generating File in Byte[] format");
         return createByteArrayFromWorkbook(workbook);
     }
+
+    private void insert50TopNounsHistogram(Workbook workbook) {
+    }
+
+    private void insert50TopVerbsHistogram(final Workbook workbook) {
+    }
+
+    private void insertSummary(final Workbook workbook) {
+    }
+    private List<String> executePythonScript(final String scriptPath) {
+        try {
+            ClassPathResource resource = new ClassPathResource(scriptPath);
+            String absoluteScriptPath = resource.getFile().getAbsolutePath();
+
+            ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
+
+            Process process = processBuilder.start();
+
+            try (OutputStream os = process.getOutputStream()) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.writeValue(os, distinctFeatures);
+                os.flush();
+            }
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line);
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                ObjectMapper mapper = new ObjectMapper();
+                // TODO Generify result data type (it should be generic)
+                List<String> result = mapper.readValue(output.toString(), List.class);
+                return result;
+            } else {
+                System.err.println("Python script exited with code: " + exitCode);
+                return new ArrayList<>();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    public void insert50TopNouns(final Workbook workbook) {
+        Sheet top50NounsSheet = createWorkbookSheet(workbook, "Top 50 Nouns");
+        List<String> top50Nouns = executePythonScript("scripts/top50Nouns.py");
+        Integer rowIndex = 1;
+        for (String noun : top50Nouns) {
+            ArrayList<String> nounData = new ArrayList<>();
+            nounData.add(noun);
+            insertRowInSheet(top50NounsSheet, nounData, rowIndex);
+            rowIndex++;
+        }
+
+    }
+    private void insert50TopVerbs(final Workbook workbook) {
+        Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
+        List<String> top50Verbs = executePythonScript("scripts/top50Verbs.py");
+        Integer rowIndex = 1;
+        // TODO extract method
+        for (String noun : top50Verbs) {
+            ArrayList<String> nounData = new ArrayList<>();
+            nounData.add(noun);
+            insertRowInSheet(top50VerbsSheet, nounData, rowIndex);
+            rowIndex++;
+        }
+    }
+
+
 
     private void insertTotalFeatures(Workbook workbook) {
         logger.info("Obtaining #total_features");
@@ -115,7 +193,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Obtaining #distinct_features");
         Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Ft.");
         generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);
-        List<String> distinctFeatures = getAllDistinctFeatures();
+        distinctFeatures = getAllDistinctFeatures();
         Integer rowIndex = 1;
         for (String distinctFeature : distinctFeatures) {
             ArrayList<String> featureData = new ArrayList<>();
