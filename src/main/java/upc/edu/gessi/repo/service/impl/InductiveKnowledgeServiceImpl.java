@@ -13,15 +13,12 @@ import org.apache.poi.xssf.usermodel.XSSFChart;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.eclipse.rdf4j.query.algebra.Str;
 import org.json.JSONArray;
-import org.odftoolkit.simple.chart.Chart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.TermDTO;
@@ -158,6 +155,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
         XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(sheet,
                 new CellRangeAddress(1, top50Nouns.size(), 0, 0));
+
         XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
                 new CellRangeAddress(1, top50Nouns.size(), 1, 1));
 
@@ -168,7 +166,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         series.setTitle("Frequency", null);
 
         chart.plot(data);
-
     }
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");

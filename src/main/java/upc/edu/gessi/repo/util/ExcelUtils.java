@@ -29,12 +29,27 @@ public class ExcelUtils {
         font.setBold(true);
         return font;
     }
-
+    private static boolean isNumeric(String str) {
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
     public static void insertRowInSheet(Sheet sheet, final List<String> rowData, final Integer rowIndex) {
         Row row = sheet.createRow(rowIndex);
-        for (String data : rowData) {
-            Cell cell = row.createCell(rowData.indexOf(data));
-            cell.setCellValue(data);
+        for (int i = 0; i < rowData.size(); i++) {
+            String data = rowData.get(i);
+            Cell cell = row.createCell(i);
+            if (isNumeric(data)) {
+                cell.setCellValue(Double.parseDouble(data));
+            } else {
+                cell.setCellValue(data);
+            }
         }
     }
 
