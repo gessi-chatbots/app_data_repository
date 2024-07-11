@@ -125,12 +125,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private void insertHeatMap(Workbook workbook) {
     }
 
-    private void insert50TopNounsHistogram(Workbook workbook) {
-    }
-
-    private void insert50TopVerbsHistogram(final Workbook workbook) {
-    }
-
     private void insertSummary(final Workbook workbook) {
     }
 
