@@ -29,6 +29,7 @@ import upc.edu.gessi.repo.dto.graph.GraphEdge;
 import upc.edu.gessi.repo.dto.graph.GraphNode;
 import upc.edu.gessi.repo.repository.*;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
+import upc.edu.gessi.repo.service.ProcessService;
 import upc.edu.gessi.repo.util.ExcelUtils;
 
 import java.io.*;
@@ -40,15 +41,19 @@ import static upc.edu.gessi.repo.util.ExcelUtils.*;
 @Lazy
 public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService {
     private final RepositoryFactory repositoryFactory;
-    private Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(InductiveKnowledgeServiceImpl.class);
+
+    private final ProcessService processService;
 
     private List<String> distinctFeatures = new ArrayList<>();
 
 
 
     @Autowired
-    public InductiveKnowledgeServiceImpl(final RepositoryFactory repoFact) {
+    public InductiveKnowledgeServiceImpl(final RepositoryFactory repoFact,
+                                         final ProcessService processServ) {
         repositoryFactory = repoFact;
+        processService = processServ;
     }
 
     @Value("${inductive-knowledge-service.url}")
@@ -107,16 +112,17 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertAllApplicationsStatistics(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
         insertAllDocumentTypesStatistics(workbook);
-        logger.info("Step 7: Inserting 50 most mentioned verbs");
+        logger.info("Step 7: Inserting 50 most mentioned verbs & Histogram");
         insert50TopVerbs(workbook);
-        logger.info("Step 8: Inserting histogram for 50 most mentioned verbs");
-        insert50TopVerbsHistogram(workbook);
-        logger.info("Step 9: Inserting 50 most mentioned nouns");
+        logger.info("Step 8: Inserting 50 most mentioned nouns & Histogram");
         insert50TopNouns(workbook);
-        logger.info("Step 10: Inserting histogram for 50 most mentioned nouns");
-        insert50TopNounsHistogram(workbook);
-        logger.info("Step 11: Generating File in Byte[] format");
+        logger.info("Step 9: Inserting HeatMap");
+        insertHeatMap(workbook);
+        logger.info("Step 10: Generating File in Byte[] format");
         return createByteArrayFromWorkbook(workbook);
+    }
+
+    private void insertHeatMap(Workbook workbook) {
     }
 
     private void insert50TopNounsHistogram(Workbook workbook) {
@@ -127,50 +133,11 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertSummary(final Workbook workbook) {
     }
-    private List<TermDTO> executePythonScript(final String scriptPath) {
-        try {
-            ClassPathResource resource = new ClassPathResource(scriptPath);
-            String absoluteScriptPath = resource.getFile().getAbsolutePath();
 
-            ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
-
-            Process process = processBuilder.start();
-
-            try (OutputStream os = process.getOutputStream()) {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.writeValue(os, distinctFeatures);
-                os.flush();
-            }
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder output = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line);
-            }
-
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                ObjectMapper mapper = new ObjectMapper();
-                List<TermDTO> termDTOList = mapper
-                        .readValue(
-                                output.toString(),
-                                mapper.getTypeFactory().constructCollectionType(List.class, TermDTO.class));
-                return termDTOList;
-            } else {
-                logger.error("Python script exited with code: " + exitCode);
-                return new ArrayList<>();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
     public void insert50TopNouns(final Workbook workbook) {
         Sheet top50NounsSheet = createWorkbookSheet(workbook, "Top 50 Nouns");
         generateTop50NounsHeader(workbook, top50NounsSheet);
-        List<TermDTO> top50Nouns = executePythonScript("scripts/top50Nouns.py");
+        List<TermDTO> top50Nouns = processService.executeTop50PythonScript("scripts/top50Nouns.py", distinctFeatures);
         Integer rowIndex = 1;
         for (TermDTO noun : top50Nouns) {
             ArrayList<String> nounData = new ArrayList<>();
@@ -212,7 +179,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
         generateTop50VerbsHeader(workbook, top50VerbsSheet);
-        List<TermDTO> top50Verbs = executePythonScript("scripts/top50Verbs.py");
+        List<TermDTO> top50Verbs = processService.executeTop50PythonScript("scripts/top50Verbs.py", distinctFeatures);
         Integer rowIndex = 1;
         // TODO extract method
         for (TermDTO verb : top50Verbs) {
