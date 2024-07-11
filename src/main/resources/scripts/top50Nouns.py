@@ -1,5 +1,6 @@
 import sys
 import json
+import re
 from collections import Counter
 import nltk
 
@@ -9,20 +10,34 @@ try:
 except LookupError:
     import subprocess
     import sys
+
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'nltk'])
     import nltk
+
     nltk.download('punkt')
     nltk.download('averaged_perceptron_tagger')
 
+
 def clean_text(text):
-    cleaned_text = ''.join(c if c.isalnum() else ' ' for c in text)
+    cleaned_text = ''.join(c if c.isalnum() or c.isspace() else ' ' for c in text)
     return cleaned_text
 
-def extract_nouns_from_text(text):
-    words = nltk.word_tokenize(clean_text(text))
+def camel_case_split(identifier):
+    return re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))', identifier)
+
+
+def extract_nouns_from_text(inp):
+    cleaned_text = clean_text(inp)
+
+    words = []
+    for word in nltk.word_tokenize(cleaned_text):
+        words.extend(camel_case_split(word))
+
     tagged_words = nltk.pos_tag(words)
-    nouns = [word for word, pos in tagged_words if pos.startswith('NN')]
-    return nouns
+    n = [word for word, pos in tagged_words if pos.startswith('NN')]
+
+    return n
+
 
 input_text = sys.stdin.read()
 
