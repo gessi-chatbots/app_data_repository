@@ -13,6 +13,7 @@ import org.apache.poi.xssf.usermodel.XSSFChart;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.eclipse.rdf4j.query.algebra.Str;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,9 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private final ProcessService processService;
 
     private List<String> distinctFeatures = new ArrayList<>();
+
+    private List<TermDTO> top50Nouns = new ArrayList<>();
+    private List<TermDTO> top50Verbs = new ArrayList<>();
 
 
 
@@ -120,15 +124,86 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
     private void insertHeatMap(Workbook workbook) {
+        Sheet heatMatrixSheet = createWorkbookSheet(workbook, "heatMatrix");
+        String heatMatrixContent = processService.executeHeatMapPythonScript(distinctFeatures, top50Verbs, top50Nouns);
+
+        if (heatMatrixContent != null) {
+            try (BufferedReader reader = new BufferedReader(new StringReader(heatMatrixContent))) {
+                String line;
+                int rowIndex = 0;
+
+                while ((line = reader.readLine()) != null) {
+                    String[] values = line.split(",");
+                    Row row = heatMatrixSheet.createRow(rowIndex++);
+                    for (int colIndex = 0; colIndex < values.length; colIndex++) {
+                        String valueStr = values[colIndex].trim();
+                        if (rowIndex == 1) {
+                            Cell headerCell = row.createCell(colIndex + 1);
+                            headerCell.setCellValue(valueStr);
+                        } else if (colIndex == 0) {
+                            Cell headerCell = row.createCell(0);
+                            headerCell.setCellValue(valueStr);
+                        } else {
+                            if (!valueStr.isEmpty()) {
+                                try {
+                                    double numericValue = Double.parseDouble(valueStr);
+                                    Cell cell = row.createCell(colIndex);
+                                    cell.setCellValue(numericValue);
+
+                                    SheetConditionalFormatting sheetCF = heatMatrixSheet.getSheetConditionalFormatting();
+                                    CellRangeAddress[] regions = {new CellRangeAddress(rowIndex - 1, rowIndex - 1, colIndex, colIndex)};
+                                    ConditionalFormattingRule rule = createConditionalFormattingRule(workbook, cell);
+                                    sheetCF.addConditionalFormatting(regions, rule);
+                                } catch (NumberFormatException e) {
+                                    logger.error("Error parsing numeric value: " + valueStr);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (IOException | NumberFormatException e) {
+                logger.error("Error processing HeatMatrix content: ", e.toString());
+                e.printStackTrace();
+            }
+        } else {
+            logger.error("No CSV content returned from Python script");
+        }
+    }
+    private ConditionalFormattingRule createConditionalFormattingRule(Workbook workbook, Cell cell) {
+        ConditionalFormattingRule rule = null;
+        SheetConditionalFormatting sheetCF = cell.getSheet().getSheetConditionalFormatting();
+
+        try {
+            rule = sheetCF.createConditionalFormattingRule(ComparisonOperator.BETWEEN, "0", "100");
+            PatternFormatting fill = rule.createPatternFormatting();
+            fill.setFillBackgroundColor(getColorBasedOnValue(cell.getNumericCellValue()));
+            fill.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+        } catch (Exception e) {
+            logger.error("Error creating conditional formatting rule: ", e.toString());
+            e.printStackTrace();
+        }
+
+        return rule;
     }
 
+    private short getColorBasedOnValue(double value) {
+        if (value < 25) {
+            return IndexedColors.LIGHT_GREEN.getIndex();
+        } else if (value < 50) {
+            return IndexedColors.LIGHT_YELLOW.getIndex();
+        } else if (value < 75) {
+            return IndexedColors.ORANGE.getIndex();
+        } else {
+            return IndexedColors.RED.getIndex();
+        }
+    }
     private void insertSummary(final Workbook workbook) {
     }
 
     public void insert50TopNouns(final Workbook workbook) {
         Sheet top50NounsSheet = createWorkbookSheet(workbook, "Top 50 Nouns");
         generateTop50NounsHeader(workbook, top50NounsSheet);
-        List<TermDTO> top50Nouns = processService.executeTop50PythonScript("scripts/top50Nouns.py", distinctFeatures);
+        top50Nouns = processService.executeTop50PythonScript("scripts/top50Nouns.py", distinctFeatures);
         Integer rowIndex = 1;
         for (TermDTO noun : top50Nouns) {
             ArrayList<String> nounData = new ArrayList<>();
@@ -170,8 +245,9 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
         generateTop50VerbsHeader(workbook, top50VerbsSheet);
-        List<TermDTO> top50Verbs = processService.executeTop50PythonScript("scripts/top50Verbs.py", distinctFeatures);
+        top50Verbs = processService.executeTop50PythonScript("scripts/top50Verbs.py", distinctFeatures);
         Integer rowIndex = 1;
+
         // TODO extract method
         for (TermDTO verb : top50Verbs) {
             ArrayList<String> verbData = new ArrayList<>();

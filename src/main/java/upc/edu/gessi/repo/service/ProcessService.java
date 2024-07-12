@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ProcessService {
     List<TermDTO> executeTop50PythonScript(final String scriptPath, final List<String> distinctFeatures);
+
+    String executeHeatMapPythonScript(final List<String> distinctFeatures, final List<TermDTO> verbs, final List<TermDTO> nouns);
 }

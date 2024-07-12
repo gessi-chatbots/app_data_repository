@@ -1,16 +1,13 @@
 import sys
 import json
-import pandas as pd
-
-
 
 try:
     import pandas as pd
 except ImportError:
     import subprocess
+
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pandas'])
     import pandas as pd
-
 
 input_json = sys.stdin.read()
 
@@ -29,4 +26,4 @@ for feature in distinct_features:
                 if verb.lower() in feature.lower():
                     heat_matrix.at[noun, verb] += 1
 
-heat_matrix.to_csv('/mnt/data/verb_noun_heat_matrix.csv')
+heat_matrix.to_csv('verb_noun_heat_matrix.csv')
