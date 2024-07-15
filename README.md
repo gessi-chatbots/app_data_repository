@@ -169,3 +169,26 @@ WHERE {
     FILTER NOT EXISTS { ?emptyReview ?p ?o }
 }
 ```
+
+### Count property document features
+```
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX schema: <https://schema.org/>
+
+SELECT ?appName ?summary ?description (COUNT(DISTINCT ?summaryFeatures) AS ?countSummaryFeatures) (COUNT(DISTINCT ?descriptionFeatures) AS ?countDescriptionFeatures)
+WHERE {
+  ?app rdf:type schema:MobileApplication;
+       schema:identifier ?appName;
+       schema:abstract ?summary;
+       schema:description ?description .
+       
+  OPTIONAL {
+    ?summary schema:keywords ?summaryFeatures .
+  }
+  OPTIONAL {
+    ?description schema:keywords ?descriptionFeatures .
+  }
+}
+GROUP BY ?appName ?summary ?description
+
+```
