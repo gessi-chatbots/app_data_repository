@@ -1,6 +1,5 @@
 package upc.edu.gessi.repo.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -13,7 +12,6 @@ import org.apache.poi.xssf.usermodel.XSSFChart;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.eclipse.rdf4j.query.algebra.Str;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import upc.edu.gessi.repo.dto.ApplicationPropDocStatisticDTO;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.TermDTO;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
@@ -110,7 +109,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         //logger.info("Step 4: Inserting all distinct features found in KG");
         //insertDistinctFeatures(workbook);
         logger.info("Step 5: Inserting all applications statistics in KG");
-        insertAllApplicationsStatistics(workbook);
+        insertAllApplicationsFeatures(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
         insertAllDocumentTypesStatistics(workbook);
         logger.info("Step 7: Inserting 50 most mentioned verbs & Histogram");
@@ -198,9 +197,25 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         }
     }
     private void insertSummary(final Workbook workbook) {
-        Sheet statisticsSheet = createWorkbookSheet(workbook, "Statistics");
-        generateStatisticsHeader(workbook, statisticsSheet);
+        Sheet summarySheet = createWorkbookSheet(workbook, "Summary");
+        generateSummaryHeader(workbook, summarySheet);
+        List<ApplicationPropDocStatisticDTO> appsStatistics = getAllApplicationsSummary();
+        Integer rowIndex = 1;
+        for (ApplicationPropDocStatisticDTO statisticDTO : appsStatistics) {
+            String appName = statisticDTO.getApplicationName();
+            String reviewFeatureCount = String.valueOf(statisticDTO.getReviewFeaturesCount());
+            String summaryFeatureCount = String.valueOf(statisticDTO.getSummaryFeaturesCount());
+            String descriptionFeatureCount = String.valueOf(statisticDTO.getDescriptionFeaturesCount());
 
+            ArrayList<String> appData = new ArrayList<>();
+            appData.add(appName);
+            appData.add(reviewFeatureCount);
+            appData.add(summaryFeatureCount);
+            appData.add(descriptionFeatureCount);
+            //TODO changelog data
+            insertRowInSheet(summarySheet, appData, rowIndex);
+            rowIndex++;
+        }
     }
 
     public void insert50TopNouns(final Workbook workbook) {
@@ -333,13 +348,13 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 totalFeaturesTitles);
     }
 
-    private void generateStatisticsHeader(final Workbook workbook, final Sheet statisticsSheet) {
+    private void generateSummaryHeader(final Workbook workbook, final Sheet statisticsSheet) {
         List<String> statisticsTitle = new ArrayList<>();
         statisticsTitle.add("Application Name");
+        statisticsTitle.add("# review features");
         statisticsTitle.add("# Summary features");
         statisticsTitle.add("# Description features");
         statisticsTitle.add("# Changelog features");
-
         insertHeaderRowInSheet(statisticsSheet,
                 generateTitleCellStyle(workbook),
                 generateTitleArial16Font(workbook),
@@ -357,7 +372,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
 
-    private void insertAllApplicationsStatistics(final Workbook workbook) {
+    private void insertAllApplicationsFeatures(final Workbook workbook) {
         List<String> applicationIdentifiers = getAllApplicationIdentifiers();
         applicationIdentifiers.forEach(applicationIdentifier -> {
             logger.info("Inserting all application {} features in KG", applicationIdentifier);
@@ -482,6 +497,10 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private List<String> getAllDistinctFeatures() {
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllDistinct();
+    }
+
+    private List<ApplicationPropDocStatisticDTO> getAllApplicationsSummary() {
+        return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllApplicationsStatistics();
     }
 
     private List<String> getAllDistinctApplicationFeatures(final String appIdentifier) {
