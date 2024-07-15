@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import upc.edu.gessi.repo.dto.ApplicationPropDocStatisticDTO;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.Feature;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
@@ -122,5 +123,43 @@ public class FeatureRepositoryImpl implements FeatureRepository {
             }
         }
         return featuresList;
+    }
+
+    @Override
+    public List<ApplicationPropDocStatisticDTO> findAllApplicationsStatistics() {
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppStatistics());
+        List<ApplicationPropDocStatisticDTO> applicationsStatistics = new ArrayList<>();
+        while (result.hasNext()) {
+            ApplicationPropDocStatisticDTO applicationPropDocStatisticDTO = new ApplicationPropDocStatisticDTO();
+            BindingSet bindings = result.next();
+
+            if(bindings.getBinding("appName") != null
+                    && bindings.getBinding("appName").getValue() != null) {
+                applicationPropDocStatisticDTO.setApplicationName(bindings.getBinding("appName").getValue().stringValue());
+            }
+
+            if(bindings.getBinding("countReviewFeatures") != null
+                    && bindings.getBinding("countReviewFeatures").getValue() != null) {
+                applicationPropDocStatisticDTO.setReviewFeaturesCount(
+                        Integer.valueOf(bindings.getBinding("countReviewFeatures").getValue().stringValue())
+                );
+            }
+
+            if(bindings.getBinding("countSummaryFeatures") != null
+                    && bindings.getBinding("countSummaryFeatures").getValue() != null) {
+                applicationPropDocStatisticDTO.setSummaryFeaturesCount(
+                        Integer.valueOf(bindings.getBinding("countSummaryFeatures").getValue().stringValue())
+                );
+            }
+
+            if(bindings.getBinding("countDescriptionFeatures") != null
+                    && bindings.getBinding("countDescriptionFeatures").getValue() != null) {
+                applicationPropDocStatisticDTO.setDescriptionFeaturesCount(
+                        Integer.valueOf(bindings.getBinding("countDescriptionFeatures").getValue().stringValue())
+                );
+            }
+            applicationsStatistics.add(applicationPropDocStatisticDTO);
+        }
+        return applicationsStatistics;
     }
 }
