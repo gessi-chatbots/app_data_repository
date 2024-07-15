@@ -62,6 +62,28 @@ public class FeatureQueryBuilder
     }
 
 
+    public String findAppFeaturesQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?appName ?summary ?description (COUNT(DISTINCT ?summaryFeatures) AS ?countSummaryFeatures) (COUNT(DISTINCT ?descriptionFeatures) AS ?countDescriptionFeatures)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:identifier ?appName;\n");
+        queryBuilder.append("       schema:abstract ?summary;\n");
+        queryBuilder.append("       schema:description ?description .\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?summary schema:keywords ?summaryFeatures .\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?description schema:keywords ?descriptionFeatures .\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?appName ?summary ?description\n");
+        return queryBuilder.toString();
+    }
+
+
 
 
 }

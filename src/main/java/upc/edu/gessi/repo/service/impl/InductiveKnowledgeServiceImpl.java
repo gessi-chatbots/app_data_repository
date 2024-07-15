@@ -107,8 +107,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertSummary(workbook);
         logger.info("Step 3: Inserting all features found in KG");
         insertTotalFeatures(workbook);
-        logger.info("Step 4: Inserting all distinct features found in KG");
-        insertDistinctFeatures(workbook);
+        //logger.info("Step 4: Inserting all distinct features found in KG");
+        //insertDistinctFeatures(workbook);
         logger.info("Step 5: Inserting all applications statistics in KG");
         insertAllApplicationsStatistics(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
@@ -198,6 +198,9 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         }
     }
     private void insertSummary(final Workbook workbook) {
+        Sheet statisticsSheet = createWorkbookSheet(workbook, "Statistics");
+        generateStatisticsHeader(workbook, statisticsSheet);
+
     }
 
     public void insert50TopNouns(final Workbook workbook) {
@@ -310,7 +313,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         }
     }
 
-    private void generateTotalFeaturesHeader(Workbook workbook, Sheet totalFeaturesSheet) {
+    private void generateTotalFeaturesHeader(final Workbook workbook, final Sheet totalFeaturesSheet) {
         List<String> totalFeaturesTitles = new ArrayList<>();
         totalFeaturesTitles.add("Feature Name");
         totalFeaturesTitles.add("Feature Occurrences");
@@ -320,7 +323,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 totalFeaturesTitles);
     }
 
-    private void generateTop50NounsHeader(Workbook workbook, Sheet totalFeaturesSheet) {
+    private void generateTop50NounsHeader(final Workbook workbook, final Sheet totalFeaturesSheet) {
         List<String> totalFeaturesTitles = new ArrayList<>();
         totalFeaturesTitles.add("Noun");
         totalFeaturesTitles.add("Occurrences");
@@ -329,7 +332,21 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 generateTitleArial16Font(workbook),
                 totalFeaturesTitles);
     }
-    private void generateTop50VerbsHeader(Workbook workbook, Sheet totalFeaturesSheet) {
+
+    private void generateStatisticsHeader(final Workbook workbook, final Sheet statisticsSheet) {
+        List<String> statisticsTitle = new ArrayList<>();
+        statisticsTitle.add("Application Name");
+        statisticsTitle.add("# Summary features");
+        statisticsTitle.add("# Description features");
+        statisticsTitle.add("# Changelog features");
+
+        insertHeaderRowInSheet(statisticsSheet,
+                generateTitleCellStyle(workbook),
+                generateTitleArial16Font(workbook),
+                statisticsTitle);
+    }
+
+    private void generateTop50VerbsHeader(final Workbook workbook, final Sheet totalFeaturesSheet) {
         List<String> totalFeaturesTitles = new ArrayList<>();
         totalFeaturesTitles.add("Verb");
         totalFeaturesTitles.add("Occurrences");
@@ -345,8 +362,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         applicationIdentifiers.forEach(applicationIdentifier -> {
             logger.info("Inserting all application {} features in KG", applicationIdentifier);
             insertTotalApplicationFeatures(workbook, applicationIdentifier);
-            logger.info("Inserting all application {} distinct features in KG", applicationIdentifier);
-            insertDistinctApplicationFeatures(workbook, applicationIdentifier);
+            //.info("Inserting all application {} distinct features in KG", applicationIdentifier);
+            //insertDistinctApplicationFeatures(workbook, applicationIdentifier);
         });
     }
 
