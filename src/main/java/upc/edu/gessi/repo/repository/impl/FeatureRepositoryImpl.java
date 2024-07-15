@@ -138,21 +138,21 @@ public class FeatureRepositoryImpl implements FeatureRepository {
                 applicationPropDocStatisticDTO.setApplicationName(bindings.getBinding("appName").getValue().stringValue());
             }
 
-            if(bindings.getBinding("countReviewFeatures ") != null
+            if(bindings.getBinding("countReviewFeatures") != null
                     && bindings.getBinding("countReviewFeatures").getValue() != null) {
                 applicationPropDocStatisticDTO.setReviewFeaturesCount(
                         Integer.valueOf(bindings.getBinding("countReviewFeatures").getValue().stringValue())
                 );
             }
 
-            if(bindings.getBinding("countSummaryFeatures ") != null
+            if(bindings.getBinding("countSummaryFeatures") != null
                     && bindings.getBinding("countSummaryFeatures").getValue() != null) {
                 applicationPropDocStatisticDTO.setSummaryFeaturesCount(
                         Integer.valueOf(bindings.getBinding("countSummaryFeatures").getValue().stringValue())
                 );
             }
 
-            if(bindings.getBinding("countDescriptionFeatures ") != null
+            if(bindings.getBinding("countDescriptionFeatures") != null
                     && bindings.getBinding("countDescriptionFeatures").getValue() != null) {
                 applicationPropDocStatisticDTO.setDescriptionFeaturesCount(
                         Integer.valueOf(bindings.getBinding("countDescriptionFeatures").getValue().stringValue())

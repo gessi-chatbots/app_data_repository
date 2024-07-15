@@ -106,8 +106,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertSummary(workbook);
         logger.info("Step 3: Inserting all features found in KG");
         insertTotalFeatures(workbook);
-        //logger.info("Step 4: Inserting all distinct features found in KG");
-        //insertDistinctFeatures(workbook);
+        logger.info("Step 4: Inserting all distinct features found in KG");
+        insertDistinctFeatures(workbook);
         logger.info("Step 5: Inserting all applications statistics in KG");
         insertAllApplicationsFeatures(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
@@ -316,9 +316,12 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertDistinctFeatures(final Workbook workbook) {
         logger.info("Obtaining #distinct_features");
+        // We use distinct features for obtaining all the syntax analysis
+        distinctFeatures = getAllDistinctFeatures();
+        // NOT INSERTING DUE TO RESULTING HEAVY EXCEL FILE
+        /*
         Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Ft.");
         generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);
-        distinctFeatures = getAllDistinctFeatures();
         Integer rowIndex = 1;
         for (String distinctFeature : distinctFeatures) {
             ArrayList<String> featureData = new ArrayList<>();
@@ -326,6 +329,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
             insertRowInSheet(distinctFeaturesSheet, featureData, rowIndex);
             rowIndex++;
         }
+        */
     }
 
     private void generateTotalFeaturesHeader(final Workbook workbook, final Sheet totalFeaturesSheet) {
@@ -472,8 +476,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         documentTypes.forEach(documentType -> {
             logger.info("Inserting all Document Type {} features in KG", documentType);
             insertTotalDocumentTypeFeatures(workbook, documentType);
-            logger.info("Inserting all Document Type {} distinct features in KG", documentType);
-            insertDistinctDocumentTypeFeatures(workbook, documentType);
+            // logger.info("Inserting all Document Type {} distinct features in KG", documentType);
+            // insertDistinctDocumentTypeFeatures(workbook, documentType);
         });
     }
 
