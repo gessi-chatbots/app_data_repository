@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import upc.edu.gessi.repo.dto.ApplicationPropDocStatisticDTO;
+import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.TermDTO;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
@@ -199,9 +199,9 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private void insertSummary(final Workbook workbook) {
         Sheet summarySheet = createWorkbookSheet(workbook, "Summary");
         generateSummaryHeader(workbook, summarySheet);
-        List<ApplicationPropDocStatisticDTO> appsStatistics = getAllApplicationsSummary();
+        List<ApplicationPropDocStatisticDAO> appsStatistics = getAllApplicationsSummary();
         Integer rowIndex = 1;
-        for (ApplicationPropDocStatisticDTO statisticDTO : appsStatistics) {
+        for (ApplicationPropDocStatisticDAO statisticDTO : appsStatistics) {
             String appName = statisticDTO.getApplicationName();
             String reviewFeatureCount = String.valueOf(statisticDTO.getReviewFeaturesCount());
             String summaryFeatureCount = String.valueOf(statisticDTO.getSummaryFeaturesCount());
@@ -503,7 +503,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllDistinct();
     }
 
-    private List<ApplicationPropDocStatisticDTO> getAllApplicationsSummary() {
+    private List<ApplicationPropDocStatisticDAO> getAllApplicationsSummary() {
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllApplicationsStatistics();
     }
 

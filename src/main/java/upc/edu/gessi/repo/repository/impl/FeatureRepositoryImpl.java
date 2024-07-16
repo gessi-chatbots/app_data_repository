@@ -1,10 +1,6 @@
 package upc.edu.gessi.repo.repository.impl;
 
-import org.apache.commons.text.WordUtils;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -13,25 +9,13 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import upc.edu.gessi.repo.dto.ApplicationPropDocStatisticDTO;
-import upc.edu.gessi.repo.dto.DocumentType;
-import upc.edu.gessi.repo.dto.Feature;
-import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
-import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
+import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewDTO;
-import upc.edu.gessi.repo.dto.SimilarityApp;
-import upc.edu.gessi.repo.dto.graph.GraphApp;
-import upc.edu.gessi.repo.exception.MobileApplications.MobileApplicationNotFoundException;
-import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.FeatureRepository;
-import upc.edu.gessi.repo.repository.MobileApplicationRepository;
-import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.util.*;
 
-import java.sql.Date;
 import java.util.*;
 
 @Repository
@@ -126,39 +110,39 @@ public class FeatureRepositoryImpl implements FeatureRepository {
     }
 
     @Override
-    public List<ApplicationPropDocStatisticDTO> findAllApplicationsStatistics() {
+    public List<ApplicationPropDocStatisticDAO> findAllApplicationsStatistics() {
         TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppStatistics());
-        List<ApplicationPropDocStatisticDTO> applicationsStatistics = new ArrayList<>();
+        List<ApplicationPropDocStatisticDAO> applicationsStatistics = new ArrayList<>();
         while (result.hasNext()) {
-            ApplicationPropDocStatisticDTO applicationPropDocStatisticDTO = new ApplicationPropDocStatisticDTO();
+            ApplicationPropDocStatisticDAO applicationPropDocStatisticDAO = new ApplicationPropDocStatisticDAO();
             BindingSet bindings = result.next();
 
             if(bindings.getBinding("appName") != null
                     && bindings.getBinding("appName").getValue() != null) {
-                applicationPropDocStatisticDTO.setApplicationName(bindings.getBinding("appName").getValue().stringValue());
+                applicationPropDocStatisticDAO.setApplicationName(bindings.getBinding("appName").getValue().stringValue());
             }
 
             if(bindings.getBinding("countReviewFeatures") != null
                     && bindings.getBinding("countReviewFeatures").getValue() != null) {
-                applicationPropDocStatisticDTO.setReviewFeaturesCount(
+                applicationPropDocStatisticDAO.setReviewFeaturesCount(
                         Integer.valueOf(bindings.getBinding("countReviewFeatures").getValue().stringValue())
                 );
             }
 
             if(bindings.getBinding("countSummaryFeatures") != null
                     && bindings.getBinding("countSummaryFeatures").getValue() != null) {
-                applicationPropDocStatisticDTO.setSummaryFeaturesCount(
+                applicationPropDocStatisticDAO.setSummaryFeaturesCount(
                         Integer.valueOf(bindings.getBinding("countSummaryFeatures").getValue().stringValue())
                 );
             }
 
             if(bindings.getBinding("countDescriptionFeatures") != null
                     && bindings.getBinding("countDescriptionFeatures").getValue() != null) {
-                applicationPropDocStatisticDTO.setDescriptionFeaturesCount(
+                applicationPropDocStatisticDAO.setDescriptionFeaturesCount(
                         Integer.valueOf(bindings.getBinding("countDescriptionFeatures").getValue().stringValue())
                 );
             }
-            applicationsStatistics.add(applicationPropDocStatisticDTO);
+            applicationsStatistics.add(applicationPropDocStatisticDAO);
         }
         return applicationsStatistics;
     }
