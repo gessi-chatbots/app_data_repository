@@ -11,9 +11,9 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import upc.edu.gessi.repo.dao.ApplicationDatesDAO;
 import upc.edu.gessi.repo.dto.*;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
-import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
@@ -24,6 +24,9 @@ import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.util.*;
 
 import java.sql.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Repository
@@ -292,6 +295,47 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
 
         return mobileApplicationBasicDataDTOS;
     }
+
+    @Override
+    public ApplicationDatesDAO getApplicationDates(final String appIdentifier) {
+        TupleQueryResult result = runSparqlQuery(
+                mobileApplicationsQueryBuilder
+                        .findMaxMinDatePublishedForApp(appIdentifier)
+        );
+        ApplicationDatesDAO applicationDatesDAO = new ApplicationDatesDAO();
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+        formatter.setTimeZone(TimeZone.getTimeZone("CET"));
+
+        while(result.hasNext()) {
+            BindingSet bindings = result.next();
+            if(bindings.getBinding("appIdentifier") != null
+                    && bindings.getBinding("appIdentifier").getValue() != null) {
+                applicationDatesDAO.setIdentifier(bindings.getBinding("appIdentifier").getValue().stringValue());
+            }
+            if(bindings.getBinding("datePublishedMax") != null
+                    && bindings.getBinding("datePublishedMax").getValue() != null) {
+                String dateTimeString = bindings.getBinding("datePublishedMax").getValue().stringValue();
+                try {
+                    java.util.Date dateFormat = formatter.parse(dateTimeString);
+                    applicationDatesDAO.setEndDate(dateFormat);
+                } catch (ParseException pe) {
+                    applicationDatesDAO.setEndDate(null);
+                }
+            }
+            if(bindings.getBinding("datePublishedMin") != null
+                    && bindings.getBinding("datePublishedMin").getValue() != null) {
+                String dateTimeString = bindings.getBinding("datePublishedMin").getValue().stringValue();
+                try {
+                    java.util.Date dateFormat = formatter.parse(dateTimeString);
+                    applicationDatesDAO.setStartDate(dateFormat);
+                } catch (ParseException pe) {
+                    applicationDatesDAO.setStartDate(null);
+                }
+            }
+        }
+        return applicationDatesDAO;
+    }
+
     @Override
     public MobileApplicationFullDataDTO findById(final String appName) throws MobileApplicationNotFoundException {
         TupleQueryResult result = runSparqlQuery(mobileApplicationsQueryBuilder.findByNameQuery(appName));

@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import upc.edu.gessi.repo.dao.ApplicationDatesDAO;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.TermDTO;
@@ -30,6 +31,7 @@ import upc.edu.gessi.repo.service.ProcessService;
 import upc.edu.gessi.repo.util.ExcelUtils;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static upc.edu.gessi.repo.util.ExcelUtils.*;
@@ -196,28 +198,61 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
             return IndexedColors.RED.getIndex();
         }
     }
+
     private void insertSummary(final Workbook workbook) {
         Sheet summarySheet = createWorkbookSheet(workbook, "Summary");
         generateSummaryHeader(workbook, summarySheet);
         List<ApplicationPropDocStatisticDAO> appsStatistics = getAllApplicationsSummary();
         Integer rowIndex = 1;
-        for (ApplicationPropDocStatisticDAO statisticDTO : appsStatistics) {
-            String appName = statisticDTO.getApplicationName();
-            String reviewFeatureCount = String.valueOf(statisticDTO.getReviewFeaturesCount());
-            String summaryFeatureCount = String.valueOf(statisticDTO.getSummaryFeaturesCount());
-            String descriptionFeatureCount = String.valueOf(statisticDTO.getDescriptionFeaturesCount());
 
+        // Define the date format for input and output
+        SimpleDateFormat inputDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+        SimpleDateFormat outputDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        for (ApplicationPropDocStatisticDAO statisticDTO : appsStatistics) {
             ArrayList<String> appData = new ArrayList<>();
-            appData.add(appName);
+
+            String appIdentifier = statisticDTO.getIdentifier();
+            appData.add(appIdentifier);
+
+            String reviewFeatureCount = String.valueOf(statisticDTO.getReviewFeaturesCount());
             appData.add(reviewFeatureCount);
+
+            String summaryFeatureCount = String.valueOf(statisticDTO.getSummaryFeaturesCount());
             appData.add(summaryFeatureCount);
+
+            String descriptionFeatureCount = String.valueOf(statisticDTO.getDescriptionFeaturesCount());
             appData.add(descriptionFeatureCount);
-            //TODO changelog data
+
+            //TODO fix bug
+            String changelogFeatureCount = "";
+            appData.add(changelogFeatureCount);
+
+            ApplicationDatesDAO applicationDatesDAO = getApplicationDates(appIdentifier);
+
+            String startDateFormatted = formatDate(applicationDatesDAO.getStartDate(), outputDateFormat);
+            appData.add(startDateFormatted);
+
+            String endDateFormatted = formatDate(applicationDatesDAO.getEndDate(), outputDateFormat);
+            appData.add(endDateFormatted);
+
             insertRowInSheet(summarySheet, appData, rowIndex);
             rowIndex++;
         }
     }
 
+
+    private String formatDate(Date date, SimpleDateFormat outputFormat) {
+        if (date == null) {
+            return "";
+        }
+        try {
+            return outputFormat.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
     public void insert50TopNouns(final Workbook workbook) {
         Sheet top50NounsSheet = createWorkbookSheet(workbook, "Top 50 Nouns");
         generateTop50NounsHeader(workbook, top50NounsSheet);
@@ -359,6 +394,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         statisticsTitle.add("# Summary features");
         statisticsTitle.add("# Description features");
         statisticsTitle.add("# Changelog features");
+        statisticsTitle.add("# Start date");
+        statisticsTitle.add("# End date");
         insertHeaderRowInSheet(statisticsSheet,
                 generateTitleCellStyle(workbook),
                 generateTitleArial16Font(workbook),
@@ -507,6 +544,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllApplicationsStatistics();
     }
 
+
     private List<String> getAllDistinctApplicationFeatures(final String appIdentifier) {
         return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
                 .findAllDistinctMobileApplicationFeatures(appIdentifier);
@@ -515,6 +553,10 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private Map<String, Integer> getTotalApplicationFeatures(final String appIdentifier) {
         return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
                 .findAllMobileApplicationFeaturesWithOccurrences(appIdentifier);
+    }
+    private ApplicationDatesDAO getApplicationDates(final String appIdentifier) {
+        return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class))
+                .getApplicationDates(appIdentifier);
     }
 
     private Map<String, Integer> getTotalDocumentTypeFeatures(final String documentType) {
