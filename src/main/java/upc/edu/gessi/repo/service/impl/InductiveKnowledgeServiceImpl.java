@@ -34,6 +34,7 @@ import upc.edu.gessi.repo.util.ExcelUtils;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static upc.edu.gessi.repo.util.ExcelUtils.*;
 
@@ -109,8 +110,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertSummary(workbook);
         logger.info("Step 3: Inserting all features found in KG");
         insertTotalFeatures(workbook);
-        logger.info("Step 4: Inserting all distinct features found in KG");
-        insertDistinctFeatures(workbook);
+        logger.info("Step 4: Obtaining all features along its context");
+        obtainFeaturesAndContext();
         logger.info("Step 5: Inserting all applications statistics in KG");
         insertAllApplicationsFeatures(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
@@ -127,8 +128,13 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertHeatMap(Workbook workbook) {
         Sheet heatMatrixSheet = createWorkbookSheet(workbook, "heatMatrix");
-        String heatMatrixContent = processService.executeHeatMapPythonScript(distinctFeatures, top50Verbs, top50Nouns);
-
+        String heatMatrixContent = processService.executeHeatMapPythonScript(
+                distinctFeatures
+                        .stream()
+                        .map(SentenceAndFeatureDAO::getFeature)
+                        .collect(Collectors.toList()),
+                top50Verbs,
+                top50Nouns);
         if (heatMatrixContent != null) {
             try (BufferedReader reader = new BufferedReader(new StringReader(heatMatrixContent))) {
                 String line;
@@ -348,11 +354,14 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertFeaturesAndOcurrencesInSheet(totalFeaturesSheet, totalFeatures);
     }
 
-    private void insertDistinctFeatures(final Workbook workbook) {
-        logger.info("Obtaining #distinct_features");
-        // We use distinct features for obtaining all the syntax analysis
+    private void obtainFeaturesAndContext() {
+        logger.info("Obtaining Summary features and context");
+        // TODO
         distinctFeatures = getAllDistinctFeatures();
-        // NOT INSERTING DUE TO RESULTING HEAVY EXCEL FILE
+        logger.info("Obtaining Description features and context");
+        // TODO
+        logger.info("Obtaining Review features and context");
+        // TODO
         /*
         Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Ft.");
         generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);

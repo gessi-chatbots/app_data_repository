@@ -8,5 +8,5 @@ import java.util.List;
 public interface ProcessService {
     List<TermDTO> executeTop50PythonScript(final String scriptPath, final List<SentenceAndFeatureDAO> distinctFeatures);
 
-    String executeHeatMapPythonScript(final List<SentenceAndFeatureDAO> distinctFeatures, final List<TermDTO> verbs, final List<TermDTO> nouns);
+    String executeHeatMapPythonScript(final List<String> distinctFeatures, final List<TermDTO> verbs, final List<TermDTO> nouns);
 }

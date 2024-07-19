@@ -72,7 +72,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public String executeHeatMapPythonScript(final List<SentenceAndFeatureDAO> distinctFeatures,
+    public String executeHeatMapPythonScript(final List<String> distinctFeatures,
                                            final List<TermDTO> verbs,
                                            final List<TermDTO> nouns) {
         try {

@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.dao;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SentenceAndFeatureDAO {
-    String sentence;
-    String feature;
+    @JsonProperty("sentence_text")
+    private String sentence;
+
+    @JsonProperty("feature_type")
+    private String feature;
 }
