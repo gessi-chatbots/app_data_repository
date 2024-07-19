@@ -205,8 +205,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         List<ApplicationPropDocStatisticDAO> appsStatistics = getAllApplicationsSummary();
         Integer rowIndex = 1;
 
-        // Define the date format for input and output
-        SimpleDateFormat inputDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
         SimpleDateFormat outputDateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
         for (ApplicationPropDocStatisticDAO statisticDTO : appsStatistics) {
