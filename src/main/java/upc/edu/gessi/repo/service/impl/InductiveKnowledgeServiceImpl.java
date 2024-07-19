@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dao.ApplicationDatesDAO;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.TermDTO;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
@@ -44,7 +45,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private final ProcessService processService;
 
-    private List<String> distinctFeatures = new ArrayList<>();
+    private List<SentenceAndFeatureDAO> distinctFeatures = new ArrayList<>();
 
     private List<TermDTO> top50Nouns = new ArrayList<>();
     private List<TermDTO> top50Verbs = new ArrayList<>();
@@ -534,7 +535,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllWithOccurrences();
     }
 
-    private List<String> getAllDistinctFeatures() {
+    private List<SentenceAndFeatureDAO> getAllDistinctFeatures() {
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllDistinct();
     }
 

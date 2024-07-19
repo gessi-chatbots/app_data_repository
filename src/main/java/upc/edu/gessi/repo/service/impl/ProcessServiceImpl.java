@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.TermDTO;
 import upc.edu.gessi.repo.service.ProcessService;
 
@@ -24,13 +25,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Lazy
-// TODO remove repeated code
 public class ProcessServiceImpl implements ProcessService {
     private final Logger logger = LoggerFactory.getLogger(ProcessServiceImpl.class);
 
 
     @Override
-    public List<TermDTO> executeTop50PythonScript(String scriptPath, List<String> distinctFeatures) {
+    public List<TermDTO> executeTop50PythonScript(String scriptPath, List<SentenceAndFeatureDAO> distinctFeatures) {
         try {
             ClassPathResource resource = new ClassPathResource(scriptPath);
             String absoluteScriptPath = resource.getFile().getAbsolutePath();
@@ -72,7 +72,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public String executeHeatMapPythonScript(final List<String> distinctFeatures,
+    public String executeHeatMapPythonScript(final List<SentenceAndFeatureDAO> distinctFeatures,
                                            final List<TermDTO> verbs,
                                            final List<TermDTO> nouns) {
         try {
@@ -84,10 +84,10 @@ public class ProcessServiceImpl implements ProcessService {
 
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode rootNode = mapper.createObjectNode();
-
+            /*
             rootNode.putArray("distinct_features").addAll(
                     distinctFeatures.stream().map(TextNode::new).collect(Collectors.toList())
-            );
+            );*/
 
             ObjectNode verbsNode = rootNode.putObject("verbs");
             for (TermDTO verb : verbs) {

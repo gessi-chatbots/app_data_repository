@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
@@ -95,15 +96,16 @@ public class FeatureRepositoryImpl implements FeatureRepository {
     }
 
     @Override
-    public List<String> findAllDistinct() {
+    public List<SentenceAndFeatureDAO> findAllDistinct() {
         TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAllDistinctFeaturesQuery());
-        List<String> featuresList = new ArrayList<>();
+        List<SentenceAndFeatureDAO> featuresList = new ArrayList<>();
         while (result.hasNext()) {
+            SentenceAndFeatureDAO sentenceAndFeatureDAO = new SentenceAndFeatureDAO();
             BindingSet bindings = result.next();
             if(bindings.getBinding("feature") != null
                     && bindings.getBinding("feature").getValue() != null) {
-                featuresList.add(
-                        bindings.getBinding("feature").getValue().stringValue());
+                sentenceAndFeatureDAO.setFeature((
+                        bindings.getBinding("feature").getValue().stringValue()));
             }
         }
         return featuresList;
