@@ -196,6 +196,24 @@ public class MobileApplicationsQueryBuilder
         return queryBuilder.toString();
     }
 
+    public String findMaxMinDatePublishedForApp(final String appIdentifier) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT ?appIdentifier (MAX(?datePublished) AS ?datePublishedMax) (MIN(?datePublished) AS ?datePublishedMin)\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?appIdentifier { \"").append(appIdentifier).append("\" }\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("       schema:identifier ?appIdentifier ;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review ;\n");
+        queryBuilder.append("          schema:datePublished ?datePublished .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?appIdentifier\n");
+        return queryBuilder.toString();
+    }
+
+
 
 
 

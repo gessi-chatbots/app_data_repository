@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -41,15 +44,41 @@ public class ExcelUtils {
         }
     }
     public static void insertRowInSheet(Sheet sheet, final List<String> rowData, final Integer rowIndex) {
+        Workbook workbook = sheet.getWorkbook();
         Row row = sheet.createRow(rowIndex);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        DataFormat dataFormat = workbook.createDataFormat();
+
+        CellStyle dateCellStyle = workbook.createCellStyle();
+        dateCellStyle.setDataFormat(dataFormat.getFormat("dd/MM/yyyy"));
+
         for (int i = 0; i < rowData.size(); i++) {
             String data = rowData.get(i);
             Cell cell = row.createCell(i);
-            if (isNumeric(data)) {
+
+            if (isDate(data, dateFormat)) {
+                try {
+                    Date date = dateFormat.parse(data);
+                    cell.setCellValue(date);
+                    cell.setCellStyle(dateCellStyle);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            } else if (isNumeric(data)) {
                 cell.setCellValue(Double.parseDouble(data));
             } else {
                 cell.setCellValue(data);
             }
+        }
+    }
+
+
+    private static boolean isDate(String data, SimpleDateFormat dateFormat) {
+        try {
+            dateFormat.parse(data);
+            return true;
+        } catch (ParseException e) {
+            return false;
         }
     }
 

@@ -2,6 +2,7 @@ package upc.edu.gessi.repo.repository;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
+import upc.edu.gessi.repo.dao.ApplicationDatesDAO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.dto.graph.GraphApp;
@@ -31,4 +32,6 @@ public interface MobileApplicationRepository extends RDFCRUDRepository<MobileApp
     List<String> findAllIdentifiers();
 
     List<MobileApplicationBasicDataDTO> findAllFromMarketSegment(String marketSegment);
+
+    ApplicationDatesDAO getApplicationDates(String appIdentifier);
 }

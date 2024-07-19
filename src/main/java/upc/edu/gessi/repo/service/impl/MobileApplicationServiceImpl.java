@@ -2,13 +2,11 @@ package upc.edu.gessi.repo.service.impl;
 
 
 
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.SchemaDO;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
+
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +25,10 @@ import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.service.AppDataScannerService;
 import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.service.ReviewService;
+import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
 
-import java.io.File;
-import java.io.FileWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -146,6 +144,9 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
         logger.info("Extracted {} applications from Market Segment {}", apps.size(), marketSegment);
 
         Integer reviewsToExtractPerApp = size/apps.size();
+        if (reviewsToExtractPerApp == 0) {
+            reviewsToExtractPerApp = size;
+        }
         logger.info("Proceeding to extract {} reviews per mobile application", reviewsToExtractPerApp);
 
         List<ReviewDTO> extractedReviews = new ArrayList<>();
@@ -165,30 +166,50 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
 
         logger.info("Proceeding to write in file...");
-        org.apache.jena.rdf.model.Model model
-                = org.apache.jena.rdf.model.ModelFactory.createDefaultModel();
+        ValueFactory valueFactory = SimpleValueFactory.getInstance();
+        Model model = new org.eclipse.rdf4j.model.impl.LinkedHashModel();
+        SchemaIRI schemaIRI = new SchemaIRI();
         for (ReviewDTO review : extractedReviews) {
-            org.apache.jena.rdf.model.Resource reviewResource = model.createResource("https://schema.org/Review/" + review.getId())
-                    .addProperty(RDF.type, SchemaDO.Review)
-                    .addProperty(SchemaDO.identifier, review.getId())
-                    .addProperty(SchemaDO.author, review.getAuthor())
-                    .addProperty(SchemaDO.datePublished, review.getDate().toString())
-                    .addProperty(SchemaDO.reviewBody, review.getReviewText());
+
+            String datePublishedStr = review.getDate().toInstant().toString();
+
+            IRI reviewResourceIRI = valueFactory.createIRI(schemaIRI.getReviewIRI() + "/" + review.getId());
+
+            Literal datePublishedLiteral = valueFactory.createLiteral(datePublishedStr, "http://www.w3.org/2001/XMLSchema#dateTime");
+            Literal identifierLiteral = valueFactory.createLiteral(review.getId());
+            Literal authorLiteral = valueFactory.createLiteral(review.getAuthor());
+            Literal reviewBodyLiteral = valueFactory.createLiteral(review.getReviewText());
+
+            model.add(reviewResourceIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewIRI());
+            model.add(reviewResourceIRI, schemaIRI.getIdentifierIRI(), identifierLiteral);
+            model.add(reviewResourceIRI, schemaIRI.getAuthorIRI(), authorLiteral);
+            model.add(reviewResourceIRI, schemaIRI.getDatePublishedIRI(), datePublishedLiteral);
+            model.add(reviewResourceIRI, schemaIRI.getReviewBodyIRI(), reviewBodyLiteral);
         }
+
 
         logger.info("Generating file...");
         String pathname = marketSegment + size + "ExtractedReviews.ttl";
         File ttlFile = new File("src/main/resources/static/ttl/" + pathname);
-        try (FileWriter out = new FileWriter(ttlFile)) {
-            model.write(out, "TURTLE");
-        } catch (Exception e) {
+
+        File parentDir = ttlFile.getParentFile();
+        if (!parentDir.exists() && !parentDir.mkdirs()) {
+            logger.error("Failed to create directory: " + parentDir.getAbsolutePath());
+            return null;
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(ttlFile)) {
+            Rio.write(model, fos, RDFFormat.TURTLE);
+            logger.info("File written successfully to " + ttlFile.getAbsolutePath());
+        } catch (IOException e) {
             logger.error("Error writing to TTL file", e);
+            return null; // Return null or handle as appropriate
         }
 
         byte[] fileContent = null;
         try {
             fileContent = Files.readAllBytes(ttlFile.toPath());
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error("Error reading TTL file into byte array", e);
         }
         logger.info("Done");
