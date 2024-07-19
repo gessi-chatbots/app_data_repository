@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SentenceAndFeatureDAO {
+    String sentence;
     String feature;
 }
