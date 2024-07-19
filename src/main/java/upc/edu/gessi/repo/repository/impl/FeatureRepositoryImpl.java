@@ -119,7 +119,7 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
             if(bindings.getBinding("appName") != null
                     && bindings.getBinding("appName").getValue() != null) {
-                applicationPropDocStatisticDAO.setApplicationName(bindings.getBinding("appName").getValue().stringValue());
+                applicationPropDocStatisticDAO.setIdentifier(bindings.getBinding("appName").getValue().stringValue());
             }
 
             if(bindings.getBinding("countReviewFeatures") != null
