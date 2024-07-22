@@ -90,6 +90,60 @@ public class FeatureQueryBuilder
         return queryBuilder.toString();
     }
 
+    public String findAppDescriptionsFeaturesWithContextQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?appIdentifier ?descriptionText ?featureIdentifier\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("       schema:identifier ?appIdentifier ;\n");
+        queryBuilder.append("       schema:description ?description .\n");
+        queryBuilder.append("  ?description rdf:type schema:DigitalDocument ;\n");
+        queryBuilder.append("               schema:text ?descriptionText ;\n");
+        queryBuilder.append("               schema:keywords ?feature .\n");
+        queryBuilder.append("  ?feature rdf:type schema:DefinedTerm ;\n");
+        queryBuilder.append("           schema:identifier ?featureIdentifier .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+    public String findAppSummariesFeaturesWithContextQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?appIdentifier ?summaryText ?featureIdentifier\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("       schema:identifier ?appIdentifier ;\n");
+        queryBuilder.append("       schema:abstract ?summary .\n");
+        queryBuilder.append("  ?summary rdf:type schema:DigitalDocument ;\n");
+        queryBuilder.append("               schema:text ?summaryText ;\n");
+        queryBuilder.append("               schema:keywords ?feature .\n");
+        queryBuilder.append("  ?feature rdf:type schema:DefinedTerm ;\n");
+        queryBuilder.append("           schema:identifier ?featureIdentifier .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+    public String findAppReviewsFeaturesWithContextQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("SELECT ?appIdentifier ?reviewText ?sentenceId ?featureIdentifier\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication ;\n");
+        queryBuilder.append("       schema:identifier ?appIdentifier ;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review ;\n");
+        queryBuilder.append("           schema:reviewBody ?reviewText ;\n");
+        queryBuilder.append("           schema:additionalProperty ?sentences .\n");
+        queryBuilder.append("  ?sentences rdf:type schema:Review ;\n");
+        queryBuilder.append("             schema:identifier ?sentenceId ;\n");
+        queryBuilder.append("             schema:keywords ?features .\n");
+        queryBuilder.append("  ?features rdf:type schema:DefinedTerm ;\n");
+        queryBuilder.append("            schema:identifier ?featureIdentifier .\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
 
 
 }
