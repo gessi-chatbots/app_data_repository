@@ -151,16 +151,31 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
     @Override
     public List<SentenceAndFeatureDAO> findAllDescriptionDistinctFeaturesWithSentence() {
+        // TODO step 1: extract with query Full text + feature
+
+        // TODO step 2: execute python script that extracts the sentence from the full text
+
+        // TODO step 3: save it in the DAO
         return null;
     }
 
     @Override
     public List<SentenceAndFeatureDAO> findAllSummaryDistinctFeaturesWithSentence() {
+        // TODO step 1: extract with query Full text + feature
+
+        // TODO step 2: execute python script that extracts the sentence from the full text
+
+        // TODO step 3: save it in the DAO
         return null;
     }
 
     @Override
     public List<SentenceAndFeatureDAO> findAllReviewDistinctFeaturesWithSentence() {
+        // TODO step 1: extract with query Full text + feature
+
+        // TODO step 2: execute python script that extracts the sentence (here at least we have the sentence ID) from the full text
+
+        // TODO step 3: save it in the DAO
         return null;
     }
 }
