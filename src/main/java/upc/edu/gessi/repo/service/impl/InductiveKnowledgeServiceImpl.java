@@ -357,12 +357,12 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void obtainFeaturesAndContext() {
         logger.info("Obtaining Summary features and context");
-        // TODO
-        distinctFeatures = getAllDistinctFeatures();
-        logger.info("Obtaining Description features and context");
-        // TODO
         logger.info("Obtaining Review features and context");
-        // TODO
+        logger.info("Obtaining Description features and context");
+
+        distinctFeatures = getAllDistinctFeatures();
+
+
         /*
         Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Ft.");
         generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);

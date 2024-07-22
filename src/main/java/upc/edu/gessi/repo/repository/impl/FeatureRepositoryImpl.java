@@ -10,11 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.ReviewSentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.FeatureRepository;
+import upc.edu.gessi.repo.service.ProcessService;
 import upc.edu.gessi.repo.util.*;
 
 import java.util.*;
@@ -25,16 +27,19 @@ public class FeatureRepositoryImpl implements FeatureRepository {
     private final HTTPRepository repository;
 
     private final FeatureQueryBuilder featureQueryBuilder;
+    private final ProcessService processService;
 
 
     @Autowired
     public FeatureRepositoryImpl(final @Value("${db.url}") String url,
                                  final @Value("${db.username}") String username,
                                  final @Value("${db.password}") String password,
-                                 final FeatureQueryBuilder featureQueryBuild) {
+                                 final FeatureQueryBuilder featureQueryBuild,
+                                 final ProcessService processSv) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         featureQueryBuilder = featureQueryBuild;
+        processService = processSv;
 
 
     }
@@ -152,30 +157,99 @@ public class FeatureRepositoryImpl implements FeatureRepository {
     @Override
     public List<SentenceAndFeatureDAO> findAllDescriptionDistinctFeaturesWithSentence() {
         // TODO step 1: extract with query Full text + feature
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppDescriptionsFeaturesWithContextQuery());
+        List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS = new ArrayList<>();
+        while (result.hasNext()) {
+            SentenceAndFeatureDAO sentenceAndFeatureDAO = new SentenceAndFeatureDAO();
+            BindingSet bindings = result.next();
+            if (bindings.getBinding("descriptionText") != null
+                    && bindings.getBinding("descriptionText").getValue() != null) {
+                sentenceAndFeatureDAO.setSentence(bindings.getBinding("descriptionText").getValue().stringValue());
+            }
 
-        // TODO step 2: execute python script that extracts the sentence from the full text
-
-        // TODO step 3: save it in the DAO
-        return null;
+            if (bindings.getBinding("featureIdentifier") != null
+                    && bindings.getBinding("featureIdentifier").getValue() != null) {
+                sentenceAndFeatureDAO.setFeature(
+                        bindings.getBinding("featureIdentifier").getValue().stringValue()
+                );
+            }
+            sentenceAndFeatureDAOS.add(sentenceAndFeatureDAO);
+        }
+        sentenceAndFeatureDAOS.forEach(sentenceAndFeatureDAO ->
+                sentenceAndFeatureDAO.setSentence(
+                        processService.executeExtractSentenceScript(
+                                sentenceAndFeatureDAO.getSentence(),
+                                sentenceAndFeatureDAO.getFeature()
+                        )
+                )
+        );
+        return sentenceAndFeatureDAOS;
     }
 
     @Override
     public List<SentenceAndFeatureDAO> findAllSummaryDistinctFeaturesWithSentence() {
         // TODO step 1: extract with query Full text + feature
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppSummariesFeaturesWithContextQuery());
+        List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS = new ArrayList<>();
+        while (result.hasNext()) {
+            SentenceAndFeatureDAO sentenceAndFeatureDAO = new SentenceAndFeatureDAO();
+            BindingSet bindings = result.next();
+            if (bindings.getBinding("summaryText") != null
+                    && bindings.getBinding("summaryText").getValue() != null) {
+                sentenceAndFeatureDAO.setSentence(bindings.getBinding("summaryText").getValue().stringValue());
+            }
 
-        // TODO step 2: execute python script that extracts the sentence from the full text
+            if (bindings.getBinding("featureIdentifier") != null
+                    && bindings.getBinding("featureIdentifier").getValue() != null) {
+                sentenceAndFeatureDAO.setFeature(
+                        bindings.getBinding("featureIdentifier").getValue().stringValue()
+                );
+            }
+            sentenceAndFeatureDAOS.add(sentenceAndFeatureDAO);
+        }
+        sentenceAndFeatureDAOS.forEach(sentenceAndFeatureDAO ->
+                sentenceAndFeatureDAO.setSentence(
+                        processService.executeExtractSentenceScript(
+                                sentenceAndFeatureDAO.getSentence(),
+                                sentenceAndFeatureDAO.getFeature()
+                        )
+                )
+        );
+        return sentenceAndFeatureDAOS;
 
-        // TODO step 3: save it in the DAO
-        return null;
     }
 
     @Override
     public List<SentenceAndFeatureDAO> findAllReviewDistinctFeaturesWithSentence() {
         // TODO step 1: extract with query Full text + feature
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppSummariesFeaturesWithContextQuery());
+        List<ReviewSentenceAndFeatureDAO> reviewSentenceAndFeatureDAOS = new ArrayList<>();
+        while (result.hasNext()) {
+            ReviewSentenceAndFeatureDAO reviewSentenceAndFeatureDAO = new ReviewSentenceAndFeatureDAO();
+            BindingSet bindings = result.next();
+            if (bindings.getBinding("reviewText") != null
+                    && bindings.getBinding("reviewText").getValue() != null) {
+                reviewSentenceAndFeatureDAO.setSentence(bindings.getBinding("reviewText").getValue().stringValue());
+            }
 
+            if (bindings.getBinding("featureIdentifier") != null
+                    && bindings.getBinding("featureIdentifier").getValue() != null) {
+                reviewSentenceAndFeatureDAO.setFeature(
+                        bindings.getBinding("featureIdentifier").getValue().stringValue()
+                );
+            }
+
+            if (bindings.getBinding("sentenceId") != null
+                    && bindings.getBinding("sentenceId").getValue() != null) {
+                reviewSentenceAndFeatureDAO.setSentenceId(
+                        bindings.getBinding("sentenceId").getValue().stringValue()
+                );
+            }
+            reviewSentenceAndFeatureDAOS.add(reviewSentenceAndFeatureDAO);
+        }
         // TODO step 2: execute python script that extracts the sentence (here at least we have the sentence ID) from the full text
-
+        List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS = null;
         // TODO step 3: save it in the DAO
-        return null;
+        return sentenceAndFeatureDAOS;
     }
 }

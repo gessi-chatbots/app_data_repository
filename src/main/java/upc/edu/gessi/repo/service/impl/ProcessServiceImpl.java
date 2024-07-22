@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -22,72 +23,62 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 @Lazy
 public class ProcessServiceImpl implements ProcessService {
     private final Logger logger = LoggerFactory.getLogger(ProcessServiceImpl.class);
 
+    private String executePythonScript(final String scriptPath,
+                                       final Object inputData) throws Exception {
+        ClassPathResource resource = new ClassPathResource(scriptPath);
+        String absoluteScriptPath = resource.getFile().getAbsolutePath();
+
+        ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
+        Process process = processBuilder.start();
+
+        try (OutputStream os = process.getOutputStream()) {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(os, inputData);
+            os.flush();
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder output = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line);
+        }
+
+        int exitCode = process.waitFor();
+        if (exitCode == 0) {
+            return output.toString();
+        } else {
+            logger.error("Python script exited with code: " + exitCode);
+            throw new RuntimeException("Python script exited with code: " + exitCode);
+        }
+    }
 
     @Override
     public List<TermDTO> executeTop50PythonScript(String scriptPath, List<SentenceAndFeatureDAO> distinctFeatures) {
         try {
-            ClassPathResource resource = new ClassPathResource(scriptPath);
-            String absoluteScriptPath = resource.getFile().getAbsolutePath();
-
-            ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
-
-            Process process = processBuilder.start();
-
-            try (OutputStream os = process.getOutputStream()) {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.writeValue(os, distinctFeatures);
-                os.flush();
-            }
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder output = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line);
-            }
-
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                ObjectMapper mapper = new ObjectMapper();
-                return mapper
-                        .readValue(
-                                output.toString(),
-                                mapper.getTypeFactory().constructCollectionType(List.class, TermDTO.class));
-            } else {
-                logger.error("Python script exited with code: " + exitCode);
-                return new ArrayList<>();
-            }
-
+            String output = executePythonScript(scriptPath, distinctFeatures);
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(
+                    output,
+                    mapper.getTypeFactory().constructCollectionType(List.class, TermDTO.class));
         } catch (Exception e) {
-            logger.error("Unexpected error: ", e.toString());
-            e.printStackTrace();
+            logger.error("Unexpected error: ", e);
             return new ArrayList<>();
         }
     }
 
     @Override
     public String executeHeatMapPythonScript(final List<String> distinctFeatures,
-                                           final List<TermDTO> verbs,
-                                           final List<TermDTO> nouns) {
+                                             final List<TermDTO> verbs,
+                                             final List<TermDTO> nouns) {
         try {
-            ClassPathResource resource = new ClassPathResource("scripts/noun_verb_heat_matrix_generator.py");
-            String absoluteScriptPath = resource.getFile().getAbsolutePath();
-
-            ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
-            Process process = processBuilder.start();
-
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode rootNode = mapper.createObjectNode();
-            /*
-            rootNode.putArray("distinct_features").addAll(
-                    distinctFeatures.stream().map(TextNode::new).collect(Collectors.toList())
-            );*/
 
             ObjectNode verbsNode = rootNode.putObject("verbs");
             for (TermDTO verb : verbs) {
@@ -99,19 +90,31 @@ public class ProcessServiceImpl implements ProcessService {
                 nounsNode.put(noun.getTerm(), noun.getFrequency());
             }
 
-            try (OutputStream os = process.getOutputStream()) {
-                mapper.writeValue(os, rootNode.toString());
-                os.flush();
-            }
-
-            process.waitFor();
+            executePythonScript("scripts/noun_verb_heat_matrix_generator.py", rootNode.toString());
             Path csvFilePath = Paths.get("verb_noun_heat_matrix.csv");
 
             return new String(Files.readAllBytes(csvFilePath));
-
         } catch (Exception e) {
-            logger.error("Unexpected error: ", e.toString());
-            e.printStackTrace();
+            logger.error("Unexpected error: ", e);
+            return null;
+        }
+    }
+
+    @Override
+    public String executeExtractSentenceScript(final String sentence, final String feature) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode rootNode = mapper.createObjectNode();
+
+            rootNode.put("sentence", sentence);
+            rootNode.put("feature", feature);
+
+            String jsonOutput = executePythonScript("scripts/extractSentenceFromFeature.py", rootNode.toString());
+
+            JsonNode outputNode = mapper.readTree(jsonOutput);
+            return outputNode.get("extracted_sentence").asText();
+        } catch (Exception e) {
+            logger.error("Unexpected error: ", e);
             return null;
         }
     }
