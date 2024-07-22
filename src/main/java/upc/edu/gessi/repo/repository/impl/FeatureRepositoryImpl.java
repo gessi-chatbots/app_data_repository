@@ -148,4 +148,19 @@ public class FeatureRepositoryImpl implements FeatureRepository {
         }
         return applicationsStatistics;
     }
+
+    @Override
+    public List<SentenceAndFeatureDAO> findAllDescriptionDistinctFeaturesWithSentence() {
+        return null;
+    }
+
+    @Override
+    public List<SentenceAndFeatureDAO> findAllSummaryDistinctFeaturesWithSentence() {
+        return null;
+    }
+
+    @Override
+    public List<SentenceAndFeatureDAO> findAllReviewDistinctFeaturesWithSentence() {
+        return null;
+    }
 }

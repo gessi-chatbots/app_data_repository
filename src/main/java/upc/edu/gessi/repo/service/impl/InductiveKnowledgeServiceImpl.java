@@ -35,6 +35,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static upc.edu.gessi.repo.util.ExcelUtils.*;
 
@@ -545,8 +546,31 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
     private List<SentenceAndFeatureDAO> getAllDistinctFeatures() {
-        return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllDistinct();
+        // Summary
+        List<SentenceAndFeatureDAO> sentencesAndFeatures = ((FeatureRepository) useRepository(FeatureRepository.class))
+                        .findAllSummaryDistinctFeaturesWithSentence();
+        // Description
+        sentencesAndFeatures = Stream
+                        .concat(
+                                sentencesAndFeatures.stream(),
+                                ((FeatureRepository) useRepository(FeatureRepository.class))
+                                        .findAllDescriptionDistinctFeaturesWithSentence().stream()
+                        )
+                        .toList();
+        // Reviews
+        sentencesAndFeatures = Stream
+                .concat(
+                        sentencesAndFeatures.stream(),
+                        ((FeatureRepository) useRepository(FeatureRepository.class))
+                                .findAllReviewDistinctFeaturesWithSentence().stream()
+                )
+                .toList();
+
+        return sentencesAndFeatures;
     }
+
+
+
 
     private List<ApplicationPropDocStatisticDAO> getAllApplicationsSummary() {
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllApplicationsStatistics();

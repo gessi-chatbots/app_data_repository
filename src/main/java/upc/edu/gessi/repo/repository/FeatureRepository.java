@@ -16,5 +16,11 @@ public interface FeatureRepository extends RDFCRUDRepository<FeatureDTO> {
     List<SentenceAndFeatureDAO> findAllDistinct();
 
     List<ApplicationPropDocStatisticDAO> findAllApplicationsStatistics();
+
+    List<SentenceAndFeatureDAO> findAllDescriptionDistinctFeaturesWithSentence();
+
+    List<SentenceAndFeatureDAO> findAllSummaryDistinctFeaturesWithSentence();
+
+    List<SentenceAndFeatureDAO> findAllReviewDistinctFeaturesWithSentence();
 }
 
