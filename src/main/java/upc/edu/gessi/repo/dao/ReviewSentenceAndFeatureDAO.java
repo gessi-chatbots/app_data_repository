@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewSentenceAndFeatureDAO {
-    @JsonProperty("sentence_id")
+    @JsonProperty("sentenceId")
     private String sentenceId;
 
-    @JsonProperty("sentence_text")
+    @JsonProperty("sentence")
     private String sentence;
 
-    @JsonProperty("feature_type")
+    @JsonProperty("feature")
     private String feature;
 }

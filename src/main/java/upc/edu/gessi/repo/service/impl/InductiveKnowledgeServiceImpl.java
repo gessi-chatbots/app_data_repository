@@ -262,6 +262,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     public void insert50TopNouns(final Workbook workbook) {
         Sheet top50NounsSheet = createWorkbookSheet(workbook, "Top 50 Nouns");
         generateTop50NounsHeader(workbook, top50NounsSheet);
+        //TODO fix script to process the sentence - feature context.
         top50Nouns = processService.executeTop50PythonScript("scripts/top50Nouns.py", distinctFeatures);
         Integer rowIndex = 1;
         for (TermDTO noun : top50Nouns) {
@@ -304,6 +305,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
         generateTop50VerbsHeader(workbook, top50VerbsSheet);
+        //TODO fix script to process the sentence - feature context.
         top50Verbs = processService.executeTop50PythonScript("scripts/top50Verbs.py", distinctFeatures);
         Integer rowIndex = 1;
 

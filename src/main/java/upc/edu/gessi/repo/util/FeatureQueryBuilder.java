@@ -128,14 +128,15 @@ public class FeatureQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("\n");
         queryBuilder.append("SELECT ?appIdentifier ?reviewText ?sentenceId ?featureIdentifier\n");
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication ;\n");
         queryBuilder.append("       schema:identifier ?appIdentifier ;\n");
         queryBuilder.append("       schema:review ?review .\n");
         queryBuilder.append("  ?review rdf:type schema:Review ;\n");
-        queryBuilder.append("           schema:reviewBody ?reviewText ;\n");
-        queryBuilder.append("           schema:additionalProperty ?sentences .\n");
+        queryBuilder.append("         schema:reviewBody ?reviewText ;\n");
+        queryBuilder.append("         schema:additionalProperty ?sentences .\n");
         queryBuilder.append("  ?sentences rdf:type schema:Review ;\n");
         queryBuilder.append("             schema:identifier ?sentenceId ;\n");
         queryBuilder.append("             schema:keywords ?features .\n");

@@ -156,7 +156,6 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
     @Override
     public List<SentenceAndFeatureDAO> findAllDescriptionDistinctFeaturesWithSentence() {
-        // TODO step 1: extract with query Full text + feature
         TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppDescriptionsFeaturesWithContextQuery());
         List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS = new ArrayList<>();
         while (result.hasNext()) {
@@ -181,7 +180,6 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
     @Override
     public List<SentenceAndFeatureDAO> findAllSummaryDistinctFeaturesWithSentence() {
-        // TODO step 1: extract with query Full text + feature
         TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppSummariesFeaturesWithContextQuery());
         List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS = new ArrayList<>();
         while (result.hasNext()) {
@@ -205,8 +203,7 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
     @Override
     public List<SentenceAndFeatureDAO> findAllReviewDistinctFeaturesWithSentence() {
-        // TODO step 1: extract with query Full text + feature
-        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppSummariesFeaturesWithContextQuery());
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppReviewsFeaturesWithContextQuery());
         List<ReviewSentenceAndFeatureDAO> reviewSentenceAndFeatureDAOS = new ArrayList<>();
         while (result.hasNext()) {
             ReviewSentenceAndFeatureDAO reviewSentenceAndFeatureDAO = new ReviewSentenceAndFeatureDAO();
@@ -231,9 +228,7 @@ public class FeatureRepositoryImpl implements FeatureRepository {
             }
             reviewSentenceAndFeatureDAOS.add(reviewSentenceAndFeatureDAO);
         }
-        // TODO step 2: execute python script that extracts the sentence (here at least we have the sentence ID) from the full text
-        List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS = null;
-        // TODO step 3: save it in the DAO
-        return sentenceAndFeatureDAOS;
+        return processService.executeExtractSentenceFromReviewsScript(reviewSentenceAndFeatureDAOS);
+
     }
 }
