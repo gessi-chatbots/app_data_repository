@@ -9,50 +9,62 @@ try:
     nltk.data.find('taggers/averaged_perceptron_tagger')
 except LookupError:
     import subprocess
-    import sys
 
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'nltk'])
-    import nltk
-
     nltk.download('punkt')
     nltk.download('averaged_perceptron_tagger')
 
 
 def clean_text(text):
-    cleaned_text = ''.join(c if c.isalnum() or c.isspace() else ' ' for c in text)
-    return cleaned_text
+    return ''.join(c if c.isalnum() or c.isspace() else ' ' for c in text)
 
 
 def camel_case_split(identifier):
     return re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))', identifier)
 
 
+def split_into_list(text):
+    return text.split()
+
+
 def extract_verbs_from_text(text):
-    cleaned_text = clean_text(text)
+    cleaned_feature = clean_text(text['feature'])
+    feature_words = []
+    for word in nltk.word_tokenize(cleaned_feature):
+        feature_words.extend(camel_case_split(word))
 
-    words = []
-    for word in nltk.word_tokenize(cleaned_text):
-        words.extend(camel_case_split(word))
+    cleaned_sentence = clean_text(text['sentence'])
+    sentence_words = []
+    for word in nltk.word_tokenize(cleaned_sentence):
+        sentence_words.append(word)
 
-    tagged_words = nltk.pos_tag(words)
-    verbs = [word for word, pos in tagged_words if pos.startswith('VB')]
-    return verbs
+    tagged_feature = nltk.pos_tag(feature_words)
+    tagged_sentence = nltk.pos_tag(sentence_words)
+
+    feature_verbs = {word for word, pos in tagged_feature if pos.startswith('VB')}
+    sentence_verbs = {word for word, pos in tagged_sentence if pos.startswith('VB')}
+
+    common_verbs = feature_verbs.intersection(sentence_verbs)
+    return common_verbs
 
 
-input_text = sys.stdin.read()
+def main():
+    input_text = sys.stdin.read()
+    text_list = json.loads(input_text)
 
-text_list = json.loads(input_text)
+    verb_counter = Counter()
 
-all_verbs = []
+    for text in text_list:
+        common_verbs = extract_verbs_from_text(text)
+        for verb in common_verbs:
+            verb_counter[verb] += 1
 
-for text in text_list:
-    verbs = extract_verbs_from_text(text)
-    all_verbs.extend(verbs)
+    top_50_verbs = verb_counter.most_common(50)
 
-verb_freq = Counter(all_verbs)
+    top_50_verbs_list = [{'term': verb, 'frequency': freq} for verb, freq in top_50_verbs]
 
-top_50_verbs = verb_freq.most_common(50)
+    print(json.dumps(top_50_verbs_list, indent=2))
 
-top_50_verbs_list = [{'term': verb, 'frequency': freq} for verb, freq in top_50_verbs]
 
-print(json.dumps(top_50_verbs_list))
+if __name__ == "__main__":
+    main()
