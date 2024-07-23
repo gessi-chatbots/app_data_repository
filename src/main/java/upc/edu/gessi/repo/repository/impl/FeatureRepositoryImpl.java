@@ -175,15 +175,8 @@ public class FeatureRepositoryImpl implements FeatureRepository {
             }
             sentenceAndFeatureDAOS.add(sentenceAndFeatureDAO);
         }
-        sentenceAndFeatureDAOS.forEach(sentenceAndFeatureDAO ->
-                sentenceAndFeatureDAO.setSentence(
-                        processService.executeExtractSentenceScript(
-                                sentenceAndFeatureDAO.getSentence(),
-                                sentenceAndFeatureDAO.getFeature()
-                        )
-                )
-        );
-        return sentenceAndFeatureDAOS;
+        return processService.executeExtractSentenceScript(sentenceAndFeatureDAOS);
+
     }
 
     @Override
@@ -207,16 +200,7 @@ public class FeatureRepositoryImpl implements FeatureRepository {
             }
             sentenceAndFeatureDAOS.add(sentenceAndFeatureDAO);
         }
-        sentenceAndFeatureDAOS.forEach(sentenceAndFeatureDAO ->
-                sentenceAndFeatureDAO.setSentence(
-                        processService.executeExtractSentenceScript(
-                                sentenceAndFeatureDAO.getSentence(),
-                                sentenceAndFeatureDAO.getFeature()
-                        )
-                )
-        );
-        return sentenceAndFeatureDAOS;
-
+        return processService.executeExtractSentenceScript(sentenceAndFeatureDAOS);
     }
 
     @Override

@@ -9,5 +9,5 @@ public interface ProcessService {
     List<TermDTO> executeTop50PythonScript(final String scriptPath, final List<SentenceAndFeatureDAO> distinctFeatures);
 
     String executeHeatMapPythonScript(final List<String> distinctFeatures, final List<TermDTO> verbs, final List<TermDTO> nouns);
-    String executeExtractSentenceScript(final String sentence, final String feature);
+    List<SentenceAndFeatureDAO> executeExtractSentenceScript(final List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS);
 }

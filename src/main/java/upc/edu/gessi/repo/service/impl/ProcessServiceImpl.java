@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -118,42 +119,53 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public String executeExtractSentenceScript(String sentence, String feature) {
+    public List<SentenceAndFeatureDAO> executeExtractSentenceScript(final List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS) {
         try {
             ClassPathResource resource = new ClassPathResource("scripts/extractSentenceFromFeature.py");
             String absoluteScriptPath = resource.getFile().getAbsolutePath();
 
             ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
-            processBuilder.redirectErrorStream(true);  // Redirect stderr to stdout
+
             Process process = processBuilder.start();
 
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode rootNode = mapper.createObjectNode();
-            rootNode.put("sentence", sentence);
-            rootNode.put("feature", feature);
-
             try (OutputStream os = process.getOutputStream()) {
-                mapper.writeValue(os, rootNode);
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.writeValue(os, sentenceAndFeatureDAOS);
                 os.flush();
             }
 
-            try (InputStream is = process.getInputStream();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-                String output = reader.lines().collect(Collectors.joining("\n"));
-                int exitCode = process.waitFor();
-
-                if (exitCode != 0) {
-                    logger.error("Python script exited with code: " + exitCode);
-                    logger.error("Error output: " + output);
-                    throw new RuntimeException("Python script exited with code: " + exitCode);
-                }
-
-                return output;
+            BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = stdoutReader.readLine()) != null) {
+                output.append(line);
             }
+
+            BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            StringBuilder errorOutput = new StringBuilder();
+            while ((line = stderrReader.readLine()) != null) {
+                errorOutput.append(line);
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                return mapper.readValue(
+                        output.toString(),
+                        mapper.getTypeFactory().constructCollectionType(List.class, SentenceAndFeatureDAO.class));
+            } else {
+                logger.error("Python script exited with code: " + exitCode);
+                logger.error("Error output: " + errorOutput.toString());
+                return new ArrayList<>();
+            }
+
         } catch (Exception e) {
-            logger.error("Unexpected error: ", e);
+            logger.error("Unexpected error: " + e.toString());
             e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
     }
+
+
 }

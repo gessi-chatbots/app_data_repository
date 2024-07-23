@@ -23,23 +23,32 @@ def camel_case_to_readable(text):
     return readable_text.lower()
 
 
-def extract_sentences(text, feature):
+def extract_sentence(text, feature):
     readable_feature = camel_case_to_readable(feature)
     sentences = nltk.sent_tokenize(text)
-    matching_sentences = [sent.strip() for sent in sentences if readable_feature in sent.lower()]
-    if matching_sentences is None or len(matching_sentences) == 0:
-        matching_sentences = [text]
-    return matching_sentences
+    for sent in sentences:
+        if readable_feature in sent.lower():
+            return sent.strip()
+    return text.strip()
 
 
 def main():
     try:
-        input_data = json.load(sys.stdin)
-        feature = input_data['feature']
-        sentence = input_data['sentence']
-        result = extract_sentences(sentence, feature)
-        output_data = {'extracted_sentences': result}
-        print(json.dumps(output_data))
+        input_text = sys.stdin.read()
+
+        text_list = json.loads(input_text)
+        results = []
+
+        for dao in text_list:
+            feature = dao['feature']
+            sentence = dao['sentence']
+            extracted_sentences = extract_sentence(sentence, feature)
+            results.append({
+                'sentence': extracted_sentences,
+                'feature': feature
+            })
+
+        print(json.dumps(results))
     except Exception as e:
         print(str(e))
         sys.stderr.write(f"Error: {str(e)}\n")
