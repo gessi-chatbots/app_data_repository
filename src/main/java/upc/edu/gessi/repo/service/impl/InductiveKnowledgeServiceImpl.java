@@ -196,15 +196,23 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
     private short getColorBasedOnValue(double value) {
-        if (value < 25) {
-            return IndexedColors.LIGHT_GREEN.getIndex();
-        } else if (value < 50) {
-            return IndexedColors.LIGHT_YELLOW.getIndex();
-        } else if (value < 75) {
-            return IndexedColors.ORANGE.getIndex();
+        double normalizedValue = Math.min(Math.max(value, 0), 100);
+
+        double gradientLevel = normalizedValue / 100.0;
+
+
+        short blueColor;
+        if (gradientLevel < 0.25) {
+            blueColor = IndexedColors.LIGHT_BLUE.getIndex();
+        } else if (gradientLevel < 0.5) {
+            blueColor = IndexedColors.SKY_BLUE.getIndex();
+        } else if (gradientLevel < 0.75) {
+            blueColor = IndexedColors.CORNFLOWER_BLUE.getIndex();
         } else {
-            return IndexedColors.RED.getIndex();
+            blueColor = IndexedColors.DARK_BLUE.getIndex();
         }
+
+        return blueColor;
     }
 
     private void insertSummary(final Workbook workbook) {
@@ -305,7 +313,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
         generateTop50VerbsHeader(workbook, top50VerbsSheet);
-        //TODO fix script to process the sentence - feature context.
         top50Verbs = processService.executeTop50PythonScript("scripts/top50Verbs.py", distinctFeatures);
         Integer rowIndex = 1;
 
