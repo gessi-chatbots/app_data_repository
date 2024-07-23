@@ -1,5 +1,7 @@
 package upc.edu.gessi.repo.service.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -8,10 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import upc.edu.gessi.repo.dao.ReviewSentenceAndFeatureDAO;
+import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.TermDTO;
 import upc.edu.gessi.repo.service.ProcessService;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -19,18 +24,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 
 @Service
 @Lazy
-// TODO remove repeated code
 public class ProcessServiceImpl implements ProcessService {
     private final Logger logger = LoggerFactory.getLogger(ProcessServiceImpl.class);
 
 
     @Override
-    public List<TermDTO> executeTop50PythonScript(String scriptPath, List<String> distinctFeatures) {
+    public List<TermDTO> executeTop50PythonScript(String scriptPath, List<SentenceAndFeatureDAO> distinctFeatures) {
         try {
             ClassPathResource resource = new ClassPathResource(scriptPath);
             String absoluteScriptPath = resource.getFile().getAbsolutePath();
@@ -84,10 +86,10 @@ public class ProcessServiceImpl implements ProcessService {
 
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode rootNode = mapper.createObjectNode();
-
+            /*
             rootNode.putArray("distinct_features").addAll(
                     distinctFeatures.stream().map(TextNode::new).collect(Collectors.toList())
-            );
+            );*/
 
             ObjectNode verbsNode = rootNode.putObject("verbs");
             for (TermDTO verb : verbs) {
@@ -115,4 +117,104 @@ public class ProcessServiceImpl implements ProcessService {
             return null;
         }
     }
+
+    @Override
+    public List<SentenceAndFeatureDAO> executeExtractSentenceScript(final List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS) {
+        try {
+            ClassPathResource resource = new ClassPathResource("scripts/extractSentenceFromFeature.py");
+            String absoluteScriptPath = resource.getFile().getAbsolutePath();
+
+            ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
+
+            Process process = processBuilder.start();
+
+            try (OutputStream os = process.getOutputStream()) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.writeValue(os, sentenceAndFeatureDAOS);
+                os.flush();
+            }
+
+            BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = stdoutReader.readLine()) != null) {
+                output.append(line);
+            }
+
+            BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            StringBuilder errorOutput = new StringBuilder();
+            while ((line = stderrReader.readLine()) != null) {
+                errorOutput.append(line);
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                return mapper.readValue(
+                        output.toString(),
+                        mapper.getTypeFactory().constructCollectionType(List.class, SentenceAndFeatureDAO.class));
+            } else {
+                logger.error("Python script exited with code: " + exitCode);
+                logger.error("Error output: " + errorOutput.toString());
+                return new ArrayList<>();
+            }
+
+        } catch (Exception e) {
+            logger.error("Unexpected error: " + e.toString());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public List<SentenceAndFeatureDAO> executeExtractSentenceFromReviewsScript(List<ReviewSentenceAndFeatureDAO> reviewSentenceAndFeatureDAOS) {
+        try {
+            ClassPathResource resource = new ClassPathResource("scripts/extractSentenceFromReview.py");
+            String absoluteScriptPath = resource.getFile().getAbsolutePath();
+
+            ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
+
+            Process process = processBuilder.start();
+
+            try (OutputStream os = process.getOutputStream()) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.writeValue(os, reviewSentenceAndFeatureDAOS);
+                os.flush();
+            }
+
+            BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = stdoutReader.readLine()) != null) {
+                output.append(line);
+            }
+
+            BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            StringBuilder errorOutput = new StringBuilder();
+            while ((line = stderrReader.readLine()) != null) {
+                errorOutput.append(line);
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                return mapper.readValue(
+                        output.toString(),
+                        mapper.getTypeFactory().constructCollectionType(List.class, SentenceAndFeatureDAO.class));
+            } else {
+                logger.error("Python script exited with code: " + exitCode);
+                logger.error("Error output: " + errorOutput.toString());
+                return new ArrayList<>();
+            }
+
+        } catch (Exception e) {
+            logger.error("Unexpected error: " + e.toString());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+
 }

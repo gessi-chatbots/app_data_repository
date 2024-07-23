@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dao.ApplicationDatesDAO;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.TermDTO;
 import upc.edu.gessi.repo.dto.graph.GraphEdge;
@@ -33,6 +34,8 @@ import upc.edu.gessi.repo.util.ExcelUtils;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static upc.edu.gessi.repo.util.ExcelUtils.*;
 
@@ -44,7 +47,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private final ProcessService processService;
 
-    private List<String> distinctFeatures = new ArrayList<>();
+    private List<SentenceAndFeatureDAO> distinctFeatures = new ArrayList<>();
 
     private List<TermDTO> top50Nouns = new ArrayList<>();
     private List<TermDTO> top50Verbs = new ArrayList<>();
@@ -108,8 +111,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertSummary(workbook);
         logger.info("Step 3: Inserting all features found in KG");
         insertTotalFeatures(workbook);
-        logger.info("Step 4: Inserting all distinct features found in KG");
-        insertDistinctFeatures(workbook);
+        logger.info("Step 4: Obtaining all features along its context");
+        obtainFeaturesAndContext();
         logger.info("Step 5: Inserting all applications statistics in KG");
         insertAllApplicationsFeatures(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
@@ -126,8 +129,13 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
 
     private void insertHeatMap(Workbook workbook) {
         Sheet heatMatrixSheet = createWorkbookSheet(workbook, "heatMatrix");
-        String heatMatrixContent = processService.executeHeatMapPythonScript(distinctFeatures, top50Verbs, top50Nouns);
-
+        String heatMatrixContent = processService.executeHeatMapPythonScript(
+                distinctFeatures
+                        .stream()
+                        .map(SentenceAndFeatureDAO::getFeature)
+                        .collect(Collectors.toList()),
+                top50Verbs,
+                top50Nouns);
         if (heatMatrixContent != null) {
             try (BufferedReader reader = new BufferedReader(new StringReader(heatMatrixContent))) {
                 String line;
@@ -254,6 +262,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     public void insert50TopNouns(final Workbook workbook) {
         Sheet top50NounsSheet = createWorkbookSheet(workbook, "Top 50 Nouns");
         generateTop50NounsHeader(workbook, top50NounsSheet);
+        //TODO fix script to process the sentence - feature context.
         top50Nouns = processService.executeTop50PythonScript("scripts/top50Nouns.py", distinctFeatures);
         Integer rowIndex = 1;
         for (TermDTO noun : top50Nouns) {
@@ -296,6 +305,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
         generateTop50VerbsHeader(workbook, top50VerbsSheet);
+        //TODO fix script to process the sentence - feature context.
         top50Verbs = processService.executeTop50PythonScript("scripts/top50Verbs.py", distinctFeatures);
         Integer rowIndex = 1;
 
@@ -347,11 +357,14 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertFeaturesAndOcurrencesInSheet(totalFeaturesSheet, totalFeatures);
     }
 
-    private void insertDistinctFeatures(final Workbook workbook) {
-        logger.info("Obtaining #distinct_features");
-        // We use distinct features for obtaining all the syntax analysis
+    private void obtainFeaturesAndContext() {
+        logger.info("Obtaining Summary features and context");
+        logger.info("Obtaining Review features and context");
+        logger.info("Obtaining Description features and context");
+
         distinctFeatures = getAllDistinctFeatures();
-        // NOT INSERTING DUE TO RESULTING HEAVY EXCEL FILE
+
+
         /*
         Sheet distinctFeaturesSheet = createWorkbookSheet(workbook, "Distinct Ft.");
         generateDistinctFeaturesHeader(workbook, distinctFeaturesSheet);
@@ -534,9 +547,32 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllWithOccurrences();
     }
 
-    private List<String> getAllDistinctFeatures() {
-        return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllDistinct();
+    private List<SentenceAndFeatureDAO> getAllDistinctFeatures() {
+        // Summary
+        List<SentenceAndFeatureDAO> sentencesAndFeatures = ((FeatureRepository) useRepository(FeatureRepository.class))
+                        .findAllSummaryDistinctFeaturesWithSentence();
+        // Description
+        sentencesAndFeatures = Stream
+                        .concat(
+                                sentencesAndFeatures.stream(),
+                                ((FeatureRepository) useRepository(FeatureRepository.class))
+                                        .findAllDescriptionDistinctFeaturesWithSentence().stream()
+                        )
+                        .toList();
+        // Reviews
+        sentencesAndFeatures = Stream
+                .concat(
+                        sentencesAndFeatures.stream(),
+                        ((FeatureRepository) useRepository(FeatureRepository.class))
+                                .findAllReviewDistinctFeaturesWithSentence().stream()
+                )
+                .toList();
+
+        return sentencesAndFeatures;
     }
+
+
+
 
     private List<ApplicationPropDocStatisticDAO> getAllApplicationsSummary() {
         return ((FeatureRepository) useRepository(FeatureRepository.class)).findAllApplicationsStatistics();

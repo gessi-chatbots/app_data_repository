@@ -2,16 +2,20 @@ package upc.edu.gessi.repo.dao;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Setter
-@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SentenceAndFeatureDAO {
+public class ReviewSentenceAndFeatureDAO {
+    @JsonProperty("sentenceId")
+    private String sentenceId;
+
     @JsonProperty("sentence")
     private String sentence;
+
     @JsonProperty("feature")
     private String feature;
 }

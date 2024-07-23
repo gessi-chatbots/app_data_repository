@@ -10,10 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.ReviewSentenceAndFeatureDAO;
+import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
 import upc.edu.gessi.repo.repository.FeatureRepository;
+import upc.edu.gessi.repo.service.ProcessService;
 import upc.edu.gessi.repo.util.*;
 
 import java.util.*;
@@ -24,16 +27,19 @@ public class FeatureRepositoryImpl implements FeatureRepository {
     private final HTTPRepository repository;
 
     private final FeatureQueryBuilder featureQueryBuilder;
+    private final ProcessService processService;
 
 
     @Autowired
     public FeatureRepositoryImpl(final @Value("${db.url}") String url,
                                  final @Value("${db.username}") String username,
                                  final @Value("${db.password}") String password,
-                                 final FeatureQueryBuilder featureQueryBuild) {
+                                 final FeatureQueryBuilder featureQueryBuild,
+                                 final ProcessService processSv) {
         repository = new HTTPRepository(url);
         repository.setUsernameAndPassword(username, password);
         featureQueryBuilder = featureQueryBuild;
+        processService = processSv;
 
 
     }
@@ -95,15 +101,16 @@ public class FeatureRepositoryImpl implements FeatureRepository {
     }
 
     @Override
-    public List<String> findAllDistinct() {
+    public List<SentenceAndFeatureDAO> findAllDistinct() {
         TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAllDistinctFeaturesQuery());
-        List<String> featuresList = new ArrayList<>();
+        List<SentenceAndFeatureDAO> featuresList = new ArrayList<>();
         while (result.hasNext()) {
+            SentenceAndFeatureDAO sentenceAndFeatureDAO = new SentenceAndFeatureDAO();
             BindingSet bindings = result.next();
             if(bindings.getBinding("feature") != null
                     && bindings.getBinding("feature").getValue() != null) {
-                featuresList.add(
-                        bindings.getBinding("feature").getValue().stringValue());
+                sentenceAndFeatureDAO.setFeature((
+                        bindings.getBinding("feature").getValue().stringValue()));
             }
         }
         return featuresList;
@@ -145,5 +152,83 @@ public class FeatureRepositoryImpl implements FeatureRepository {
             applicationsStatistics.add(applicationPropDocStatisticDAO);
         }
         return applicationsStatistics;
+    }
+
+    @Override
+    public List<SentenceAndFeatureDAO> findAllDescriptionDistinctFeaturesWithSentence() {
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppDescriptionsFeaturesWithContextQuery());
+        List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS = new ArrayList<>();
+        while (result.hasNext()) {
+            SentenceAndFeatureDAO sentenceAndFeatureDAO = new SentenceAndFeatureDAO();
+            BindingSet bindings = result.next();
+            if (bindings.getBinding("descriptionText") != null
+                    && bindings.getBinding("descriptionText").getValue() != null) {
+                sentenceAndFeatureDAO.setSentence(bindings.getBinding("descriptionText").getValue().stringValue());
+            }
+
+            if (bindings.getBinding("featureIdentifier") != null
+                    && bindings.getBinding("featureIdentifier").getValue() != null) {
+                sentenceAndFeatureDAO.setFeature(
+                        bindings.getBinding("featureIdentifier").getValue().stringValue()
+                );
+            }
+            sentenceAndFeatureDAOS.add(sentenceAndFeatureDAO);
+        }
+        return processService.executeExtractSentenceScript(sentenceAndFeatureDAOS);
+
+    }
+
+    @Override
+    public List<SentenceAndFeatureDAO> findAllSummaryDistinctFeaturesWithSentence() {
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppSummariesFeaturesWithContextQuery());
+        List<SentenceAndFeatureDAO> sentenceAndFeatureDAOS = new ArrayList<>();
+        while (result.hasNext()) {
+            SentenceAndFeatureDAO sentenceAndFeatureDAO = new SentenceAndFeatureDAO();
+            BindingSet bindings = result.next();
+            if (bindings.getBinding("summaryText") != null
+                    && bindings.getBinding("summaryText").getValue() != null) {
+                sentenceAndFeatureDAO.setSentence(bindings.getBinding("summaryText").getValue().stringValue());
+            }
+
+            if (bindings.getBinding("featureIdentifier") != null
+                    && bindings.getBinding("featureIdentifier").getValue() != null) {
+                sentenceAndFeatureDAO.setFeature(
+                        bindings.getBinding("featureIdentifier").getValue().stringValue()
+                );
+            }
+            sentenceAndFeatureDAOS.add(sentenceAndFeatureDAO);
+        }
+        return processService.executeExtractSentenceScript(sentenceAndFeatureDAOS);
+    }
+
+    @Override
+    public List<SentenceAndFeatureDAO> findAllReviewDistinctFeaturesWithSentence() {
+        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.findAppReviewsFeaturesWithContextQuery());
+        List<ReviewSentenceAndFeatureDAO> reviewSentenceAndFeatureDAOS = new ArrayList<>();
+        while (result.hasNext()) {
+            ReviewSentenceAndFeatureDAO reviewSentenceAndFeatureDAO = new ReviewSentenceAndFeatureDAO();
+            BindingSet bindings = result.next();
+            if (bindings.getBinding("reviewText") != null
+                    && bindings.getBinding("reviewText").getValue() != null) {
+                reviewSentenceAndFeatureDAO.setSentence(bindings.getBinding("reviewText").getValue().stringValue());
+            }
+
+            if (bindings.getBinding("featureIdentifier") != null
+                    && bindings.getBinding("featureIdentifier").getValue() != null) {
+                reviewSentenceAndFeatureDAO.setFeature(
+                        bindings.getBinding("featureIdentifier").getValue().stringValue()
+                );
+            }
+
+            if (bindings.getBinding("sentenceId") != null
+                    && bindings.getBinding("sentenceId").getValue() != null) {
+                reviewSentenceAndFeatureDAO.setSentenceId(
+                        bindings.getBinding("sentenceId").getValue().stringValue()
+                );
+            }
+            reviewSentenceAndFeatureDAOS.add(reviewSentenceAndFeatureDAO);
+        }
+        return processService.executeExtractSentenceFromReviewsScript(reviewSentenceAndFeatureDAOS);
+
     }
 }
