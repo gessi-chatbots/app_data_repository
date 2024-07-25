@@ -368,7 +368,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Obtaining Summary features and context");
         logger.info("Obtaining Review features and context");
         logger.info("Obtaining Description features and context");
-
         distinctFeatures = getAllDistinctFeatures();
 
 
