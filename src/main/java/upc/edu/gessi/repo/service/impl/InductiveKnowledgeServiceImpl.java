@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -32,6 +33,7 @@ import upc.edu.gessi.repo.service.ProcessService;
 import upc.edu.gessi.repo.util.ExcelUtils;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -448,7 +450,25 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 ExcelUtils.extractLastIdentifierSegment(applicationIdentifier) + " TF");
         generateTotalApplicationFeaturesHeader(workbook, totalApplicationFeaturesSheet);
         Map<String, Integer> totalApplicationFeatures = getTotalApplicationFeatures(applicationIdentifier);
+        List<String> featureList = totalApplicationFeatures.keySet().stream().collect(Collectors.toList());
+        writeFeaturesToJson(applicationIdentifier, featureList);
         insertFeaturesAndOcurrencesInSheet(totalApplicationFeaturesSheet, totalApplicationFeatures);
+    }
+
+    private void writeFeaturesToJson(String applicationIdentifier, List<String> features) {
+        String basePath = "src/main/resources/static/applicationFeatures";
+
+        String fileName = ExcelUtils.extractLastIdentifierSegment(applicationIdentifier) + "Features.json";
+
+        File file = new File(Paths.get(basePath, fileName).toString());
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writeValue(file, features);
+            logger.info("Features written to {}", file.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("Error writing features to JSON file", e);
+        }
     }
 
     private void insertTotalDocumentTypeFeatures(final Workbook workbook, final String documentType) {
