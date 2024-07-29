@@ -3,18 +3,20 @@ import json
 import re
 import logging
 from collections import Counter
-import nltk
+import spacy
 from argparse import ArgumentParser
 
+# Load SpaCy model
 try:
-    nltk.data.find('tokenizers/punkt')
-    nltk.data.find('taggers/averaged_perceptron_tagger')
-except LookupError:
+    spacy.load('en_core_web_sm')
+except IOError:
     import subprocess
 
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'nltk'])
-    nltk.download('punkt')
-    nltk.download('averaged_perceptron_tagger')
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'spacy'])
+    spacy.cli.download('en_core_web_sm')
+    spacy.load('en_core_web_sm')
+
+nlp = spacy.load('en_core_web_sm')
 
 
 def clean_text(text):
@@ -25,81 +27,71 @@ def camel_case_split(identifier):
     return re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))', identifier)
 
 
-def split_into_list(text):
-    return text.split()
-
-
 def extraction(pos_tag_prefix):
     # 1) Get Feature and sentence from input
     input_text = sys.stdin.read()
     text_list = json.loads(input_text)
+    word_counter = Counter()
 
     for text in text_list:
         # 2) Clean feature
         cleaned_feature = clean_text(text['feature'])
         feature_words = []
-        for word in nltk.word_tokenize(cleaned_feature):
-            feature_words.extend(camel_case_split(word))
+        doc_feature = nlp(cleaned_feature)
+        for token in doc_feature:
+            feature_words.extend(camel_case_split(token.text))
         feature_words_lower = [word.lower() for word in feature_words]
 
         # 2 bis) Clean Sentence
         cleaned_sentence = clean_text(text['sentence'])
-        sentence_words = []
-        for word in nltk.word_tokenize(cleaned_sentence):
-            sentence_words.append(word)
-        sentence_words_lower = [word.lower() for word in sentence_words]
+        doc_sentence = nlp(cleaned_sentence)
+        sentence_words_lower = [token.text.lower() for token in doc_sentence]
 
         # 3) Tag sentence
-        tagged_sentence = nltk.pos_tag(sentence_words)
+        tagged_sentence = [(token.text, token.pos_) for token in doc_sentence]
 
-        # 4) Initialize counter and matched positions
+        # 4) Initialize matched positions
         matched_words_positions = {}
         for feature_word in feature_words_lower:
-            logging.info(f"Searching feature word '{feature_word}' in sentence...")
             if feature_word in sentence_words_lower:
-                for i, sentence_word in enumerate(sentence_words):
+                for i, sentence_word in enumerate(sentence_words_lower):
                     if sentence_word == feature_word:
                         tag = tagged_sentence[i][1]
                         tagged_word = tagged_sentence[i][0]
-                        logging.info(f"Hit: Word '{tagged_word}' with POS TAG {tag}")
                         if sentence_word in matched_words_positions:
-                            matched_words_positions[sentence_word].append(
-                                {'tag': tag, 'tagged_word': tagged_word, 'index': i})
+                            matched_words_positions[sentence_word]['tag'] = tag
                         else:
-                            matched_words_positions[sentence_word] = [
-                                {'tag': tag, 'tagged_word': tagged_word, 'index': i}]
+                            matched_words_positions[sentence_word] = {'tag': tag, 'tagged_word': tagged_word,
+                                                                      'index': i}
             else:
-                logging.info(f"Word '{feature_word}' from feature not found in sentence")
                 break
-            logging.info(f'----------------------------------')
 
     # 5) Count most frequent POS TAG
     word_counter = Counter()
-    logging.info(f"Searching for Hit results with POS TAG '{pos_tag_prefix}'...")
-    for word, entries in matched_words_positions.items():
-        for entry in entries:
-            if entry['tag'].startswith(pos_tag_prefix):
-                logging.info(f"Detected '{word}' with POS TAG '{pos_tag_prefix}'")
-                word_counter[word] += 1
+    for word, entry in matched_words_positions.items():
+        if entry['tag'] in pos_tag_prefix:
+            word_counter[word] += 1
 
     top_50_words = word_counter.most_common(50)
-
     top_50_words_list = [{'term': word, 'frequency': freq} for word, freq in top_50_words]
-    logging.info(f'----------------------------------')
-    logging.info(f'Result')
     print(json.dumps(top_50_words_list, indent=2))
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Extract NN or VV from text")
-    parser.add_argument('--tag', choices=['NN', 'VV'], required=True,
-                        help="Specify 'NN' for noun extraction or 'VV' for verb extraction")
+    parser = ArgumentParser(description="Extract specific POS tags from text")
+    parser.add_argument('--tag', choices=['NOUN', 'VERB'], required=True,
+                        help="Specify 'NOUN' for noun extraction or 'VERB' for verb extraction")
     args = parser.parse_args()
 
-    logging.basicConfig(filename='analysis.log', level=logging.INFO, format='%(asctime)s - %(message)s')
-    logging.info('Starting analysis')
-    logging.info(f'----------------------------------')
-    pos_tag_prefix = 'NN' if args.tag == 'NN' else 'VB'
+    # Mapping POS tags to SpaCy's POS tags
+    pos_tag_mapping = {
+        'NOUN': {'NOUN', 'PROPN'},
+        'VERB': {'VERB'}
+    }
+
+    pos_tag_prefix = pos_tag_mapping.get(args.tag)
+    if not pos_tag_prefix:
+        print(f"Invalid tag '{args.tag}' specified.")
+        sys.exit(1)
+
     extraction(pos_tag_prefix)
-    logging.info(f'----------------------------------')
-    logging.info('Analysis completed')
