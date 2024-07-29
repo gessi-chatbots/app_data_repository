@@ -1,5 +1,6 @@
 package upc.edu.gessi.repo.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -32,6 +33,7 @@ import upc.edu.gessi.repo.service.ProcessService;
 import upc.edu.gessi.repo.util.ExcelUtils;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -196,15 +198,23 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
     private short getColorBasedOnValue(double value) {
-        if (value < 25) {
-            return IndexedColors.LIGHT_GREEN.getIndex();
-        } else if (value < 50) {
-            return IndexedColors.LIGHT_YELLOW.getIndex();
-        } else if (value < 75) {
-            return IndexedColors.ORANGE.getIndex();
+        double normalizedValue = Math.min(Math.max(value, 0), 100);
+
+        double gradientLevel = normalizedValue / 100.0;
+
+
+        short blueColor;
+        if (gradientLevel < 0.25) {
+            blueColor = IndexedColors.LIGHT_BLUE.getIndex();
+        } else if (gradientLevel < 0.5) {
+            blueColor = IndexedColors.SKY_BLUE.getIndex();
+        } else if (gradientLevel < 0.75) {
+            blueColor = IndexedColors.CORNFLOWER_BLUE.getIndex();
         } else {
-            return IndexedColors.RED.getIndex();
+            blueColor = IndexedColors.DARK_BLUE.getIndex();
         }
+
+        return blueColor;
     }
 
     private void insertSummary(final Workbook workbook) {
@@ -262,91 +272,91 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     public void insert50TopNouns(final Workbook workbook) {
         Sheet top50NounsSheet = createWorkbookSheet(workbook, "Top 50 Nouns");
         generateTop50NounsHeader(workbook, top50NounsSheet);
-        //TODO fix script to process the sentence - feature context.
         top50Nouns = processService.executeTop50PythonScript("scripts/top50Nouns.py", distinctFeatures);
         Integer rowIndex = 1;
-        for (TermDTO noun : top50Nouns) {
-            ArrayList<String> nounData = new ArrayList<>();
-            nounData.add(noun.getTerm());
-            nounData.add(String.valueOf(noun.getFrequency()));
-            insertRowInSheet(top50NounsSheet, nounData, rowIndex);
-            rowIndex++;
+        if (top50Nouns.size() > 0) {
+            for (TermDTO noun : top50Nouns) {
+                ArrayList<String> nounData = new ArrayList<>();
+                nounData.add(noun.getTerm());
+                nounData.add(String.valueOf(noun.getFrequency()));
+                insertRowInSheet(top50NounsSheet, nounData, rowIndex);
+                rowIndex++;
+            }
+
+            XSSFSheet sheet = (XSSFSheet) top50NounsSheet;
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 20);
+
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText("Top 50 Nouns Frequencies");
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            bottomAxis.setTitle("Nouns");
+
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            leftAxis.setTitle("Frequency");
+
+            XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(sheet,
+                    new CellRangeAddress(1, top50Nouns.size(), 0, 0));
+
+            XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
+                    new CellRangeAddress(1, top50Nouns.size(), 1, 1));
+
+            XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
+            ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
+
+            XDDFChartData.Series series = data.addSeries(categories, values);
+            series.setTitle("Frequency", null);
+
+            chart.plot(data);
         }
 
-        XSSFSheet sheet = (XSSFSheet) top50NounsSheet;
-        XSSFDrawing drawing = sheet.createDrawingPatriarch();
-        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 20);
-
-        XSSFChart chart = drawing.createChart(anchor);
-        chart.setTitleText("Top 50 Nouns Frequencies");
-        XDDFChartLegend legend = chart.getOrAddLegend();
-        legend.setPosition(LegendPosition.BOTTOM);
-
-        XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
-        bottomAxis.setTitle("Nouns");
-
-        XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
-        leftAxis.setTitle("Frequency");
-
-        XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(sheet,
-                new CellRangeAddress(1, top50Nouns.size(), 0, 0));
-
-        XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
-                new CellRangeAddress(1, top50Nouns.size(), 1, 1));
-
-        XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
-        ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
-
-        XDDFChartData.Series series = data.addSeries(categories, values);
-        series.setTitle("Frequency", null);
-
-        chart.plot(data);
     }
     private void insert50TopVerbs(final Workbook workbook) {
         Sheet top50VerbsSheet = createWorkbookSheet(workbook, "Top 50 Verbs");
         generateTop50VerbsHeader(workbook, top50VerbsSheet);
-        //TODO fix script to process the sentence - feature context.
         top50Verbs = processService.executeTop50PythonScript("scripts/top50Verbs.py", distinctFeatures);
         Integer rowIndex = 1;
+        if (top50Verbs.size() > 0) {
+            for (TermDTO verb : top50Verbs) {
+                ArrayList<String> verbData = new ArrayList<>();
+                verbData.add(verb.getTerm());
+                verbData.add(String.valueOf(verb.getFrequency()));
+                insertRowInSheet(top50VerbsSheet, verbData, rowIndex);
+                rowIndex++;
+            }
 
-        // TODO extract method
-        for (TermDTO verb : top50Verbs) {
-            ArrayList<String> verbData = new ArrayList<>();
-            verbData.add(verb.getTerm());
-            verbData.add(String.valueOf(verb.getFrequency()));
-            insertRowInSheet(top50VerbsSheet, verbData, rowIndex);
-            rowIndex++;
+            XSSFSheet sheet = (XSSFSheet) top50VerbsSheet;
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 20);
+
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText("Top 50 Verbs Frequencies");
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            bottomAxis.setTitle("Verbs");
+
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            leftAxis.setTitle("Frequency");
+
+            XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(sheet,
+                    new CellRangeAddress(1, top50Verbs.size(), 0, 0));
+            XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
+                    new CellRangeAddress(1, top50Verbs.size(), 1, 1));
+
+            XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
+            ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
+
+            XDDFChartData.Series series = data.addSeries(categories, values);
+            series.setTitle("Verb distribution", null);
+
+            chart.plot(data);
         }
-
-        XSSFSheet sheet = (XSSFSheet) top50VerbsSheet;
-        XSSFDrawing drawing = sheet.createDrawingPatriarch();
-        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 20);
-
-        XSSFChart chart = drawing.createChart(anchor);
-        chart.setTitleText("Top 50 Verbs Frequencies");
-        XDDFChartLegend legend = chart.getOrAddLegend();
-        legend.setPosition(LegendPosition.BOTTOM);
-
-        XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
-        bottomAxis.setTitle("Verbs");
-
-        XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
-        leftAxis.setTitle("Frequency");
-
-        XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(sheet,
-                new CellRangeAddress(1, top50Verbs.size(), 0, 0));
-        XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
-                new CellRangeAddress(1, top50Verbs.size(), 1, 1));
-
-        XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
-        ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
-
-        XDDFChartData.Series series = data.addSeries(categories, values);
-        series.setTitle("Verb distribution", null);
-
-        chart.plot(data);
     }
-
 
 
     private void insertTotalFeatures(Workbook workbook) {
@@ -361,7 +371,6 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Obtaining Summary features and context");
         logger.info("Obtaining Review features and context");
         logger.info("Obtaining Description features and context");
-
         distinctFeatures = getAllDistinctFeatures();
 
 
@@ -441,7 +450,25 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 ExcelUtils.extractLastIdentifierSegment(applicationIdentifier) + " TF");
         generateTotalApplicationFeaturesHeader(workbook, totalApplicationFeaturesSheet);
         Map<String, Integer> totalApplicationFeatures = getTotalApplicationFeatures(applicationIdentifier);
+        List<String> featureList = totalApplicationFeatures.keySet().stream().collect(Collectors.toList());
+        writeFeaturesToJson(applicationIdentifier, featureList);
         insertFeaturesAndOcurrencesInSheet(totalApplicationFeaturesSheet, totalApplicationFeatures);
+    }
+
+    private void writeFeaturesToJson(String applicationIdentifier, List<String> features) {
+        String basePath = "src/main/resources/static/applicationFeatures";
+
+        String fileName = ExcelUtils.extractLastIdentifierSegment(applicationIdentifier) + "Features.json";
+
+        File file = new File(Paths.get(basePath, fileName).toString());
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writeValue(file, features);
+            logger.info("Features written to {}", file.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("Error writing features to JSON file", e);
+        }
     }
 
     private void insertTotalDocumentTypeFeatures(final Workbook workbook, final String documentType) {

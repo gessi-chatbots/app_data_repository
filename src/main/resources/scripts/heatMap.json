@@ -1,1 +1,17 @@
-["Adfree", "Aap", "Message", "IntroduceOption", "Telegram", "Call", "Notification", "Update", "Chat", "Line", "Spam", "Text", "Communication", "Bug", "Support", "Scam", "Download", "Channel", "Phone", "Verification", "Email", "Selling", "Service", "Account", "Group", "Folder", "Messenger", "Facebook", "Video", "Contacts", "PushNotification", "SendCall", "LikeTelegram", "VeryGoodApp", "LoveApp", "AccessAllContent", "AccessChrome", "BringPersonalizedNewsArticle", "BrowseInternet", "BrowsePreviouslyVisitWebPage", "CreateExperience", "DownloadDangerousFile", "DownloadVideo", "EnjoySameChromeWebBrowserExperience", "FillForm", "FindAnswer", "FindArticle", "HaveDownload", "KeepPhone", "ProtectPhone", "SaveBookmark", "SaveHistory", "ShowWarning", "StartGoogleSearch", "TranslateEntireWeb", "UseVoice", "BlockAd", "CopyUrl"]
+{
+    "distinct_features": [
+        "HaveApp",
+        "GiveBrowser",
+        "SeeApp"
+    ],
+    "verbs": {
+        "Have": 10,
+        "Give": 5,
+        "See": 3
+    },
+    "nouns": {
+        "App": 15,
+        "Use": 7,
+        "Browser": 4
+    }
+}

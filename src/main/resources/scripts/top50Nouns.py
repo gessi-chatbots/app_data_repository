@@ -2,57 +2,87 @@ import sys
 import json
 import re
 from collections import Counter
-import nltk
+import spacy
 
+# Ensure SpaCy and its model are available
 try:
-    nltk.data.find('tokenizers/punkt')
-    nltk.data.find('taggers/averaged_perceptron_tagger')
-except LookupError:
+    spacy.load('en_core_web_sm')
+except IOError:
     import subprocess
-    import sys
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'spacy'])
+    import spacy
+    spacy.cli.download("en_core_web_sm")
 
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'nltk'])
-    import nltk
-
-    nltk.download('punkt')
-    nltk.download('averaged_perceptron_tagger')
-
+# Load the SpaCy model
+nlp = spacy.load('en_core_web_sm')
 
 def clean_text(text):
-    cleaned_text = ''.join(c if c.isalnum() or c.isspace() else ' ' for c in text)
-    return cleaned_text
+    return ''.join(c if c.isalnum() or c.isspace() else ' ' for c in text)
 
 def camel_case_split(identifier):
     return re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))', identifier)
 
+def split_into_list(text):
+    return text.split()
 
-def extract_nouns_from_text(inp):
-    cleaned_text = clean_text(inp)
+def extraction(noun_tags):
+    # 1) Get Feature and sentence from input
+    input_text = sys.stdin.read()
+    text_list = json.loads(input_text)
+    word_counter = Counter()
 
-    words = []
-    for word in nltk.word_tokenize(cleaned_text):
-        words.extend(camel_case_split(word))
+    for text in text_list:
+        # 2) Clean feature
+        cleaned_feature = clean_text(text['feature'])
+        feature_words = []
+        for word in nlp(cleaned_feature):
+            feature_words.extend(camel_case_split(word.text))
+        feature_words_lower = [word.lower() for word in feature_words]
 
-    tagged_words = nltk.pos_tag(words)
-    n = [word for word, pos in tagged_words if pos.startswith('NN')]
+        # 2 bis) Clean Sentence
+        cleaned_sentence = clean_text(text['sentence'])
+        sentence_doc = nlp(cleaned_sentence)
+        sentence_words_lower = [token.text.lower() for token in sentence_doc]
 
-    return n
+        # 3) Tag sentence
+        tagged_sentence = [(token.text, token.pos_) for token in sentence_doc]
 
+        # 4) Initialize matched positions
+        matched_words_positions = []
+        for feature_word in feature_words_lower:
+            if feature_word not in sentence_words_lower:
+                continue
 
-input_text = sys.stdin.read()
+            for i, sentence_word in enumerate(sentence_words_lower):
+                if feature_word == sentence_word:
+                    tag = tagged_sentence[i][1]
+                    tagged_word = tagged_sentence[i][0]
 
-text_list = json.loads(input_text)
+                    # Check if the word is already in matched_words_positions
+                    found = False
+                    for entry in matched_words_positions:
+                        if entry['tagged_word'] == tagged_word:
+                            entry['tag'] = tag
+                            found = True
+                            break
 
-all_nouns = []
+                    if not found:
+                        matched_words_positions.append({'tag': tag,
+                                                        'tagged_word': tagged_word,
+                                                        'index': i})
 
-for text in text_list:
-    nouns = extract_nouns_from_text(text)
-    all_nouns.extend(nouns)
+        # 5) Count most frequent POS TAGs
+        for entry in matched_words_positions:
+            if entry['tag'] in noun_tags:
+                word_counter[entry['tagged_word']] += 1
 
-noun_freq = Counter(all_nouns)
+    top_50_words = word_counter.most_common(50)
+    top_50_words_list = [{'term': word, 'frequency': freq} for word, freq in top_50_words]
+    print(json.dumps(top_50_words_list, indent=2))
 
-top_50_nouns = noun_freq.most_common(50)
+def find_word_in_matched_words(word, matched_words):
+    return any(matched_word['tagged_word'] == word for matched_word in matched_words)
 
-top_50_nouns_list = [{'term': noun, 'frequency': freq} for noun, freq in top_50_nouns]
-
-print(json.dumps(top_50_nouns_list))
+if __name__ == "__main__":
+    noun_tags = {'NOUN', 'PROPN'}  # Adjusted to SpaCy's tags for nouns
+    extraction(noun_tags)
