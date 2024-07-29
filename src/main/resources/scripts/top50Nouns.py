@@ -10,9 +10,10 @@ try:
 except IOError:
     import subprocess
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'spacy'])
-    spacy.cli.download('en_core_web_sm')
+    import spacy
+    spacy.cli.download("en_core_web_sm")
 
-# Load SpaCy model
+# Load the SpaCy model
 nlp = spacy.load('en_core_web_sm')
 
 def clean_text(text):
@@ -21,7 +22,10 @@ def clean_text(text):
 def camel_case_split(identifier):
     return re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))', identifier)
 
-def extraction(pos_tag_prefix):
+def split_into_list(text):
+    return text.split()
+
+def extraction(noun_tags):
     # 1) Get Feature and sentence from input
     input_text = sys.stdin.read()
     text_list = json.loads(input_text)
@@ -31,18 +35,17 @@ def extraction(pos_tag_prefix):
         # 2) Clean feature
         cleaned_feature = clean_text(text['feature'])
         feature_words = []
-        doc_feature = nlp(cleaned_feature)
-        for token in doc_feature:
-            feature_words.extend(camel_case_split(token.text))
+        for word in nlp(cleaned_feature):
+            feature_words.extend(camel_case_split(word.text))
         feature_words_lower = [word.lower() for word in feature_words]
 
         # 2 bis) Clean Sentence
         cleaned_sentence = clean_text(text['sentence'])
-        doc_sentence = nlp(cleaned_sentence)
-        sentence_words_lower = [token.text.lower() for token in doc_sentence]
+        sentence_doc = nlp(cleaned_sentence)
+        sentence_words_lower = [token.text.lower() for token in sentence_doc]
 
         # 3) Tag sentence
-        tagged_sentence = [(token.text, token.pos_) for token in doc_sentence]
+        tagged_sentence = [(token.text, token.pos_) for token in sentence_doc]
 
         # 4) Initialize matched positions
         matched_words_positions = []
@@ -68,9 +71,9 @@ def extraction(pos_tag_prefix):
                                                         'tagged_word': tagged_word,
                                                         'index': i})
 
-        # 5) Count most frequent POS TAG
+        # 5) Count most frequent POS TAGs
         for entry in matched_words_positions:
-            if entry['tag'] == pos_tag_prefix:
+            if entry['tag'] in noun_tags:
                 word_counter[entry['tagged_word']] += 1
 
     top_50_words = word_counter.most_common(50)
@@ -81,4 +84,5 @@ def find_word_in_matched_words(word, matched_words):
     return any(matched_word['tagged_word'] == word for matched_word in matched_words)
 
 if __name__ == "__main__":
-    extraction('VERB')  # SpaCy uses 'VERB' for verbs
+    noun_tags = {'NOUN', 'PROPN'}  # Adjusted to SpaCy's tags for nouns
+    extraction(noun_tags)
