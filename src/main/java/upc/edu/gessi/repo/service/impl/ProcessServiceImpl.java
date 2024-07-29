@@ -38,31 +38,30 @@ public class ProcessServiceImpl implements ProcessService {
             String absoluteScriptPath = resource.getFile().getAbsolutePath();
 
             ProcessBuilder processBuilder = new ProcessBuilder("python", absoluteScriptPath);
-
             Process process = processBuilder.start();
 
             try (OutputStream os = process.getOutputStream()) {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.writeValue(os, distinctFeatures);
                 os.flush();
+                os.close();
             }
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder output = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line);
+                }
             }
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
                 ObjectMapper mapper = new ObjectMapper();
-                return mapper
-                        .readValue(
-                                output.toString(),
-                                mapper.getTypeFactory().constructCollectionType(List.class, TermDTO.class));
+                return mapper.readValue(output.toString(), mapper.getTypeFactory().constructCollectionType(List.class, TermDTO.class));
             } else {
                 logger.error("Python script exited with code: " + exitCode);
+                logger.error("Output: " + output.toString());
                 return new ArrayList<>();
             }
 
