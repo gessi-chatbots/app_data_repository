@@ -1,17 +1,1 @@
-{
-    "distinct_features": [
-        "HaveApp",
-        "GiveBrowser",
-        "SeeApp"
-    ],
-    "verbs": {
-        "Have": 10,
-        "Give": 5,
-        "See": 3
-    },
-    "nouns": {
-        "App": 15,
-        "Use": 7,
-        "Browser": 4
-    }
-}
+{"distinct_features": ["HaveApp", "GiveBrowser", "SeeApp"], "verbs": {"Have": "10", "Give": "5", "See": "3"}, "nouns": {"App": "15", "Use": "7", "Browser": "4"}}
