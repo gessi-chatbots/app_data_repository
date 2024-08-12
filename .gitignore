@@ -4,15 +4,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 ### GraphBD ###
-graphdb-data/logs/*
-graphdb-data/graphdb-import/*
-graphdb-data/work/*
-graphdb-data/data/*
+src/main/resources/graphdb-data/logs/*
+src/main/resources/graphdb-data/graphdb-import/*
+src/main/resources/graphdb-data/work/*
+src/main/resources/graphdb-data/data/*
 
-!graphdb-data/data/readme.md
-!graphdb-data/logs/
-!graphdb-data/graphdb-import/readme.md
-!graphdb-data/work/
+!src/main/resources/graphdb-data/data/readme.md
+!src/main/resources/graphdb-data/logs/
+!src/main/resources/graphdb-data/graphdb-import/readme.md
+!src/main/resources/graphdb-data/work/
 *.ttl
 *.xlsx
 ### STS ###
