@@ -24,7 +24,7 @@ def generate_datasets(file):
     return datasets
 
 
-def save_datasets(datasets):
+def save_csv_datasets(datasets):
     for dataset_dic in datasets:
         if dataset_dic['name'] == 'training_dataset':
             path = os.path.join(SPLIT_PATH, 'training')
@@ -35,6 +35,9 @@ def save_datasets(datasets):
 
         dataset_dic['dataset'].to_csv(path_or_buf=os.path.join(path, dataset_dic['name'] + '.csv'))
 
+def generate_hf_datasets(datasets):
+    return None
+
 def main():
     csv_files = os.listdir(CSV_PATH)
     read_csv_files = []
@@ -44,8 +47,11 @@ def main():
 
     merged_csv = merge_csv_files(read_csv_files)
 
-    datasets = generate_datasets(merged_csv)
-    save_datasets(datasets)
+    csv_datasets = generate_datasets(merged_csv)
+
+    save_csv_datasets(csv_datasets)
+
+    generate_hf_datasets(csv_datasets)
 
 
 if __name__ == '__main__':
