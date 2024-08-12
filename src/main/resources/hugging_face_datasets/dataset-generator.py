@@ -19,10 +19,8 @@ def merge_csv_files(csv_files):
 
 def generate_datasets(file):
     datasets = []
-    train_data, temp_data = train_test_split(file, test_size=0.3, random_state=42)
+    train_data, test_data = train_test_split(file, test_size=0.3, random_state=42)
     datasets.append({'name': 'training_dataset', 'dataset' : train_data})
-    val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42)
-    datasets.append({'name': 'validation_dataset', 'dataset' : val_data})
     datasets.append({'name': 'test_dataset', 'dataset' : test_data})
     return datasets
 
@@ -31,8 +29,6 @@ def save_csv_datasets(datasets):
     for dataset_dic in datasets:
         if dataset_dic['name'] == 'training_dataset':
             path = os.path.join(SPLIT_PATH, 'training')
-        elif dataset_dic['name'] == 'validation_dataset':
-            path = os.path.join(SPLIT_PATH, 'validation')
         elif dataset_dic['name'] == 'test_dataset':
             path = os.path.join(SPLIT_PATH, 'test')
 
