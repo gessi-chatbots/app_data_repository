@@ -6,5 +6,6 @@ name = "pypi"
 [packages]
 pandas = "*"
 scikit-learn = "*"
+datasets = "*"
 
 [dev-packages]
