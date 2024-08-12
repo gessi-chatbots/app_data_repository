@@ -1,7 +1,10 @@
 import os
+import datasets
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from dotenv import load_dotenv
 
+load_dotenv()
 CSV_PATH = 'datasets/csv'
 SPLIT_PATH = 'datasets/splits'
 COLUMNS = ['app_name', 'categoryId', 'reviewId', 'sentenceId', 'feature', 'review', 'sentence', 'emotion-primary-agreement']
@@ -35,8 +38,9 @@ def save_csv_datasets(datasets):
 
         dataset_dic['dataset'].to_csv(path_or_buf=os.path.join(path, dataset_dic['name'] + '.csv'))
 
-def generate_hf_datasets(datasets):
-    return None
+def generate_and_push_hf_datasets():
+    hf_datasets = datasets.load_dataset('csv', data_files={'train': SPLIT_PATH + "/training/" + "training_dataset.csv",'test': SPLIT_PATH + "/test/" + "test_dataset.csv"})
+    hf_datasets.push_to_hub("mtiessler/emotion_classification_reviews_mobile_applications", token=os.getenv("HF_TOKEN"))
 
 def main():
     csv_files = os.listdir(CSV_PATH)
@@ -51,7 +55,7 @@ def main():
 
     save_csv_datasets(csv_datasets)
 
-    generate_hf_datasets(csv_datasets)
+    generate_and_push_hf_datasets()
 
 
 if __name__ == '__main__':
