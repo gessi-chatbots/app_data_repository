@@ -35,8 +35,14 @@ def save_csv_datasets(datasets):
         dataset_dic['dataset'].to_csv(path_or_buf=os.path.join(path, dataset_dic['name'] + '.csv'))
 
 def generate_and_push_hf_datasets():
-    hf_datasets = datasets.load_dataset('csv', data_files={'train': SPLIT_PATH + "/training/" + "training_dataset.csv",'test': SPLIT_PATH + "/test/" + "test_dataset.csv"})
-    hf_datasets.push_to_hub("mtiessler/emotion_classification_reviews_mobile_applications", token=os.getenv("HF_TOKEN"))
+    hf_datasets = datasets.load_dataset('csv', data_files={
+        'train': SPLIT_PATH + "/training/" + "training_dataset.csv",
+        'test': SPLIT_PATH + "/test/" + "test_dataset.csv"
+    })
+
+    hf_datasets.push_to_hub(
+        "mtiessler/emotion_classification_reviews_mobile_applications",
+        token=os.getenv("HF_TOKEN"))
 
 def main():
     csv_files = os.listdir(CSV_PATH)
