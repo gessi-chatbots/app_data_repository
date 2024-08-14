@@ -38,8 +38,8 @@ def load_trainer_args(fold_index):
 def load_tokenizer():
     return AutoTokenizer.from_pretrained(os.getenv("TOKENIZER_ID"))
 
-def preprocess(text, tokenizer):
-    return tokenizer(text, padding='max_length', truncation=True)
+def preprocess(example, tokenizer):
+    return tokenizer(example['sentence'], padding='max_length', truncation=True)
 
 def train(model, tokenizer, train_split, test_split, fold_index):
     trainer = load_trainer(model,
