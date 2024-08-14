@@ -9,5 +9,6 @@ scikit-learn = "*"
 datasets = "*"
 python-dotenv = "*"
 accelerate = "*"
+transformers = "*"
 
 [dev-packages]
