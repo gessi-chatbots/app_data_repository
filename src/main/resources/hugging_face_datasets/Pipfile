@@ -8,5 +8,6 @@ pandas = "*"
 scikit-learn = "*"
 datasets = "*"
 python-dotenv = "*"
+accelerate = "*"
 
 [dev-packages]
