@@ -1,8 +1,8 @@
 import os
+import numpy as np
 from datasets import load_dataset
 from dotenv import load_dotenv
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
-import numpy as np
 import evaluate
 
 load_dotenv()
@@ -33,14 +33,15 @@ def load_trainer(model, trainer_args, tokenizer, train_split, test_split):
         args=trainer_args,
         train_dataset=train_split,
         eval_dataset=test_split,
+        tokenizer=tokenizer,
         compute_metrics=compute_metrics
     )
 
 
 def load_trainer_args(fold_index):
-    '''return TrainingArguments(
+    return TrainingArguments(
         output_dir=f'./results/fold_{fold_index}',
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-5,
         per_device_train_batch_size=16,
@@ -48,8 +49,7 @@ def load_trainer_args(fold_index):
         num_train_epochs=3,
         weight_decay=0.01,
         load_best_model_at_end=True,
-    )'''
-    return TrainingArguments(output_dir="test_trainer", eval_strategy="epoch")
+    )
 
 
 def load_tokenizer():
@@ -71,8 +71,6 @@ def preprocess(examples, tokenizer):
         raise ValueError("Label out of bounds!")
 
     return {
-        'sentence': examples['sentence'],
-        'emotion-primary-agreement': examples['emotion-primary-agreement'],
         'input_ids': tokens['input_ids'],
         'attention_mask': tokens['attention_mask'],
         'labels': labels
@@ -101,7 +99,7 @@ def train_model(model, tokenizer, dataset):
 
 
 def load_hf_model():
-    return BertForSequenceClassification.from_pretrained(os.getenv("MODEL_ID"))
+    return BertForSequenceClassification.from_pretrained(os.getenv("MODEL_ID"), num_labels=LABEL_QTY)
 
 
 def load_hf_dataset():
