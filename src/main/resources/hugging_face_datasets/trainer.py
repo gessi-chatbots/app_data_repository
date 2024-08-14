@@ -1,7 +1,7 @@
 import os
 from datasets import load_dataset
 from dotenv import load_dotenv
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 
 
 load_dotenv()
@@ -25,7 +25,7 @@ def load_trainer(model, trainer_args, tokenizer, train_split, test_split):
 def load_trainer_args(fold_index):
     return TrainingArguments(
         output_dir=f'./results/fold_{fold_index}',
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-5,
         per_device_train_batch_size=16,
@@ -36,7 +36,7 @@ def load_trainer_args(fold_index):
     )
 
 def load_tokenizer():
-    return AutoTokenizer.from_pretrained(os.getenv("TOKENIZER_ID"))
+    return BertTokenizer.from_pretrained(os.getenv("TOKENIZER_ID"))
 
 def preprocess(example, tokenizer):
     return tokenizer(example['sentence'], padding='max_length', truncation=True)
@@ -60,8 +60,8 @@ def train_model(model, tokenizer, dataset):
         trainer.save_model(f"./model_fold_{fold}")
 
 def load_hf_model():
-    return AutoModelForSequenceClassification.from_pretrained(os.getenv("MODEL_ID"),
-                                                              num_labels=LABEL_QTY)
+    return BertForSequenceClassification.from_pretrained(os.getenv("MODEL_ID"),
+                                                         num_labels=LABEL_QTY)
 def load_hf_dataset():
     return load_dataset(os.getenv("REPOSITORY_K10_ID"))
 
