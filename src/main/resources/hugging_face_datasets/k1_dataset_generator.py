@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 CSV_PATH = 'datasets/csv'
-SPLIT_PATH = 'datasets/splits'
+SPLIT_PATH = 'datasets/splits/k1'
 COLUMNS = ['app_name', 'categoryId', 'reviewId', 'sentenceId', 'feature', 'review', 'sentence', 'emotion-primary-agreement']
 def read_csv_file(csv_file):
     csv = pd.read_csv(CSV_PATH + '/' + csv_file)
@@ -41,7 +41,7 @@ def generate_and_push_hf_datasets():
     })
 
     hf_datasets.push_to_hub(
-        "mtiessler/emotion_classification_reviews_mobile_applications",
+        repo_id=os.getenv("REPOSITORY_ID"),
         token=os.getenv("HF_TOKEN"))
 
 def main():

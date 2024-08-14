@@ -49,7 +49,7 @@ def generate_and_push_hf_datasets(k=10):
     hf_datasets = datasets.load_dataset('csv', data_files=data_files)
 
     hf_datasets.push_to_hub(
-        "mtiessler/emotion_classification_reviews_mobile_applications",
+        repo_id=os.getenv("REPOSITORY_K10_ID"),
         token=os.getenv("HF_TOKEN"))
 
 
