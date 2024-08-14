@@ -10,5 +10,6 @@ datasets = "*"
 python-dotenv = "*"
 accelerate = "*"
 transformers = "*"
+evaluate = "*"
 
 [dev-packages]
