@@ -35,9 +35,8 @@ def load_trainer_args(fold_index):
         load_best_model_at_end=True,
     )
 
-
-def load_tokenizer(model):
-    return AutoTokenizer.from_pretrained(os.getenv("MODEL_ID"))
+def load_tokenizer():
+    return AutoTokenizer.from_pretrained(os.getenv("TOKENIZER_ID"))
 
 def preprocess(text, tokenizer):
     return tokenizer(text, padding='max_length', truncation=True)
@@ -55,10 +54,10 @@ def train(model, tokenizer, train_split, test_split, fold_index):
 def train_model(model, tokenizer, dataset):
     all_fold_metrics = []
     for fold in range(FOLD_QTY):
-        train_split = ""
-        test_split = ""
+        train_split = dataset[f'train_fold_{fold}']
+        test_split = dataset[f'val_fold_{fold}']
         trainer = train(model, tokenizer, train_split, test_split, fold)
-        fold_metrics = evaluate_metrics(trainer)
+        all_fold_metrics.append(evaluate_metrics(trainer))
         trainer.save_model(f"./model_fold_{fold}")
 
 
@@ -70,11 +69,18 @@ def load_hf_model():
 def load_hf_dataset():
     return load_dataset(os.getenv("REPOSITORY_K10_ID"))
 
+def preprocess_dataset(dataset, tokenizer):
+    for fold in range(FOLD_QTY):
+        dataset[f'train_fold_{fold}'] = dataset[f'train_fold_{fold}'].map(lambda x: preprocess(x, tokenizer), batched=True)
+        dataset[f'val_fold_{fold}'] = dataset[f'val_fold_{fold}'].map(lambda x: preprocess(x, tokenizer), batched=True)
+
+
 
 def main():
     dataset = load_hf_dataset()
     model = load_hf_model()
-    tokenizer = load_tokenizer(model)
+    tokenizer = load_tokenizer()
+    preprocess_dataset(dataset, tokenizer)
     train_model(model, tokenizer, dataset)
 
 
