@@ -117,7 +117,14 @@ def preprocess_dataset(dataset, tokenizer):
         dataset[f'train_fold_{fold}'] = train_split
         dataset[f'test_fold_{fold}'] = test_split
 
-
+def save_metrics_to_file(metrics, filename):
+    with open(filename, 'w') as file:
+        file.write("Evaluation Metrics per Fold:\n\n")
+        for fold_index, metric in enumerate(metrics, 1):
+            file.write(f"Fold {fold_index} Metrics:\n")
+            for key, value in metric.items():
+                file.write(f"{key}: {value}\n")
+            file.write("\n")
 def main():
     dataset = load_hf_dataset()
     model = load_hf_model()
@@ -125,8 +132,7 @@ def main():
     preprocess_dataset(dataset, tokenizer)
 
     metrics = train_model(model, tokenizer, dataset)
-    print(metrics)
-
+    save_metrics_to_file(metrics, 'metrics.txt')
 
 if __name__ == '__main__':
     main()
