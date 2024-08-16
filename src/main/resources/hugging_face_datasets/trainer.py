@@ -2,7 +2,7 @@ import os
 import numpy as np
 from datasets import load_dataset
 from dotenv import load_dotenv
-from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments, PushToHubCallback
 import evaluate
 
 load_dotenv()
@@ -118,14 +118,35 @@ def preprocess_dataset(dataset, tokenizer):
         dataset[f'test_fold_{fold}'] = test_split
 
 
-def main():
-    dataset = load_hf_dataset()
-    model = load_hf_model()
-    tokenizer = load_tokenizer()
-    preprocess_dataset(dataset, tokenizer)
+def save_metrics_to_file(metrics, filename):
+    with open(filename, 'w') as file:
+        file.write("Evaluation Metrics per Fold:\n\n")
+        for fold_index, metric in enumerate(metrics, 1):
+            file.write(f"Fold {fold_index} Metrics:\n")
+            for key, value in metric.items():
+                file.write(f"{key}: {value}\n")
+            file.write("\n")
 
-    metrics = train_model(model, tokenizer, dataset)
-    print(metrics)
+
+def push_model_to_hf():
+    model_name = os.getenv("MODEL_RESULT_ID")
+    for fold in range(1, FOLD_QTY + 1):
+        print(f"Fold {fold} model pushed to Hugging Face Hub.")
+        model = BertForSequenceClassification.from_pretrained(f"./model_fold_{fold}")
+        tokenizer = BertTokenizer.from_pretrained(os.getenv("TOKENIZER_ID"))
+        model.push_to_hub(f"{model_name}_fold_{fold}")
+        tokenizer.push_to_hub(f"{model_name}_fold_{fold}")
+
+
+def main():
+    # dataset = load_hf_dataset()
+    # model = load_hf_model()
+    # tokenizer = load_tokenizer()
+    # preprocess_dataset(dataset, tokenizer)
+
+    # metrics = train_model(model, tokenizer, dataset)
+    # save_metrics_to_file(metrics, 'metrics.txt')
+    push_model_to_hf()
 
 
 if __name__ == '__main__':
