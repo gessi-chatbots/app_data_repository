@@ -2,7 +2,7 @@ import os
 import numpy as np
 from datasets import load_dataset
 from dotenv import load_dotenv
-from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments, PushToHubCallback
 import evaluate
 
 load_dotenv()
@@ -127,6 +127,14 @@ def save_metrics_to_file(metrics, filename):
                 file.write(f"{key}: {value}\n")
             file.write("\n")
 
+def push_model_to_hf():
+    model_name = os.getenv("MODEL_ID") + '_fine_tuned'
+    for fold in range(1, FOLD_QTY + 1):
+        print(f"Fold {fold} model pushed to Hugging Face Hub.")
+        model = BertForSequenceClassification.from_pretrained(f"./model_fold_{fold}")
+        tokenizer = BertTokenizer.from_pretrained(os.getenv("TOKENIZER_ID"))
+        model.push_to_hub(f"{model_name}_fold_{fold}")
+        tokenizer.push_to_hub(f"{model_name}_fold_{fold}")
 
 def main():
     dataset = load_hf_dataset()
@@ -136,7 +144,7 @@ def main():
 
     metrics = train_model(model, tokenizer, dataset)
     save_metrics_to_file(metrics, 'metrics.txt')
-
+    push_model_to_hf()
 
 if __name__ == '__main__':
     main()
