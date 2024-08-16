@@ -127,8 +127,9 @@ def save_metrics_to_file(metrics, filename):
                 file.write(f"{key}: {value}\n")
             file.write("\n")
 
+
 def push_model_to_hf():
-    model_name = os.getenv("MODEL_ID") + '_fine_tuned'
+    model_name = os.getenv("MODEL_RESULT_ID")
     for fold in range(1, FOLD_QTY + 1):
         print(f"Fold {fold} model pushed to Hugging Face Hub.")
         model = BertForSequenceClassification.from_pretrained(f"./model_fold_{fold}")
@@ -136,15 +137,17 @@ def push_model_to_hf():
         model.push_to_hub(f"{model_name}_fold_{fold}")
         tokenizer.push_to_hub(f"{model_name}_fold_{fold}")
 
-def main():
-    dataset = load_hf_dataset()
-    model = load_hf_model()
-    tokenizer = load_tokenizer()
-    preprocess_dataset(dataset, tokenizer)
 
-    metrics = train_model(model, tokenizer, dataset)
-    save_metrics_to_file(metrics, 'metrics.txt')
+def main():
+    # dataset = load_hf_dataset()
+    # model = load_hf_model()
+    # tokenizer = load_tokenizer()
+    # preprocess_dataset(dataset, tokenizer)
+
+    # metrics = train_model(model, tokenizer, dataset)
+    # save_metrics_to_file(metrics, 'metrics.txt')
     push_model_to_hf()
+
 
 if __name__ == '__main__':
     main()
