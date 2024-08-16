@@ -2,12 +2,12 @@ import os
 import numpy as np
 from datasets import load_dataset
 from dotenv import load_dotenv
-from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments, PushToHubCallback
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 import evaluate
 
 load_dotenv()
 
-# Number of labels and folds
+
 FOLD_QTY = 10
 LABEL_QTY = 10
 LABEL_MAP = {
@@ -38,9 +38,9 @@ def load_trainer(model, trainer_args, tokenizer, train_split, test_split):
     )
 
 
-def load_trainer_args(fold_index):
+def load_trainer_args(emotion, model_name):
     return TrainingArguments(
-        output_dir=f'./results/fold_{fold_index}',
+        output_dir=f'./{model_name}_{emotion}',
         eval_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-5,
@@ -77,9 +77,9 @@ def preprocess(examples, tokenizer):
     }
 
 
-def train(model, tokenizer, train_split, test_split, fold_index):
+def train(model, tokenizer, train_split, test_split, emotion, model_name):
     trainer = load_trainer(model,
-                           load_trainer_args(fold_index),
+                           load_trainer_args(emotion, model_name),
                            tokenizer,
                            train_split,
                            test_split)
@@ -88,13 +88,15 @@ def train(model, tokenizer, train_split, test_split, fold_index):
 
 
 def train_model(model, tokenizer, dataset):
+    model_name = os.getenv("MODEL_ID").split('/')[-1]
     all_fold_metrics = []
-    for fold in range(1, FOLD_QTY + 1):  # Folds go from 1 to 10
-        train_split = dataset[f'train_fold_{fold}']
-        test_split = dataset[f'test_fold_{fold}']
-        trainer = train(model, tokenizer, train_split, test_split, fold)
+    for emotion in LABEL_MAP.keys():
+
+        train_split = dataset[f'{emotion}_train']
+        test_split = dataset[f'{emotion}_test']
+        trainer = train(model, tokenizer, train_split, test_split, emotion, model_name)
         all_fold_metrics.append(evaluate_metrics(trainer))
-        trainer.save_model(f"./model_fold_{fold}")
+        trainer.save_model(f"./{model_name}_{emotion}")
     return all_fold_metrics
 
 
@@ -103,20 +105,19 @@ def load_hf_model():
 
 
 def load_hf_dataset():
-    return load_dataset(os.getenv("REPOSITORY_K10_ID"))
+    return load_dataset(os.getenv("REPOSITORY_K10_BY_SENTIMENT_ID"))
 
 
 def preprocess_dataset(dataset, tokenizer):
-    for fold in range(1, FOLD_QTY + 1):  # Folds go from 1 to 10
-        train_split = dataset[f'train_fold_{fold}']
-        test_split = dataset[f'test_fold_{fold}']
+    for emotion in LABEL_MAP.keys():
+        train_split = dataset[f'{emotion}_train']
+        test_split = dataset[f'{emotion}_test']
 
         train_split = train_split.map(lambda x: preprocess(x, tokenizer), batched=True)
         test_split = test_split.map(lambda x: preprocess(x, tokenizer), batched=True)
 
-        dataset[f'train_fold_{fold}'] = train_split
-        dataset[f'test_fold_{fold}'] = test_split
-
+        dataset[f'{emotion}_train'] = train_split
+        dataset[f'{emotion}_test'] = test_split
 
 def save_metrics_to_file(metrics, filename):
     with open(filename, 'w') as file:
@@ -129,13 +130,13 @@ def save_metrics_to_file(metrics, filename):
 
 
 def push_model_to_hf():
-    model_name = os.getenv("MODEL_RESULT_ID")
-    for fold in range(1, FOLD_QTY + 1):
-        print(f"Fold {fold} model pushed to Hugging Face Hub.")
-        model = BertForSequenceClassification.from_pretrained(f"./model_fold_{fold}")
+    model_name = os.getenv("MODEL_ID").split('/')[-1]
+    for emotion in LABEL_MAP.keys():
+        print(f"{emotion} model pushed to Hugging Face Hub.")
+        model = BertForSequenceClassification.from_pretrained(f"./{model_name}_{emotion}")
         tokenizer = BertTokenizer.from_pretrained(os.getenv("TOKENIZER_ID"))
-        model.push_to_hub(f"{model_name}_fold_{fold}")
-        tokenizer.push_to_hub(f"{model_name}_fold_{fold}")
+        model.push_to_hub(f"{model_name}_{emotion}")
+        tokenizer.push_to_hub(f"{model_name}_{emotion}")
 
 
 def main():
