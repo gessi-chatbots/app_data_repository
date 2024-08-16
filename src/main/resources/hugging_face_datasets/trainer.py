@@ -139,13 +139,13 @@ def push_model_to_hf():
 
 
 def main():
-    # dataset = load_hf_dataset()
-    # model = load_hf_model()
-    # tokenizer = load_tokenizer()
-    # preprocess_dataset(dataset, tokenizer)
+    dataset = load_hf_dataset()
+    model = load_hf_model()
+    tokenizer = load_tokenizer()
+    preprocess_dataset(dataset, tokenizer)
 
-    # metrics = train_model(model, tokenizer, dataset)
-    # save_metrics_to_file(metrics, 'metrics.txt')
+    metrics = train_model(model, tokenizer, dataset)
+    save_metrics_to_file(metrics, 'metrics.txt')
     push_model_to_hf()
 
 
