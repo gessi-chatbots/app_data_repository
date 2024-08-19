@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 CSV_PATH = 'datasets/csv'
 K10_SPLIT_PATH = 'datasets/splits/k10'
-COLUMNS = ['app_name', 'categoryId', 'reviewId', 'sentenceId', 'feature', 'review', 'sentence', 'emotion-primary-agreement']
+COLUMNS = ['app_name', 'categoryId', 'reviewId', 'sentenceId', 'feature', 'review', 'sentence',
+           'emotion-primary-agreement']
+
 
 def read_csv_file(csv_file):
     csv = pd.read_csv(CSV_PATH + '/' + csv_file)
@@ -15,8 +17,10 @@ def read_csv_file(csv_file):
     stringified_csv = cleaned_csv.applymap(str)
     return stringified_csv
 
+
 def merge_csv_files(csv_files):
     return pd.concat(csv_files)
+
 
 def generate_k_fold_datasets(file, k=10):
     kf = KFold(n_splits=k, shuffle=True, random_state=42)
@@ -26,6 +30,7 @@ def generate_k_fold_datasets(file, k=10):
         test_data = file.iloc[test_index]
         yield {'fold': fold, 'train': train_data, 'test': test_data}
         fold += 1
+
 
 def save_csv_datasets(fold_datasets):
     for fold_dataset in fold_datasets:
@@ -39,10 +44,11 @@ def save_csv_datasets(fold_datasets):
         fold_dataset['train'].to_csv(os.path.join(train_path, 'training_dataset.csv'), index=False)
         fold_dataset['test'].to_csv(os.path.join(test_path, 'test_dataset.csv'), index=False)
 
+
 def generate_and_push_hf_datasets(k=10):
     data_files = {}
 
-    for fold in range(1, k+1):
+    for fold in range(1, k + 1):
         data_files[f'train_fold_{fold}'] = os.path.join(K10_SPLIT_PATH, f'fold_{fold}/training/training_dataset.csv')
         data_files[f'test_fold_{fold}'] = os.path.join(K10_SPLIT_PATH, f'fold_{fold}/test/test_dataset.csv')
 
@@ -67,6 +73,7 @@ def main():
     save_csv_datasets(k_fold_datasets)
 
     generate_and_push_hf_datasets()
+
 
 if __name__ == '__main__':
     main()
