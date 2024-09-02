@@ -1,0 +1,2 @@
+app_name,categoryId,reviewId,sentenceId,feature,review,sentence,emotion-primary-agreement
+Meetup: Find events near you,SOCIAL,cd4cc735-f2fb-49bd-911c-4e97cc1f51ae,0,Rsvp,wanted to go to an event later in the month showed only 3 attendees but rsvp was closed not showing canceled?,wanted to go to an event later in the month showed only 3 attendees but rsvp was closed not showing canceled?,Surprise

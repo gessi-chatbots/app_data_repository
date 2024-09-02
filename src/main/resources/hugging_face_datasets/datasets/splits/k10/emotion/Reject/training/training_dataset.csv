@@ -1,0 +1,3 @@
+app_name,categoryId,reviewId,sentenceId,feature,review,sentence,emotion-primary-agreement
+Play Services Info (Update),TOOLS,bf1bb5af-1140-419d-ad65-882712e912b6,0,Team work,Efficient team work tsappreciated,Efficient team work tsappreciated,Reject
+Pomodoro Timer,PRODUCTIVITY,e68dc121-cfcf-4cd5-9614-584873f70698,0,Todos,"Melhor de Todos! Simples, fácil de usar, sem enrolação, zero anúncios... tudo o que eu preciso!",Melhor de Todos!,Reject
