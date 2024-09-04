@@ -145,6 +145,26 @@ public class FeatureQueryBuilder
         queryBuilder.append("}\n");
         return queryBuilder.toString();
     }
+    public static String featureReviewTextQueryBuilder(String featureIdentifier) {
+        StringBuilder sparqlQuery = new StringBuilder();
+        sparqlQuery.append("PREFIX schema: <https://schema.org/>\n");
+        sparqlQuery.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\n");
+        sparqlQuery.append("SELECT ?reviewText\n");
+        sparqlQuery.append("WHERE {\n");
+        sparqlQuery.append("  ?app rdf:type schema:MobileApplication ;\n");
+        sparqlQuery.append("       schema:identifier ?appIdentifier ;\n");
+        sparqlQuery.append("       schema:review ?review .\n\n");
+        sparqlQuery.append("  ?review rdf:type schema:Review ;\n");
+        sparqlQuery.append("         schema:reviewBody ?reviewText ;\n");
+        sparqlQuery.append("         schema:additionalProperty ?sentences .\n\n");
+        sparqlQuery.append("  ?sentences rdf:type schema:Review ;\n");
+        sparqlQuery.append("             schema:identifier ?sentenceId ;\n");
+        sparqlQuery.append("             schema:keywords ?features .\n\n");
+        sparqlQuery.append("  ?features rdf:type schema:DefinedTerm ;\n");
+        sparqlQuery.append("            schema:identifier \"").append(featureIdentifier).append("\" .\n");
+        sparqlQuery.append("}");
 
+        return sparqlQuery.toString();
+    }
 
 }

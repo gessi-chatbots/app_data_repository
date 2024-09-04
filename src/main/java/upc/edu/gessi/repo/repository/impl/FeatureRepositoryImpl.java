@@ -231,4 +231,22 @@ public class FeatureRepositoryImpl implements FeatureRepository {
         return processService.executeExtractSentenceFromReviewsScript(reviewSentenceAndFeatureDAOS);
 
     }
+
+    @Override
+    public List<String> findReviewText(List<String> features) {
+        List<String> reviewTexts = new ArrayList<>();
+        for(String feature : features) {
+            TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder(feature));
+            while (result.hasNext()) {
+                BindingSet bindings = result.next();
+                if (bindings.getBinding("reviewText") != null
+x                        && bindings.getBinding("reviewText").getValue() != null) {
+                    reviewTexts.add((bindings.getBinding("reviewText").getValue().stringValue()));
+                }
+
+            }
+        }
+        return reviewTexts;
+
+    }
 }

@@ -22,5 +22,10 @@ public interface FeatureRepository extends RDFCRUDRepository<FeatureDTO> {
     List<SentenceAndFeatureDAO> findAllSummaryDistinctFeaturesWithSentence();
 
     List<SentenceAndFeatureDAO> findAllReviewDistinctFeaturesWithSentence();
+
+    List<String> findReviewText(List<String> features
+
+
+    );
 }
 

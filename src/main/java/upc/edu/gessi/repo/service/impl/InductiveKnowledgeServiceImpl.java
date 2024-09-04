@@ -115,18 +115,39 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertTotalFeatures(workbook);
         logger.info("Step 4: Obtaining all features along its context");
         obtainFeaturesAndContext();
-        logger.info("Step 5: Inserting all applications statistics in KG");
-        insertAllApplicationsFeatures(workbook);
-        logger.info("Step 6: Inserting all proprietary documents statistics in KG");
-        insertAllDocumentTypesStatistics(workbook);
+        // logger.info("Step 5: Inserting all applications statistics in KG");
+        // insertAllApplicationsFeatures(workbook);
+        // logger.info("Step 6: Inserting all proprietary documents statistics in KG");
+        // insertAllDocumentTypesStatistics(workbook);
         logger.info("Step 7: Inserting 50 most mentioned verbs & Histogram");
-        insert50TopVerbs(workbook);
+        // insert50TopVerbs(workbook);
         logger.info("Step 8: Inserting 50 most mentioned nouns & Histogram");
-        insert50TopNouns(workbook);
+        // insert50TopNouns(workbook);
         logger.info("Step 9: Inserting HeatMap");
-        insertHeatMap(workbook);
+        // insertHeatMap(workbook);
+        logger.info("Step 10: Inserting review texts");
+        insertReviews(workbook);
         logger.info("Step 10: Generating File in Byte[] format");
         return createByteArrayFromWorkbook(workbook);
+    }
+
+    private void insertReviews(Workbook workbook) {
+        List<String> features = new ArrayList<>();
+        for (SentenceAndFeatureDAO sentenceAndFeatureDAO : distinctFeatures) {
+            features.add(sentenceAndFeatureDAO.getFeature());
+        }
+        List<String> reviews = ((FeatureRepository) useRepository(FeatureRepository.class))
+                .findReviewText(features).stream().toList();
+
+        Integer rowIndex = 1;
+        Sheet reviewSheet = createWorkbookSheet(workbook, "reviews");
+
+        for (String review : reviews) {
+            ArrayList<String> reviewData = new ArrayList<>();
+            reviewData.add(review);
+            insertRowInSheet(reviewSheet, reviewData, rowIndex);
+            rowIndex++;
+        }
     }
 
     private void insertHeatMap(Workbook workbook) {
