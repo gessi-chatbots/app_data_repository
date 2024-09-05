@@ -135,7 +135,10 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     private void insertReviews(Workbook workbook) {
         List<String> features = new ArrayList<>();
         for (SentenceAndFeatureDAO sentenceAndFeatureDAO : distinctFeatures) {
-            features.add(sentenceAndFeatureDAO.getFeature());
+            String feature = sentenceAndFeatureDAO.getFeature();
+            if (!features.contains(feature)) {
+                features.add(feature);
+            }
         }
         List<ReviewDatasetDAO> reviews = ((FeatureRepository) useRepository(FeatureRepository.class))
                 .findReviews(features).stream().toList();
