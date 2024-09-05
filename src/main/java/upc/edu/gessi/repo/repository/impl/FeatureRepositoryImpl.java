@@ -251,10 +251,10 @@ public class FeatureRepositoryImpl implements FeatureRepository {
                     review.setReview((bindings.getBinding("reviewText").getValue().stringValue()));
                     review.setFeature((bindings.getBinding("featureLabel").getValue().stringValue()));
                     review.setAppIdentifier((bindings.getBinding("appIdentifier").getValue().stringValue()));
+                    reviews.add(review);
                 }
             }
         }
         return reviews;
-
     }
 }
