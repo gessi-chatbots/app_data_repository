@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dao.ApplicationDatesDAO;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.ReviewDatasetDAO;
 import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.TermDTO;
@@ -110,11 +111,11 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Step 1: Generating Analytical Excel");
         Workbook workbook = generateExcelSheet();
         logger.info("Step 2: Inserting summary");
-        insertSummary(workbook);
+        //insertSummary(workbook);
         logger.info("Step 3: Inserting all features found in KG");
-        insertTotalFeatures(workbook);
+        // insertTotalFeatures(workbook);
         logger.info("Step 4: Obtaining all features along its context");
-        obtainFeaturesAndContext();
+        getDistinctFeatures();
         // logger.info("Step 5: Inserting all applications statistics in KG");
         // insertAllApplicationsFeatures(workbook);
         // logger.info("Step 6: Inserting all proprietary documents statistics in KG");
@@ -136,17 +137,25 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         for (SentenceAndFeatureDAO sentenceAndFeatureDAO : distinctFeatures) {
             features.add(sentenceAndFeatureDAO.getFeature());
         }
-        List<String> reviews = ((FeatureRepository) useRepository(FeatureRepository.class))
-                .findReviewText(features).stream().toList();
+        List<ReviewDatasetDAO> reviews = ((FeatureRepository) useRepository(FeatureRepository.class))
+                .findReviews(features).stream().toList();
+        String csvFilePath = Paths.get("src/main/resources/reviews.csv").toString();
 
-        Integer rowIndex = 1;
-        Sheet reviewSheet = createWorkbookSheet(workbook, "reviews");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
+            writer.write("ReviewText,FeatureLabel,AppIdentifier");
+            writer.newLine();
 
-        for (String review : reviews) {
-            ArrayList<String> reviewData = new ArrayList<>();
-            reviewData.add(review);
-            insertRowInSheet(reviewSheet, reviewData, rowIndex);
-            rowIndex++;
+            for (ReviewDatasetDAO review : reviews) {
+                String reviewText = review.getReview();
+                String featureLabel = review.getFeature();
+                String appIdentifier = review.getAppIdentifier();
+
+                String row = String.format("\"%s\",\"%s\",\"%s\"", reviewText, featureLabel, appIdentifier);
+                writer.write(row);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -388,7 +397,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertFeaturesAndOcurrencesInSheet(totalFeaturesSheet, totalFeatures);
     }
 
-    private void obtainFeaturesAndContext() {
+    private void getDistinctFeatures() {
         logger.info("Obtaining Summary features and context");
         logger.info("Obtaining Review features and context");
         logger.info("Obtaining Description features and context");

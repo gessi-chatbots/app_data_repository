@@ -4,6 +4,7 @@ package upc.edu.gessi.repo.repository;
 
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
 import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
+import upc.edu.gessi.repo.dao.ReviewDatasetDAO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
 
 import java.util.List;
@@ -23,9 +24,6 @@ public interface FeatureRepository extends RDFCRUDRepository<FeatureDTO> {
 
     List<SentenceAndFeatureDAO> findAllReviewDistinctFeaturesWithSentence();
 
-    List<String> findReviewText(List<String> features
-
-
-    );
+    List<ReviewDatasetDAO> findReviews(List<String> features);
 }
 

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.ReviewDatasetDAO;
 import upc.edu.gessi.repo.dao.ReviewSentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
@@ -233,20 +234,27 @@ public class FeatureRepositoryImpl implements FeatureRepository {
     }
 
     @Override
-    public List<String> findReviewText(List<String> features) {
-        List<String> reviewTexts = new ArrayList<>();
+    public List<ReviewDatasetDAO> findReviews(List<String> features) {
+        List<ReviewDatasetDAO> reviews = new ArrayList<>();
         for(String feature : features) {
             TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder(feature));
             while (result.hasNext()) {
                 BindingSet bindings = result.next();
                 if (bindings.getBinding("reviewText") != null
-x                        && bindings.getBinding("reviewText").getValue() != null) {
-                    reviewTexts.add((bindings.getBinding("reviewText").getValue().stringValue()));
+                        && bindings.getBinding("reviewText").getValue() != null
+                        && bindings.getBinding("appIdentifier") != null
+                        && bindings.getBinding("appIdentifier").getValue() != null
+                        && bindings.getBinding("featureLabel") != null
+                        && bindings.getBinding("featureLabel").getValue() != null
+                ) {
+                    ReviewDatasetDAO review = new ReviewDatasetDAO();
+                    review.setReview((bindings.getBinding("reviewText").getValue().stringValue()));
+                    review.setFeature((bindings.getBinding("featureLabel").getValue().stringValue()));
+                    review.setAppIdentifier((bindings.getBinding("appIdentifier").getValue().stringValue()));
                 }
-
             }
         }
-        return reviewTexts;
+        return reviews;
 
     }
 }
