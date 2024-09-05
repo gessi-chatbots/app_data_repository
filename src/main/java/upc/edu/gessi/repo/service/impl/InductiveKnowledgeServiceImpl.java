@@ -111,28 +111,28 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Step 1: Generating Analytical Excel");
         Workbook workbook = generateExcelSheet();
         logger.info("Step 2: Inserting summary");
-        //insertSummary(workbook);
+        insertSummary(workbook);
         logger.info("Step 3: Inserting all features found in KG");
-        // insertTotalFeatures(workbook);
+        insertTotalFeatures(workbook);
         logger.info("Step 4: Obtaining all features along its context");
         getDistinctFeatures();
-        // logger.info("Step 5: Inserting all applications statistics in KG");
-        // insertAllApplicationsFeatures(workbook);
-        // logger.info("Step 6: Inserting all proprietary documents statistics in KG");
-        // insertAllDocumentTypesStatistics(workbook);
+        logger.info("Step 5: Inserting all applications statistics in KG");
+        insertAllApplicationsFeatures(workbook);
+        logger.info("Step 6: Inserting all proprietary documents statistics in KG");
+        insertAllDocumentTypesStatistics(workbook);
         logger.info("Step 7: Inserting 50 most mentioned verbs & Histogram");
-        // insert50TopVerbs(workbook);
+        insert50TopVerbs(workbook);
         logger.info("Step 8: Inserting 50 most mentioned nouns & Histogram");
-        // insert50TopNouns(workbook);
+        insert50TopNouns(workbook);
         logger.info("Step 9: Inserting HeatMap");
-        // insertHeatMap(workbook);
-        logger.info("Step 10: Inserting review texts");
-        generateReviewDatasetCSV(workbook);
+        insertHeatMap(workbook);
+        // logger.info("Step 10: Generating review dataset");
+        // generateReviewDatasetCSV();
         logger.info("Step 10: Generating File in Byte[] format");
         return createByteArrayFromWorkbook(workbook);
     }
 
-    private void generateReviewDatasetCSV(Workbook workbook) {
+    private void generateReviewDatasetCSV() {
         List<String> features = new ArrayList<>();
         for (SentenceAndFeatureDAO sentenceAndFeatureDAO : distinctFeatures) {
             String feature = sentenceAndFeatureDAO.getFeature();
@@ -140,26 +140,8 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
                 features.add(feature);
             }
         }
-        List<ReviewDatasetDAO> reviews = ((FeatureRepository) useRepository(FeatureRepository.class))
-                .findReviews(features).stream().toList();
-        String csvFilePath = Paths.get("src/main/resources/reviews.csv").toString();
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
-            writer.write("ReviewText,FeatureLabel,AppIdentifier");
-            writer.newLine();
-
-            for (ReviewDatasetDAO review : reviews) {
-                String reviewText = review.getReview();
-                String featureLabel = review.getFeature();
-                String appIdentifier = review.getAppIdentifier();
-
-                String row = String.format("\"%s\",\"%s\",\"%s\"", reviewText, featureLabel, appIdentifier);
-                writer.write(row);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ((FeatureRepository) useRepository(FeatureRepository.class))
+                .findReviews(features);
     }
 
     private void insertHeatMap(Workbook workbook) {

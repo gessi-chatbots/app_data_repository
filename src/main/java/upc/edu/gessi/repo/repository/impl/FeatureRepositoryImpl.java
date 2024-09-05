@@ -239,8 +239,6 @@ public class FeatureRepositoryImpl implements FeatureRepository {
 
     @Override
     public List<ReviewDatasetDAO> findReviews(List<String> features) {
-        List<ReviewDatasetDAO> reviews = new ArrayList<>();
-
         String csvFilePath = Paths.get("src/main/resources/reviews.csv").toString();
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
@@ -248,37 +246,47 @@ public class FeatureRepositoryImpl implements FeatureRepository {
             writer.newLine();
 
             for (String feature : features) {
-                TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder(feature));
-                while (result.hasNext()) {
-                    BindingSet bindings = result.next();
+                boolean success = false;
+                int retryCount = 0;
 
-                    if (bindings.getBinding("reviewText") != null
-                            && bindings.getBinding("reviewText").getValue() != null
-                            && bindings.getBinding("appIdentifier") != null
-                            && bindings.getBinding("appIdentifier").getValue() != null
-                            && bindings.getBinding("featureLabel") != null
-                            && bindings.getBinding("featureLabel").getValue() != null) {
+                while (!success && retryCount < 3) {
+                    try {
+                        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder(feature));
+                        while (result.hasNext()) {
+                            BindingSet bindings = result.next();
+                            if (bindings.getBinding("reviewText") != null
+                                    && bindings.getBinding("reviewText").getValue() != null
+                                    && bindings.getBinding("appIdentifier") != null
+                                    && bindings.getBinding("appIdentifier").getValue() != null
+                                    && bindings.getBinding("featureLabel") != null
+                                    && bindings.getBinding("featureLabel").getValue() != null) {
 
-                        ReviewDatasetDAO review = new ReviewDatasetDAO();
-                        String reviewText = bindings.getBinding("reviewText").getValue().stringValue();
-                        String featureLabel = bindings.getBinding("featureLabel").getValue().stringValue();
-                        String appIdentifier = bindings.getBinding("appIdentifier").getValue().stringValue();
+                                String reviewText = bindings.getBinding("reviewText").getValue().stringValue();
+                                String featureLabel = bindings.getBinding("featureLabel").getValue().stringValue();
+                                String appIdentifier = bindings.getBinding("appIdentifier").getValue().stringValue();
 
-                        review.setReview(reviewText);
-                        review.setFeature(featureLabel);
-                        review.setAppIdentifier(appIdentifier);
-                        reviews.add(review);
-
-                        String row = String.format("\"%s\",\"%s\",\"%s\"", reviewText, featureLabel, appIdentifier);
-                        writer.write(row);
-                        writer.newLine();
+                                String row = String.format("\"%s\",\"%s\",\"%s\"", reviewText, featureLabel, appIdentifier);
+                                writer.write(row);
+                                writer.newLine();
+                                writer.flush();
+                            }
+                        }
+                        success = true;
+                    } catch (Exception e) {
+                        retryCount++;
+                        System.err.println("Error querying feature: " + feature + ". Retrying (" + retryCount + "/3)...");
+                        e.printStackTrace();
+                        if (retryCount == 3) {
+                            System.err.println("Failed to process feature after 3 attempts: " + feature);
+                        }
                     }
                 }
             }
         } catch (IOException e) {
+            System.err.println("Error writing to CSV file.");
             e.printStackTrace();
         }
 
-        return reviews;
+        return null;
     }
 }
