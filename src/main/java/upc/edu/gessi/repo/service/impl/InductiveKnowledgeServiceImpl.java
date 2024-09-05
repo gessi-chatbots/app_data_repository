@@ -127,12 +127,12 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Step 9: Inserting HeatMap");
         // insertHeatMap(workbook);
         logger.info("Step 10: Inserting review texts");
-        insertReviews(workbook);
+        generateReviewDatasetCSV(workbook);
         logger.info("Step 10: Generating File in Byte[] format");
         return createByteArrayFromWorkbook(workbook);
     }
 
-    private void insertReviews(Workbook workbook) {
+    private void generateReviewDatasetCSV(Workbook workbook) {
         List<String> features = new ArrayList<>();
         for (SentenceAndFeatureDAO sentenceAndFeatureDAO : distinctFeatures) {
             String feature = sentenceAndFeatureDAO.getFeature();

@@ -20,6 +20,10 @@ import upc.edu.gessi.repo.repository.FeatureRepository;
 import upc.edu.gessi.repo.service.ProcessService;
 import upc.edu.gessi.repo.util.*;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Repository
@@ -236,25 +240,45 @@ public class FeatureRepositoryImpl implements FeatureRepository {
     @Override
     public List<ReviewDatasetDAO> findReviews(List<String> features) {
         List<ReviewDatasetDAO> reviews = new ArrayList<>();
-        for(String feature : features) {
-            TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder(feature));
-            while (result.hasNext()) {
-                BindingSet bindings = result.next();
-                if (bindings.getBinding("reviewText") != null
-                        && bindings.getBinding("reviewText").getValue() != null
-                        && bindings.getBinding("appIdentifier") != null
-                        && bindings.getBinding("appIdentifier").getValue() != null
-                        && bindings.getBinding("featureLabel") != null
-                        && bindings.getBinding("featureLabel").getValue() != null
-                ) {
-                    ReviewDatasetDAO review = new ReviewDatasetDAO();
-                    review.setReview((bindings.getBinding("reviewText").getValue().stringValue()));
-                    review.setFeature((bindings.getBinding("featureLabel").getValue().stringValue()));
-                    review.setAppIdentifier((bindings.getBinding("appIdentifier").getValue().stringValue()));
-                    reviews.add(review);
+
+        String csvFilePath = Paths.get("src/main/resources/reviews.csv").toString();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
+            writer.write("ReviewText,FeatureLabel,AppIdentifier");
+            writer.newLine();
+
+            for (String feature : features) {
+                TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder(feature));
+                while (result.hasNext()) {
+                    BindingSet bindings = result.next();
+
+                    if (bindings.getBinding("reviewText") != null
+                            && bindings.getBinding("reviewText").getValue() != null
+                            && bindings.getBinding("appIdentifier") != null
+                            && bindings.getBinding("appIdentifier").getValue() != null
+                            && bindings.getBinding("featureLabel") != null
+                            && bindings.getBinding("featureLabel").getValue() != null) {
+
+                        ReviewDatasetDAO review = new ReviewDatasetDAO();
+                        String reviewText = bindings.getBinding("reviewText").getValue().stringValue();
+                        String featureLabel = bindings.getBinding("featureLabel").getValue().stringValue();
+                        String appIdentifier = bindings.getBinding("appIdentifier").getValue().stringValue();
+
+                        review.setReview(reviewText);
+                        review.setFeature(featureLabel);
+                        review.setAppIdentifier(appIdentifier);
+                        reviews.add(review);
+
+                        String row = String.format("\"%s\",\"%s\",\"%s\"", reviewText, featureLabel, appIdentifier);
+                        writer.write(row);
+                        writer.newLine();
+                    }
                 }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
         return reviews;
     }
 }
