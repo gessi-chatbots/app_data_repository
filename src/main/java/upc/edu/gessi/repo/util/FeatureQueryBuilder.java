@@ -145,6 +145,34 @@ public class FeatureQueryBuilder
         queryBuilder.append("}\n");
         return queryBuilder.toString();
     }
+    public static String featureReviewTextQueryBuilder(String featureIdentifier) {
+        StringBuilder query = new StringBuilder();
 
+        query.append("PREFIX schema: <https://schema.org/>\n");
+        query.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\n");
+
+        query.append("SELECT ?reviewText ?appIdentifier ?featureLabel\n");
+        query.append("WHERE {\n");
+        query.append("  ?app rdf:type schema:MobileApplication ;\n");
+        query.append("       schema:identifier ?appIdentifier ;\n");
+        query.append("       schema:review ?review .\n\n");
+
+        query.append("  ?review rdf:type schema:Review ;\n");
+        query.append("         schema:reviewBody ?reviewText ;\n");
+        query.append("         schema:additionalProperty ?sentences .\n\n");
+
+        query.append("  ?sentences rdf:type schema:Review ;\n");
+        query.append("             schema:identifier ?sentenceId ;\n");
+        query.append("             schema:keywords ?features .\n\n");
+
+        query.append("  ?features rdf:type schema:DefinedTerm ;\n");
+        query.append("            schema:identifier ?featureLabel .\n\n");
+
+        query.append("  FILTER(?featureLabel = \"").append(featureIdentifier).append("\")\n");
+
+        query.append("}\n");
+
+        return query.toString();
+    }
 
 }

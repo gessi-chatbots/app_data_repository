@@ -121,7 +121,7 @@ def preprocess_dataset(dataset, tokenizer):
 
 def save_metrics_to_file(metrics, filename):
     with open(filename, 'w') as file:
-        file.write("Evaluation Metrics per Fold:\n\n")
+        file.write("Evaluation Metrics per Emotion:\n\n")
         for fold_index, metric in enumerate(metrics, 1):
             file.write(f"Fold {fold_index} Metrics:\n")
             for key, value in metric.items():

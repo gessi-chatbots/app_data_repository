@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dao.ApplicationDatesDAO;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.ReviewDatasetDAO;
 import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.DocumentType;
 import upc.edu.gessi.repo.dto.TermDTO;
@@ -114,7 +115,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Step 3: Inserting all features found in KG");
         insertTotalFeatures(workbook);
         logger.info("Step 4: Obtaining all features along its context");
-        obtainFeaturesAndContext();
+        getDistinctFeatures();
         logger.info("Step 5: Inserting all applications statistics in KG");
         insertAllApplicationsFeatures(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
@@ -125,8 +126,22 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insert50TopNouns(workbook);
         logger.info("Step 9: Inserting HeatMap");
         insertHeatMap(workbook);
+        // logger.info("Step 10: Generating review dataset");
+        // generateReviewDatasetCSV();
         logger.info("Step 10: Generating File in Byte[] format");
         return createByteArrayFromWorkbook(workbook);
+    }
+
+    private void generateReviewDatasetCSV() {
+        List<String> features = new ArrayList<>();
+        for (SentenceAndFeatureDAO sentenceAndFeatureDAO : distinctFeatures) {
+            String feature = sentenceAndFeatureDAO.getFeature();
+            if (!features.contains(feature)) {
+                features.add(feature);
+            }
+        }
+        ((FeatureRepository) useRepository(FeatureRepository.class))
+                .findReviews(features);
     }
 
     private void insertHeatMap(Workbook workbook) {
@@ -367,7 +382,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insertFeaturesAndOcurrencesInSheet(totalFeaturesSheet, totalFeatures);
     }
 
-    private void obtainFeaturesAndContext() {
+    private void getDistinctFeatures() {
         logger.info("Obtaining Summary features and context");
         logger.info("Obtaining Review features and context");
         logger.info("Obtaining Description features and context");

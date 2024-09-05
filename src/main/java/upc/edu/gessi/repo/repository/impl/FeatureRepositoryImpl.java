@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import upc.edu.gessi.repo.dao.ApplicationPropDocStatisticDAO;
+import upc.edu.gessi.repo.dao.ReviewDatasetDAO;
 import upc.edu.gessi.repo.dao.ReviewSentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dao.SentenceAndFeatureDAO;
 import upc.edu.gessi.repo.dto.Review.FeatureDTO;
@@ -19,6 +20,10 @@ import upc.edu.gessi.repo.repository.FeatureRepository;
 import upc.edu.gessi.repo.service.ProcessService;
 import upc.edu.gessi.repo.util.*;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Repository
@@ -230,5 +235,58 @@ public class FeatureRepositoryImpl implements FeatureRepository {
         }
         return processService.executeExtractSentenceFromReviewsScript(reviewSentenceAndFeatureDAOS);
 
+    }
+
+    @Override
+    public List<ReviewDatasetDAO> findReviews(List<String> features) {
+        String csvFilePath = Paths.get("src/main/resources/reviews.csv").toString();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
+            writer.write("ReviewText,FeatureLabel,AppIdentifier");
+            writer.newLine();
+
+            for (String feature : features) {
+                boolean success = false;
+                int retryCount = 0;
+
+                while (!success && retryCount < 3) {
+                    try {
+                        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder(feature));
+                        while (result.hasNext()) {
+                            BindingSet bindings = result.next();
+                            if (bindings.getBinding("reviewText") != null
+                                    && bindings.getBinding("reviewText").getValue() != null
+                                    && bindings.getBinding("appIdentifier") != null
+                                    && bindings.getBinding("appIdentifier").getValue() != null
+                                    && bindings.getBinding("featureLabel") != null
+                                    && bindings.getBinding("featureLabel").getValue() != null) {
+
+                                String reviewText = bindings.getBinding("reviewText").getValue().stringValue();
+                                String featureLabel = bindings.getBinding("featureLabel").getValue().stringValue();
+                                String appIdentifier = bindings.getBinding("appIdentifier").getValue().stringValue();
+
+                                String row = String.format("\"%s\",\"%s\",\"%s\"", reviewText, featureLabel, appIdentifier);
+                                writer.write(row);
+                                writer.newLine();
+                                writer.flush();
+                            }
+                        }
+                        success = true;
+                    } catch (Exception e) {
+                        retryCount++;
+                        System.err.println("Error querying feature: " + feature + ". Retrying (" + retryCount + "/3)...");
+                        e.printStackTrace();
+                        if (retryCount == 3) {
+                            System.err.println("Failed to process feature after 3 attempts: " + feature);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error writing to CSV file.");
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }
