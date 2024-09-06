@@ -111,37 +111,29 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         logger.info("Step 1: Generating Analytical Excel");
         Workbook workbook = generateExcelSheet();
         logger.info("Step 2: Inserting summary");
-        insertSummary(workbook);
+        //insertSummary(workbook);
         logger.info("Step 3: Inserting all features found in KG");
-        insertTotalFeatures(workbook);
+        //insertTotalFeatures(workbook);
         logger.info("Step 4: Obtaining all features along its context");
-        getDistinctFeatures();
+        //getDistinctFeatures();
         logger.info("Step 5: Inserting all applications statistics in KG");
-        insertAllApplicationsFeatures(workbook);
+        //insertAllApplicationsFeatures(workbook);
         logger.info("Step 6: Inserting all proprietary documents statistics in KG");
-        insertAllDocumentTypesStatistics(workbook);
+        //insertAllDocumentTypesStatistics(workbook);
         logger.info("Step 7: Inserting 50 most mentioned verbs & Histogram");
-        insert50TopVerbs(workbook);
+        //insert50TopVerbs(workbook);
         logger.info("Step 8: Inserting 50 most mentioned nouns & Histogram");
-        insert50TopNouns(workbook);
+        //insert50TopNouns(workbook);
         logger.info("Step 9: Inserting HeatMap");
-        insertHeatMap(workbook);
+        //insertHeatMap(workbook);
         // logger.info("Step 10: Generating review dataset");
-        // generateReviewDatasetCSV();
+        generateReviewDatasetCSV();
         logger.info("Step 10: Generating File in Byte[] format");
         return createByteArrayFromWorkbook(workbook);
     }
 
     private void generateReviewDatasetCSV() {
-        List<String> features = new ArrayList<>();
-        for (SentenceAndFeatureDAO sentenceAndFeatureDAO : distinctFeatures) {
-            String feature = sentenceAndFeatureDAO.getFeature();
-            if (!features.contains(feature)) {
-                features.add(feature);
-            }
-        }
-        ((FeatureRepository) useRepository(FeatureRepository.class))
-                .findReviews(features);
+        ((FeatureRepository) useRepository(FeatureRepository.class)).findReviews();
     }
 
     private void insertHeatMap(Workbook workbook) {

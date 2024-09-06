@@ -236,50 +236,38 @@ public class FeatureRepositoryImpl implements FeatureRepository {
         return processService.executeExtractSentenceFromReviewsScript(reviewSentenceAndFeatureDAOS);
 
     }
-
     @Override
-    public List<ReviewDatasetDAO> findReviews(List<String> features) {
+    public List<ReviewDatasetDAO> findReviews() {
         String csvFilePath = Paths.get("src/main/resources/reviews.csv").toString();
-
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
-            writer.write("ReviewText,FeatureLabel,AppIdentifier");
+            writer.write("ApplicationId, ReviewId, ReviewText, Date, TransFeatExFeatures");
             writer.newLine();
 
-            for (String feature : features) {
-                boolean success = false;
-                int retryCount = 0;
+            TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder());
+            while (result.hasNext()) {
+                BindingSet bindings = result.next();
+                if (bindings.getBinding("appIdentifier") != null
+                        && bindings.getBinding("appIdentifier").getValue() != null
+                        && bindings.getBinding("reviewIdentifier") != null
+                        && bindings.getBinding("reviewIdentifier").getValue() != null
+                        && bindings.getBinding("reviewText") != null
+                        && bindings.getBinding("reviewText").getValue() != null
+                        && bindings.getBinding("date") != null
+                        && bindings.getBinding("date").getValue() != null
+                        && bindings.getBinding("TransFeatexFeatures") != null
+                        && bindings.getBinding("TransFeatexFeatures").getValue() != null) {
 
-                while (!success && retryCount < 3) {
-                    try {
-                        TupleQueryResult result = runSparqlQuery(featureQueryBuilder.featureReviewTextQueryBuilder(feature));
-                        while (result.hasNext()) {
-                            BindingSet bindings = result.next();
-                            if (bindings.getBinding("reviewText") != null
-                                    && bindings.getBinding("reviewText").getValue() != null
-                                    && bindings.getBinding("appIdentifier") != null
-                                    && bindings.getBinding("appIdentifier").getValue() != null
-                                    && bindings.getBinding("featureLabel") != null
-                                    && bindings.getBinding("featureLabel").getValue() != null) {
+                    String appIdentifier = escapeCsv(bindings.getBinding("appIdentifier").getValue().stringValue());
+                    String reviewIdentifier = escapeCsv(bindings.getBinding("reviewIdentifier").getValue().stringValue());
+                    String reviewText = escapeCsv(bindings.getBinding("reviewText").getValue().stringValue());
+                    String date = escapeCsv(bindings.getBinding("date").getValue().stringValue());
+                    String features = escapeCsv(bindings.getBinding("TransFeatexFeatures").getValue().stringValue());
 
-                                String reviewText = bindings.getBinding("reviewText").getValue().stringValue();
-                                String featureLabel = bindings.getBinding("featureLabel").getValue().stringValue();
-                                String appIdentifier = bindings.getBinding("appIdentifier").getValue().stringValue();
-
-                                String row = String.format("\"%s\",\"%s\",\"%s\"", reviewText, featureLabel, appIdentifier);
-                                writer.write(row);
-                                writer.newLine();
-                                writer.flush();
-                            }
-                        }
-                        success = true;
-                    } catch (Exception e) {
-                        retryCount++;
-                        System.err.println("Error querying feature: " + feature + ". Retrying (" + retryCount + "/3)...");
-                        e.printStackTrace();
-                        if (retryCount == 3) {
-                            System.err.println("Failed to process feature after 3 attempts: " + feature);
-                        }
-                    }
+                    String row = String.format("%s,%s,%s,%s,%s",
+                            appIdentifier, reviewIdentifier, reviewText, date, features);
+                    writer.write(row);
+                    writer.newLine();
+                    writer.flush();
                 }
             }
         } catch (IOException e) {
@@ -288,5 +276,23 @@ public class FeatureRepositoryImpl implements FeatureRepository {
         }
 
         return null;
+    }
+
+    private String escapeCsv(String field) {
+        if (field == null) {
+            return "";
+        }
+
+        field = field.replace("\t", " ");
+
+        if (field.contains("\"")) {
+            field = field.replace("\"", "\"\"");
+        }
+
+        if (field.contains(",") || field.contains("\n") || field.contains("\r") || field.contains(" ")) {
+            field = "\"" + field + "\"";
+        }
+
+        return field;
     }
 }

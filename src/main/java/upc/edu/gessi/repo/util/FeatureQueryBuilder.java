@@ -145,32 +145,31 @@ public class FeatureQueryBuilder
         queryBuilder.append("}\n");
         return queryBuilder.toString();
     }
-    public static String featureReviewTextQueryBuilder(String featureIdentifier) {
+    public static String featureReviewTextQueryBuilder() { // TODO change Query
         StringBuilder query = new StringBuilder();
 
-        query.append("PREFIX schema: <https://schema.org/>\n");
-        query.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\n");
-
-        query.append("SELECT ?reviewText ?appIdentifier ?featureLabel\n");
-        query.append("WHERE {\n");
-        query.append("  ?app rdf:type schema:MobileApplication ;\n");
-        query.append("       schema:identifier ?appIdentifier ;\n");
-        query.append("       schema:review ?review .\n\n");
-
-        query.append("  ?review rdf:type schema:Review ;\n");
-        query.append("         schema:reviewBody ?reviewText ;\n");
-        query.append("         schema:additionalProperty ?sentences .\n\n");
-
-        query.append("  ?sentences rdf:type schema:Review ;\n");
-        query.append("             schema:identifier ?sentenceId ;\n");
-        query.append("             schema:keywords ?features .\n\n");
-
-        query.append("  ?features rdf:type schema:DefinedTerm ;\n");
-        query.append("            schema:identifier ?featureLabel .\n\n");
-
-        query.append("  FILTER(?featureLabel = \"").append(featureIdentifier).append("\")\n");
-
-        query.append("}\n");
+        query.append("PREFIX schema: <https://schema.org/> ")
+                .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ")
+                .append("SELECT ?appIdentifier ?reviewIdentifier ?reviewText ?date ")
+                .append("(GROUP_CONCAT(DISTINCT ?featureLabel; SEPARATOR=\"; \") AS ?TransFeatexFeatures) ")
+                .append("WHERE { ")
+                .append("?app rdf:type schema:MobileApplication ; ")
+                .append("     schema:identifier ?appIdentifier ; ")
+                .append("     schema:review ?review . ")
+                .append("?review rdf:type schema:Review ; ")
+                .append("        schema:reviewBody ?reviewText ; ")
+                .append("        schema:additionalProperty ?sentences ; ")
+                .append("        schema:identifier ?reviewIdentifier ; ")
+                .append("        schema:datePublished ?date . ")
+                .append("?sentences rdf:type schema:Review ; ")
+                .append("           schema:identifier ?sentenceId ; ")
+                .append("           schema:keywords ?features . ")
+                .append("?features rdf:type schema:DefinedTerm ; ")
+                .append("          schema:identifier ?featureLabel . ")
+                .append("} ")
+                .append("GROUP BY ?appIdentifier ?date ?reviewText ?reviewIdentifier ")
+                .append("HAVING (COUNT(DISTINCT ?featureLabel) > 0) ")
+                .append("ORDER BY DESC(COUNT(DISTINCT ?featureLabel))");
 
         return query.toString();
     }
