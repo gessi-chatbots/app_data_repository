@@ -82,6 +82,11 @@ public class ReviewsController implements ReviewsAPI {
         return new ResponseEntity<>(ttlFile, HttpStatus.OK);
     }
 
+    @Override
+    public ResponseEntity<List<ReviewDTO>> getReviewsByFeatures(List<String> features) {
+        return null;
+    }
+
     private Object useService(Class<?> clazz) {
         return serviceFactory.createService(clazz);
     }
