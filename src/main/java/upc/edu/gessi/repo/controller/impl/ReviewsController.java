@@ -84,7 +84,8 @@ public class ReviewsController implements ReviewsAPI {
 
     @Override
     public ResponseEntity<List<ReviewDTO>> getReviewsByFeatures(List<String> features) {
-        return null;
+        return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getByFeatures(features),
+                HttpStatus.OK);
     }
 
     private Object useService(Class<?> clazz) {
