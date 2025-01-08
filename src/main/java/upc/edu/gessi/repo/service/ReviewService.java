@@ -10,4 +10,9 @@ public interface ReviewService extends CrudService<ReviewDTO> {
     List<ReviewDTO> getAllSimplified();
 
     Integer getReviewCount();
+
+    List<ReviewDTO> getByFeature(String feature);
+
+    List<ReviewDTO> getByFeatures(List<String> features);
+
 }

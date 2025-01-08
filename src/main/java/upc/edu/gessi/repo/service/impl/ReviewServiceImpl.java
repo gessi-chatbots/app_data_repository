@@ -107,4 +107,17 @@ public class ReviewServiceImpl implements ReviewService {
     public Integer getReviewCount() {
         return ((ReviewRepository) useRepository(ReviewRepository.class)).getCount();
     }
+
+    @Override
+    public List<ReviewDTO> getByFeature(String feature) {
+        return List.of();
+    }
+
+    @Override
+    public List<ReviewDTO> getByFeatures(List<String> features) {
+        for(String feature : features) {
+            List<ReviewDTO> featureReviews = getByFeature(feature);
+        }
+        return List.of();
+    }
 }
