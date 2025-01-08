@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.ReviewsAPI;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewFeatureDTO;
 import upc.edu.gessi.repo.exception.*;
 import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.service.MobileApplicationService;
@@ -84,7 +85,7 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<List<ReviewDTO>> getReviewsByFeatures(List<String> features) {
+    public ResponseEntity<List<ReviewFeatureDTO>> getReviewsByFeatures(List<String> features) {
         try {
             return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getByFeatures(features),
                     HttpStatus.OK);
