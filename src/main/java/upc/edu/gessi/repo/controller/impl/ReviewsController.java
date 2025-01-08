@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.ReviewsAPI;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewFeatureDTO;
 import upc.edu.gessi.repo.exception.*;
+import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.service.ServiceFactory;
@@ -80,6 +82,17 @@ public class ReviewsController implements ReviewsAPI {
         headers.setContentDispositionFormData("attachment", "reviews.ttl");
         headers.setContentLength(ttlFile.length);
         return new ResponseEntity<>(ttlFile, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<ReviewFeatureDTO>> getReviewsByFeatures(List<String> features) {
+        try {
+            return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getByFeatures(features),
+                    HttpStatus.OK);
+        } catch (NoReviewsFoundException e) {
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+        }
+
     }
 
     private Object useService(Class<?> clazz) {

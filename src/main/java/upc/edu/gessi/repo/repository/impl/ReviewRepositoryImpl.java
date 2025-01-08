@@ -1,7 +1,5 @@
 package upc.edu.gessi.repo.repository.impl;
 
-import io.swagger.models.auth.In;
-import jdk.jshell.execution.Util;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
@@ -14,15 +12,12 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import upc.edu.gessi.repo.dto.Review.FeatureDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewDTO;
-import upc.edu.gessi.repo.dto.Review.SentenceDTO;
-import upc.edu.gessi.repo.dto.Review.SentimentDTO;
+import upc.edu.gessi.repo.dto.LanguageModel.LanguageModelDTO;
+import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.exception.Reviews.ReviewNotFoundException;
 import upc.edu.gessi.repo.repository.ReviewRepository;
-import upc.edu.gessi.repo.util.ExcelUtils;
 import upc.edu.gessi.repo.util.ReviewQueryBuilder;
 import upc.edu.gessi.repo.util.SchemaIRI;
 import upc.edu.gessi.repo.util.Utils;
@@ -30,10 +25,7 @@ import upc.edu.gessi.repo.util.Utils;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Repository
 public class ReviewRepositoryImpl implements ReviewRepository {
@@ -126,10 +118,10 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public List<ReviewDTO> findListed(List<String> reviewIds) throws NoReviewsFoundException {
+    public List<ReviewDTO> findListed(final List<String> reviewIds) throws NoReviewsFoundException {
         TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findReviewsByIds(reviewIds));
         if (!reviewsResult.hasNext()) {
-            throw new NoReviewsFoundException("Any review was found");
+            throw new NoReviewsFoundException("No review was found");
         }
         List<ReviewDTO> reviewDTOs = new ArrayList<>();
         while (reviewsResult.hasNext()) {
@@ -138,6 +130,22 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
         return reviewDTOs;
     }
+
+
+    @Override
+    public List<ReviewFeatureDTO> findAllByFeatures(final List<String> features) throws NoReviewsFoundException {
+        TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findReviewsByFeatures(features));
+        if (!reviewsResult.hasNext()) {
+            throw new NoReviewsFoundException("No review was found");
+        }
+        List<ReviewFeatureDTO> reviewDTOs = new ArrayList<>();
+        while (reviewsResult.hasNext()) {
+            ReviewFeatureDTO reviewFeatureDTO = getReviewFeatureDTO(reviewsResult.next());
+            reviewDTOs.add(reviewFeatureDTO);
+        }
+        return reviewDTOs;
+    }
+
 
     @Override
     public IRI insert(ReviewDTO dto) {
@@ -383,6 +391,35 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         repoConnection.close();
     }
 
+    private ReviewFeatureDTO getReviewFeatureDTO(final BindingSet bindings) {
+        ReviewFeatureDTO reviewFeatureDTO = new ReviewFeatureDTO();
+        if (existsShortReviewBinding(bindings)) {
+            if (bindings.getBinding("id") != null && bindings.getBinding("id").getValue() != null) {
+                String idValue = bindings.getBinding("id").getValue().stringValue();
+                reviewFeatureDTO.setId(idValue);
+            }
+
+            if (bindings.getBinding("text") != null && bindings.getBinding("text").getValue() != null) {
+                String textValue = bindings.getBinding("text").getValue().stringValue();
+                reviewFeatureDTO.setReviewText(textValue);
+            }
+
+        }
+
+        FeatureDTO featureDTO = new FeatureDTO();
+        if (bindings.getBinding("feature") != null && bindings.getBinding("feature").getValue() != null) {
+            String feature = bindings.getBinding("feature").getValue().stringValue();
+            featureDTO.setFeature(feature);
+        }
+        if (bindings.getBinding("model") != null && bindings.getBinding("model").getValue() != null) {
+            String model = bindings.getBinding("model").getValue().stringValue();
+            featureDTO.setLanguageModel(new LanguageModelDTO(model));
+        }
+        reviewFeatureDTO.setFeatureDTOs(Collections.singletonList(featureDTO));
+
+
+        return reviewFeatureDTO;
+    }
 
 
     private ReviewDTO getReviewDTO(final BindingSet bindings) {

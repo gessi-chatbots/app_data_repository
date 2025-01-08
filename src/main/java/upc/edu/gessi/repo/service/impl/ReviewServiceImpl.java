@@ -9,11 +9,13 @@ import org.springframework.stereotype.Service;
 import upc.edu.gessi.repo.dto.Review.*;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
 import upc.edu.gessi.repo.repository.ReviewRepository;
 import upc.edu.gessi.repo.repository.SentenceRepository;
 import upc.edu.gessi.repo.service.ReviewService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -106,5 +108,16 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Integer getReviewCount() {
         return ((ReviewRepository) useRepository(ReviewRepository.class)).getCount();
+    }
+
+    @Override
+    public List<ReviewDTO> getByFeature(String feature) {
+        // TODO too much overhead due to graphDB, use the getByFeatures best
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ReviewFeatureDTO> getByFeatures(List<String> features) throws NoReviewsFoundException {
+        return ((ReviewRepository) useRepository(ReviewRepository.class)).findAllByFeatures(features);
     }
 }

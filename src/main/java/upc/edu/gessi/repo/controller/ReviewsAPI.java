@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewFeatureDTO;
+
+import java.util.List;
 
 
 @RestController
@@ -15,4 +18,9 @@ public interface ReviewsAPI extends CrudAPI<ReviewDTO> {
     ResponseEntity<byte[]> extractReviews(
             @RequestParam(name = "size", defaultValue = "10000", required = false) Integer size,
             @RequestParam(name = "market-segment", defaultValue = "Communication", required = false) String marketSegment);
+
+    @ApiOperation("Fetch reviews based on features")
+    @GetMapping(value = "/by-features")
+    ResponseEntity<List<ReviewFeatureDTO>> getReviewsByFeatures(
+            @RequestBody List<String> features);
 }

@@ -126,6 +126,9 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
         insert50TopNouns(workbook);
         logger.info("Step 9: Inserting HeatMap");
         insertHeatMap(workbook);
+        /*
+        DISABLE COMMENT IN CASE OF WANTING TO GENERATE A REVIEW DATASET
+         */
         // logger.info("Step 10: Generating review dataset");
         // generateReviewDatasetCSV();
         logger.info("Step 10: Generating File in Byte[] format");
@@ -133,15 +136,7 @@ public class InductiveKnowledgeServiceImpl implements InductiveKnowledgeService 
     }
 
     private void generateReviewDatasetCSV() {
-        List<String> features = new ArrayList<>();
-        for (SentenceAndFeatureDAO sentenceAndFeatureDAO : distinctFeatures) {
-            String feature = sentenceAndFeatureDAO.getFeature();
-            if (!features.contains(feature)) {
-                features.add(feature);
-            }
-        }
-        ((FeatureRepository) useRepository(FeatureRepository.class))
-                .findReviews(features);
+        ((FeatureRepository) useRepository(FeatureRepository.class)).findReviews();
     }
 
     private void insertHeatMap(Workbook workbook) {
