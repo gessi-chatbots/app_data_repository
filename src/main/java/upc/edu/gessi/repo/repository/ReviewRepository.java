@@ -32,4 +32,6 @@ public interface ReviewRepository extends RDFCRUDRepository<ReviewDTO> {
     List<ReviewDTO> getReviewsByAppNameAndIdentifierWithLimit(String appName,
                                                               String appIdentifier,
                                                               Integer limit);
+
+    List<ReviewDTO> findAllByFeatures(List<String> features) throws NoReviewsFoundException;
 }
