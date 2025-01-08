@@ -13,6 +13,7 @@ import upc.edu.gessi.repo.controller.ReviewsAPI;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
 import upc.edu.gessi.repo.exception.*;
+import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.service.MobileApplicationService;
 import upc.edu.gessi.repo.service.ReviewService;
 import upc.edu.gessi.repo.service.ServiceFactory;
@@ -84,8 +85,13 @@ public class ReviewsController implements ReviewsAPI {
 
     @Override
     public ResponseEntity<List<ReviewDTO>> getReviewsByFeatures(List<String> features) {
-        return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getByFeatures(features),
-                HttpStatus.OK);
+        try {
+            return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getByFeatures(features),
+                    HttpStatus.OK);
+        } catch (NoReviewsFoundException e) {
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+        }
+
     }
 
     private Object useService(Class<?> clazz) {
