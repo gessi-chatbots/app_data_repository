@@ -270,16 +270,20 @@ public class ReviewQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?s ?p ?o\n");
+        queryBuilder.append("SELECT ?id ?text ?feature ?model\n");
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  ?s a schema:Review ;\n");
-        queryBuilder.append("     ?p ?o .\n");
-        queryBuilder.append("  ?s schema:additionalProperty ?reviewSentence .\n");
-        queryBuilder.append("  ?reviewSentence a schema:Review; \n");
+        queryBuilder.append("     schema:identifier ?id;\n");
+        queryBuilder.append("     schema:reviewBody ?text;\n");
+        queryBuilder.append("     schema:additionalProperty ?reviewSentence .\n");
+        queryBuilder.append("  ?reviewSentence a schema:Review;\n");
         queryBuilder.append("                  schema:keywords ?keywords .\n");
         queryBuilder.append("  ?keywords a schema:DefinedTerm ;\n");
-        queryBuilder.append("            schema:name ?name .\n");
-        queryBuilder.append("  VALUES ?name {\n");
+        queryBuilder.append("            schema:name ?feature ;\n");
+        queryBuilder.append("            schema:disambiguatingDescription ?languageModel .\n");
+        queryBuilder.append("  ?languageModel a schema:softwareApplication ;\n");
+        queryBuilder.append("                 schema:identifier ?model .\n");
+        queryBuilder.append("  VALUES ?feature {\n");
         for (String feature : features) {
             queryBuilder.append("    \"" + feature + "\"\n");
         }
@@ -287,6 +291,7 @@ public class ReviewQueryBuilder
         queryBuilder.append("}\n");
         return queryBuilder.toString();
     }
+
 
 
 
