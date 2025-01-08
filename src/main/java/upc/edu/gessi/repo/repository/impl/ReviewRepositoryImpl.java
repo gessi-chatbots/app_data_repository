@@ -129,7 +129,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     public List<ReviewDTO> findListed(List<String> reviewIds) throws NoReviewsFoundException {
         TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findReviewsByIds(reviewIds));
         if (!reviewsResult.hasNext()) {
-            throw new NoReviewsFoundException("Any review was found");
+            throw new NoReviewsFoundException("No review was found");
         }
         List<ReviewDTO> reviewDTOs = new ArrayList<>();
         while (reviewsResult.hasNext()) {
@@ -138,6 +138,22 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
         return reviewDTOs;
     }
+
+
+    @Override
+    public List<ReviewDTO> findAllByFeatures(List<String> features) throws NoReviewsFoundException {
+        TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findReviewsByFeatures(features));
+        if (!reviewsResult.hasNext()) {
+            throw new NoReviewsFoundException("No review was found");
+        }
+        List<ReviewDTO> reviewDTOs = new ArrayList<>();
+        while (reviewsResult.hasNext()) {
+            ReviewDTO reviewDTO = getReviewDTO(reviewsResult.next());
+            reviewDTOs.add(reviewDTO);
+        }
+        return reviewDTOs;
+    }
+
 
     @Override
     public IRI insert(ReviewDTO dto) {
