@@ -270,7 +270,7 @@ public class ReviewQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?s ?name\n");
+        queryBuilder.append("SELECT ?s ?p ?o\n");
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  ?s a schema:Review ;\n");
         queryBuilder.append("     ?p ?o .\n");
