@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.service;
 
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
+import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 
 import java.util.List;
 
@@ -13,6 +14,6 @@ public interface ReviewService extends CrudService<ReviewDTO> {
 
     List<ReviewDTO> getByFeature(String feature);
 
-    List<ReviewDTO> getByFeatures(List<String> features);
+    List<ReviewDTO> getByFeatures(List<String> features) throws NoReviewsFoundException;
 
 }
