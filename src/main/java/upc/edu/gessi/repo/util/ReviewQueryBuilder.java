@@ -266,5 +266,28 @@ public class ReviewQueryBuilder
         return queryBuilder.toString();
     }
 
+    public String findReviewsByFeatures(final List<String> features) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT ?s ?name\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?s a schema:Review ;\n");
+        queryBuilder.append("     ?p ?o .\n");
+        queryBuilder.append("  ?s schema:additionalProperty ?reviewSentence .\n");
+        queryBuilder.append("  ?reviewSentence a schema:Review; \n");
+        queryBuilder.append("                  schema:keywords ?keywords .\n");
+        queryBuilder.append("  ?keywords a schema:DefinedTerm ;\n");
+        queryBuilder.append("            schema:name ?name .\n");
+        queryBuilder.append("  VALUES ?name {\n");
+        for (String feature : features) {
+            queryBuilder.append("    \"" + feature + "\"\n");
+        }
+        queryBuilder.append("  }\n");
+        queryBuilder.append("}\n");
+        return queryBuilder.toString();
+    }
+
+
 
 }
