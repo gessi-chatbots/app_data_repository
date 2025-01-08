@@ -126,7 +126,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public List<ReviewDTO> findListed(List<String> reviewIds) throws NoReviewsFoundException {
+    public List<ReviewDTO> findListed(final List<String> reviewIds) throws NoReviewsFoundException {
         TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findReviewsByIds(reviewIds));
         if (!reviewsResult.hasNext()) {
             throw new NoReviewsFoundException("No review was found");
@@ -141,7 +141,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
 
     @Override
-    public List<ReviewDTO> findAllByFeatures(List<String> features) throws NoReviewsFoundException {
+    public List<ReviewDTO> findAllByFeatures(final List<String> features) throws NoReviewsFoundException {
         TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findReviewsByFeatures(features));
         if (!reviewsResult.hasNext()) {
             throw new NoReviewsFoundException("No review was found");
