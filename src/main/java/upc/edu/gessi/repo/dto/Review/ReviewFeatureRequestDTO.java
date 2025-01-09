@@ -15,9 +15,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ReviewFeatureRequestDTO implements Serializable {
 
-    @JsonProperty("app_name")
+    @JsonProperty("app_id")
     private String appName;
 
-    @JsonProperty("feature_list")
+    @JsonProperty("features")
     private List<String> featureList;
 }
