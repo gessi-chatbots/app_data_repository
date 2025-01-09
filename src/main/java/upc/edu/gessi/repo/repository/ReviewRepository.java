@@ -4,7 +4,7 @@ package upc.edu.gessi.repo.repository;
 
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewFeatureDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewFeatureResponseDTO;
 import upc.edu.gessi.repo.dto.Review.SentenceDTO;
 import upc.edu.gessi.repo.dto.graph.GraphReview;
 import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
@@ -34,5 +34,5 @@ public interface ReviewRepository extends RDFCRUDRepository<ReviewDTO> {
                                                               String appIdentifier,
                                                               Integer limit);
 
-    List<ReviewFeatureDTO> findAllByFeatures(List<String> features) throws NoReviewsFoundException;
+    List<ReviewFeatureResponseDTO> findAllByAppIdAndFeatures(String appId, List<String> features) throws NoReviewsFoundException;
 }

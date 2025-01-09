@@ -133,15 +133,17 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
 
     @Override
-    public List<ReviewFeatureDTO> findAllByFeatures(final List<String> features) throws NoReviewsFoundException {
-        TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findReviewsByFeatures(features));
+    public List<ReviewFeatureResponseDTO> findAllByAppIdAndFeatures(final String appId,
+                                                                    final List<String> features) throws NoReviewsFoundException {
+        TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder
+                .findReviewsByAppIdAndFeatures(appId, features));
         if (!reviewsResult.hasNext()) {
             throw new NoReviewsFoundException("No review was found");
         }
-        List<ReviewFeatureDTO> reviewDTOs = new ArrayList<>();
+        List<ReviewFeatureResponseDTO> reviewDTOs = new ArrayList<>();
         while (reviewsResult.hasNext()) {
-            ReviewFeatureDTO reviewFeatureDTO = getReviewFeatureDTO(reviewsResult.next());
-            reviewDTOs.add(reviewFeatureDTO);
+            ReviewFeatureResponseDTO reviewFeatureResponseDTO = getReviewFeatureDTO(reviewsResult.next());
+            reviewDTOs.add(reviewFeatureResponseDTO);
         }
         return reviewDTOs;
     }
@@ -391,17 +393,17 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         repoConnection.close();
     }
 
-    private ReviewFeatureDTO getReviewFeatureDTO(final BindingSet bindings) {
-        ReviewFeatureDTO reviewFeatureDTO = new ReviewFeatureDTO();
+    private ReviewFeatureResponseDTO getReviewFeatureDTO(final BindingSet bindings) {
+        ReviewFeatureResponseDTO reviewFeatureResponseDTO = new ReviewFeatureResponseDTO();
         if (existsShortReviewBinding(bindings)) {
             if (bindings.getBinding("id") != null && bindings.getBinding("id").getValue() != null) {
                 String idValue = bindings.getBinding("id").getValue().stringValue();
-                reviewFeatureDTO.setId(idValue);
+                reviewFeatureResponseDTO.setId(idValue);
             }
 
             if (bindings.getBinding("text") != null && bindings.getBinding("text").getValue() != null) {
                 String textValue = bindings.getBinding("text").getValue().stringValue();
-                reviewFeatureDTO.setReviewText(textValue);
+                reviewFeatureResponseDTO.setReviewText(textValue);
             }
 
         }
@@ -415,10 +417,10 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             String model = bindings.getBinding("model").getValue().stringValue();
             featureDTO.setLanguageModel(new LanguageModelDTO(model));
         }
-        reviewFeatureDTO.setFeatureDTOs(Collections.singletonList(featureDTO));
+        reviewFeatureResponseDTO.setFeatureDTOs(Collections.singletonList(featureDTO));
 
 
-        return reviewFeatureDTO;
+        return reviewFeatureResponseDTO;
     }
 
 
