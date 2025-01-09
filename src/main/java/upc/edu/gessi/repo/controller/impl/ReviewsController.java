@@ -10,9 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.ReviewsAPI;
-import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewFeatureDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewFeatureRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewFeatureResponseDTO;
 import upc.edu.gessi.repo.exception.*;
 import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.service.MobileApplicationService;
@@ -85,9 +85,11 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<List<ReviewFeatureDTO>> getReviewsByFeatures(List<String> features) {
+    public ResponseEntity<List<ReviewFeatureResponseDTO>> getReviewsByFeatures(ReviewFeatureRequestDTO request) {
         try {
-            return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).getByFeatures(features),
+            return new ResponseEntity<>(((ReviewService) useService(ReviewService.class))
+                    .getByAppIdAndFeatures(request.getAppName(),
+                            request.getFeatureList()),
                     HttpStatus.OK);
         } catch (NoReviewsFoundException e) {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
