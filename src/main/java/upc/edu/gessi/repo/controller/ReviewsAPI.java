@@ -21,7 +21,7 @@ public interface ReviewsAPI extends CrudAPI<ReviewDTO> {
             @RequestParam(name = "market-segment", defaultValue = "Communication", required = false) String marketSegment);
 
     @ApiOperation("Fetch reviews based on features")
-    @GetMapping(value = "/by-features")
+    @PostMapping(value = "/by-features")
     ResponseEntity<List<ReviewFeatureResponseDTO>> getReviewsByFeatures(
             @RequestBody ReviewFeatureRequestDTO request);
 }
