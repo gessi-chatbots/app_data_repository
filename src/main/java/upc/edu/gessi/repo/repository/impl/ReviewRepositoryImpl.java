@@ -425,51 +425,75 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
 
     private ReviewDTO getReviewDTO(final BindingSet bindings) {
-        ReviewDTO ReviewDTO = new ReviewDTO();
+        ReviewDTO reviewDTO = new ReviewDTO();
+
         if (existsShortReviewBinding(bindings)) {
             if (bindings.getBinding("id") != null && bindings.getBinding("id").getValue() != null) {
                 String idValue = bindings.getBinding("id").getValue().stringValue();
-                ReviewDTO.setId(idValue);
+                reviewDTO.setId(idValue);
             }
 
             if (bindings.getBinding("text") != null && bindings.getBinding("text").getValue() != null) {
                 String textValue = bindings.getBinding("text").getValue().stringValue();
-                ReviewDTO.setReviewText(textValue);
+                reviewDTO.setReviewText(textValue);
             }
 
             if (bindings.getBinding("app_identifier") != null && bindings.getBinding("app_identifier").getValue() != null) {
                 String appValue = bindings.getBinding("app_identifier").getValue().stringValue();
-                ReviewDTO.setApplicationId(appValue);
-
+                reviewDTO.setApplicationId(appValue);
             }
 
             if (bindings.getBinding("date") != null && bindings.getBinding("date").getValue() != null) {
                 String dateString = bindings.getBinding("date").getValue().stringValue();
-                try {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    Date date = dateFormat.parse(dateString);
-                    ReviewDTO.setDate(date);
-                } catch (ParseException e) {
-                    e.printStackTrace();
+
+                Date date = parseDate(dateString);
+                if (date != null) {
+                    reviewDTO.setDate(date);
+                } else {
+                    System.err.println("Failed to parse date: " + dateString);
                 }
             }
         }
-        ReviewDTO.setSentences(new ArrayList<>());
-        TupleQueryResult sentencesResult =
-                runSparqlQuery(reviewQueryBuilder.findReviewSentencesEmotions(new ArrayList<>(Collections.singleton(ReviewDTO.getId()))));
+
+        reviewDTO.setSentences(new ArrayList<>());
+        TupleQueryResult sentencesResult = runSparqlQuery(
+                reviewQueryBuilder.findReviewSentencesEmotions(new ArrayList<>(Collections.singleton(reviewDTO.getId())))
+        );
+
         if (sentencesResult.hasNext()) {
             while (sentencesResult.hasNext()) {
-                ReviewDTO
-                        .getSentences()
-                        .add(getSentenceDTO(sentencesResult));
+                reviewDTO.getSentences().add(getSentenceDTO(sentencesResult));
             }
         } else {
-            ReviewDTO.setSentences(new ArrayList<>());
+            reviewDTO.setSentences(new ArrayList<>());
         }
 
-        return ReviewDTO;
+        return reviewDTO;
     }
 
+    private Date parseDate(String dateString) {
+        List<String> dateFormats = Arrays.asList(
+                "yyyy-MM-dd",
+                "EEE MMM dd HH:mm:ss z yyyy",
+                "MM/dd/yyyy",
+                "dd/MM/yyyy",
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                "yyyy-MM-dd HH:mm:ss"
+        );
+
+        for (String format : dateFormats) {
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat(format, Locale.ENGLISH);
+                dateFormat.setLenient(false);
+                return dateFormat.parse(dateString);
+            } catch (ParseException ignored) {
+            }
+        }
+
+        System.err.println("Failed to parse date: " + dateString);
+        return null; // If no formats match
+    }
     private boolean existsShortReviewBinding(BindingSet bindings) {
         return bindings.getBinding("id") != null
                 && bindings.getBinding("id").getValue() != null
