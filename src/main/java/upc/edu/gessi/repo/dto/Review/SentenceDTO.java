@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import upc.edu.gessi.repo.dto.LanguageModel.LanguageModelDTO;
 
 import java.io.Serializable;
 
@@ -19,6 +18,9 @@ public class SentenceDTO implements Serializable {
     private String id;
     private SentimentDTO sentimentData;
     private FeatureDTO featureData;
+    private PolarityDTO polarityData;   
+    private TopicDTO topicData;
+    private TypeDTO typeData;
     private String text;
 
 }
