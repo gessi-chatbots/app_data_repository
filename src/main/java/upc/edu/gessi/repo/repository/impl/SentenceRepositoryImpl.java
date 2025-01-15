@@ -70,6 +70,15 @@ public class SentenceRepositoryImpl implements SentenceRepository {
         if (dto.getFeatureData() != null && dto.getFeatureData().getFeature() != null) {
             addSenteceFeatureIntoStatements(statements, dto, sentenceIRI);
         }
+        if (dto.getPolarityData() != null && dto.getPolarityData().getPolarity() != null) {
+            addSentencePolarityIntoStatements(statements, dto, sentenceIRI);
+        }
+        if (dto.getTopicData() != null && dto.getTopicData().getTopic() != null) {
+            addSentenceTopicIntoStatements(statements, dto, sentenceIRI);
+        }  
+        if (dto.getTypeData() != null && dto.getTypeData().getType() != null) {
+            addSentenceTypeIntoStatements(statements, dto, sentenceIRI);
+        }
         commitChanges(statements);
         return sentenceIRI;
     }
@@ -106,6 +115,30 @@ public class SentenceRepositoryImpl implements SentenceRepository {
         deleteFeatureIfExists(reviewId);
         addFeatureIntoStatements(statements, sentenceDTO, sentenceIRI);
 
+    }
+
+    private void addSentencePolarityIntoStatements(final List<Statement> statements,
+                                                  final SentenceDTO sentenceDTO,
+                                                  final IRI sentenceIRI) {
+        //String reviewId = "";
+        //deletePolarityIfExists(reviewId);
+        addPolarityIntoStatements(statements, sentenceDTO, sentenceIRI);
+    }
+
+    private void addSentenceTopicIntoStatements(final List<Statement> statements,
+                                                final SentenceDTO sentenceDTO,
+                                                final IRI sentenceIRI) {
+        //String reviewId = "";
+        //deleteTopicIfExists(reviewId);
+        addTopicIntoStatements(statements, sentenceDTO, sentenceIRI);
+    }
+
+    private void addSentenceTypeIntoStatements(final List<Statement> statements,
+                                                final SentenceDTO sentenceDTO,
+                                                final IRI sentenceIRI) {
+        //String reviewId = "";
+        //deleteTypeIfExists(reviewId);
+        addTypeIntoStatements(statements, sentenceDTO, sentenceIRI);
     }
 
     private void deleteSentimentIfExisting(String reviewId) {
@@ -167,6 +200,57 @@ public class SentenceRepositoryImpl implements SentenceRepository {
                     statements,
                     sentenceDTO.getFeatureData().getLanguageModel().getModelName(),
                     featureIRI);
+        }
+    }
+
+    private void addPolarityIntoStatements(final List<Statement> statements,
+                                            final SentenceDTO sentenceDTO,
+                                            final IRI sentenceIRI) {
+        String polarity = sentenceDTO.getPolarityData().getPolarity();
+        IRI polarityIRI = factory.createIRI(schemaIRI.getPolarityIRI() + "/" + polarity);
+        statements.add(factory.createStatement(polarityIRI, schemaIRI.getTypeIRI(), schemaIRI.getPolarityIRI()));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getPolarityPropertyIRI(), polarityIRI));
+        statements.add(factory.createStatement(polarityIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(polarity)));
+        statements.add(factory.createStatement(polarityIRI, schemaIRI.getNameIRI(), factory.createLiteral(polarity)));
+        if (sentenceDTO.getPolarityData().getLanguageModel() != null) {
+            addLanguageModel(
+                    statements,
+                    sentenceDTO.getPolarityData().getLanguageModel().getModelName(),
+                    polarityIRI);
+        }
+    }
+
+    private void addTopicIntoStatements(final List<Statement> statements,
+                                            final SentenceDTO sentenceDTO,
+                                            final IRI sentenceIRI) {
+        String topic = sentenceDTO.getTopicData().getTopic();
+        IRI topicIRI = factory.createIRI(schemaIRI.getTopicIRI() + "/" + topic);
+        statements.add(factory.createStatement(topicIRI, schemaIRI.getTypeIRI(), schemaIRI.getTopicIRI()));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getTopicPropertyIRI(), topicIRI));
+        statements.add(factory.createStatement(topicIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(topic)));
+        statements.add(factory.createStatement(topicIRI, schemaIRI.getNameIRI(), factory.createLiteral(topic)));
+        if (sentenceDTO.getTopicData().getLanguageModel() != null) {
+            addLanguageModel(
+                    statements,
+                    sentenceDTO.getTopicData().getLanguageModel().getModelName(),
+                    topicIRI);
+        }
+    }
+
+    private void addTypeIntoStatements(final List<Statement> statements,
+                                            final SentenceDTO sentenceDTO,
+                                            final IRI sentenceIRI) {
+        String type = sentenceDTO.getTypeData().getType();
+        IRI typeIRI = factory.createIRI(schemaIRI.getReviewTypeIRI() + "/" + type);
+        statements.add(factory.createStatement(typeIRI, schemaIRI.getTypeIRI(), schemaIRI.getReviewTypeIRI()));
+        statements.add(factory.createStatement(sentenceIRI, schemaIRI.getTypePropertyIRI(), typeIRI));
+        statements.add(factory.createStatement(typeIRI, schemaIRI.getIdentifierIRI(), factory.createLiteral(type)));
+        statements.add(factory.createStatement(typeIRI, schemaIRI.getNameIRI(), factory.createLiteral(type)));
+        if (sentenceDTO.getTypeData().getLanguageModel() != null) {
+            addLanguageModel(
+                    statements,
+                    sentenceDTO.getTypeData().getLanguageModel().getModelName(),
+                    typeIRI);
         }
     }
 

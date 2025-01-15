@@ -55,4 +55,15 @@ public class SchemaIRI {
 
     //Feature object
     private IRI synonymIRI = factory.createIRI("https://schema.org/sameAs");
+
+    //Descriptor objects
+    private final IRI polarityIRI = factory.createIRI("https://gessi.upc.edu/en/tools/mapp-kg/Polarity");
+    private final IRI topicIRI = factory.createIRI("https://gessi.upc.edu/en/tools/mapp-kg/Topic");
+    private final IRI reviewTypeIRI = factory.createIRI("https://gessi.upc.edu/en/tools/mapp-kg/Type");
+
+    //Descriptors properties
+    private final IRI polarityPropertyIRI = factory.createIRI("https://gessi.upc.edu/en/tools/mapp-kg/polarity");
+    private final IRI topicPropertyIRI = factory.createIRI("https://gessi.upc.edu/en/tools/mapp-kg/topic");
+    private final IRI typePropertyIRI = factory.createIRI("https://gessi.upc.edu/en/tools/mapp-kg/type");
+
 }
