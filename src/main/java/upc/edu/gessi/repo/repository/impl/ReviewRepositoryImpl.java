@@ -140,12 +140,77 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         if (!reviewsResult.hasNext()) {
             throw new NoReviewsFoundException("No review was found");
         }
-        List<ReviewFeatureResponseDTO> reviewDTOs = new ArrayList<>();
+        
+        // Use a map to group results by review ID
+        Map<String, ReviewFeatureResponseDTO> reviewMap = new HashMap<>();
+        
         while (reviewsResult.hasNext()) {
-            ReviewFeatureResponseDTO reviewFeatureResponseDTO = getReviewFeatureDTO(reviewsResult.next());
-            reviewDTOs.add(reviewFeatureResponseDTO);
+            BindingSet bindings = reviewsResult.next();
+            String reviewId = bindings.getBinding("id").getValue().stringValue();
+            System.out.println(bindings.toString());
+            
+            // Get or create ReviewFeatureResponseDTO
+            ReviewFeatureResponseDTO dto = reviewMap.computeIfAbsent(reviewId, k -> {
+                ReviewFeatureResponseDTO newDto = new ReviewFeatureResponseDTO();
+                newDto.setId(reviewId);
+                if (bindings.getBinding("text") != null) {
+                    newDto.setReviewText(bindings.getBinding("text").getValue().stringValue());
+                }
+                newDto.setFeatureDTOs(new ArrayList<>());
+                newDto.setPolarityDTOs(new ArrayList<>());
+                newDto.setTypeDTOs(new ArrayList<>());
+                newDto.setTopicDTOs(new ArrayList<>());
+                return newDto;
+            });
+            
+            // Add feature if present and not empty
+            if (bindings.getBinding("feature") != null) {
+                String featureValue = bindings.getBinding("feature").getValue().stringValue();
+                if (!featureValue.isEmpty()) {
+                    FeatureDTO featureDTO = new FeatureDTO();
+                    featureDTO.setFeature(featureValue);
+                    if (bindings.getBinding("model") != null) {
+                        String modelValue = bindings.getBinding("model").getValue().stringValue();
+                        if (!modelValue.isEmpty()) {
+                            featureDTO.setLanguageModel(new LanguageModelDTO(modelValue));
+                        }
+                    }
+                    dto.getFeatureDTOs().add(featureDTO);
+                }
+            }
+            
+            // Add polarity if present and not empty
+            if (bindings.getBinding("polarityId") != null) {
+                String polarityValue = bindings.getBinding("polarityId").getValue().stringValue();
+                if (!polarityValue.isEmpty()) {
+                    PolarityDTO polarityDTO = new PolarityDTO();
+                    polarityDTO.setPolarity(polarityValue);
+                    dto.getPolarityDTOs().add(polarityDTO);
+                }
+            }
+            
+            // Add type if present and not empty
+            if (bindings.getBinding("typeId") != null) {
+                String typeValue = bindings.getBinding("typeId").getValue().stringValue();
+                if (!typeValue.isEmpty()) {
+                    TypeDTO typeDTO = new TypeDTO();
+                    typeDTO.setType(typeValue);
+                    dto.getTypeDTOs().add(typeDTO);
+                }
+            }
+            
+            // Add topic if present and not empty
+            if (bindings.getBinding("topicId") != null) {
+                String topicValue = bindings.getBinding("topicId").getValue().stringValue();
+                if (!topicValue.isEmpty()) {
+                    TopicDTO topicDTO = new TopicDTO();
+                    topicDTO.setTopic(topicValue);
+                    dto.getTopicDTOs().add(topicDTO);
+                }
+            }
         }
-        return reviewDTOs;
+        
+        return new ArrayList<>(reviewMap.values());
     }
 
 
@@ -420,23 +485,23 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             String model = bindings.getBinding("model").getValue().stringValue();
             featureDTO.setLanguageModel(new LanguageModelDTO(model));
         }
-        if (bindings.getBinding("polarityId") != null && bindings.getBinding("polarityId").getValue() != null) {
-            String polarity = bindings.getBinding("polarityId").getValue().stringValue();
+        if (bindings.getBinding("polarity") != null && bindings.getBinding("polarity").getValue() != null) {
+            String polarity = bindings.getBinding("polarity").getValue().stringValue();
             polarityDTO.setPolarity(polarity);
         }
-        if (bindings.getBinding("typeId") != null && bindings.getBinding("typeId").getValue() != null) {
-            String type = bindings.getBinding("typeId").getValue().stringValue();
+        if (bindings.getBinding("type") != null && bindings.getBinding("type").getValue() != null) {
+            String type = bindings.getBinding("type").getValue().stringValue();
             typeDTO.setType(type);
         }
-        if (bindings.getBinding("topicId") != null && bindings.getBinding("topicId").getValue() != null) {
-            String topic = bindings.getBinding("topicId").getValue().stringValue();
+        if (bindings.getBinding("topic") != null && bindings.getBinding("topic").getValue() != null) {
+            String topic = bindings.getBinding("topic").getValue().stringValue();
             topicDTO.setTopic(topic);
         }
 
         reviewFeatureResponseDTO.setFeatureDTOs(Collections.singletonList(featureDTO));
-        reviewFeatureResponseDTO.setPolarityDTOs(Collections.singleton(polarityDTO));
-        reviewFeatureResponseDTO.setTypeDTOs(Collections.singleton(typeDTO));
-        reviewFeatureResponseDTO.setTopicDTOs(Collections.singleton(topicDTO));
+        reviewFeatureResponseDTO.setPolarityDTOs(Collections.singletonList(polarityDTO));
+        reviewFeatureResponseDTO.setTypeDTOs(Collections.singletonList(typeDTO));
+        reviewFeatureResponseDTO.setTopicDTOs(Collections.singletonList(topicDTO));
 
         return reviewFeatureResponseDTO;
     }

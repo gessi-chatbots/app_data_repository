@@ -25,9 +25,9 @@ public class ReviewFeatureResponseDTO implements Serializable {
 
     private List<FeatureDTO> featureDTOs;
 
-    private Set<PolarityDTO> polarityDTOs;
+    private List<PolarityDTO> polarityDTOs;
 
-    private Set<TypeDTO> typeDTOs;
+    private List<TypeDTO> typeDTOs;
 
-    private Set<TopicDTO> topicDTOs;
+    private List<TopicDTO> topicDTOs;
 }
