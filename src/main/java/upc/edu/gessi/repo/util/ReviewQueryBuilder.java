@@ -268,10 +268,10 @@ public class ReviewQueryBuilder
 
     public String findReviewsByAppIdAndFeatures(String appId, final List<String> features) {
         StringBuilder queryBuilder = new StringBuilder();
-
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?id ?text ?feature ?model\n");
+        queryBuilder.append("PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>\n");
+        queryBuilder.append("SELECT ?id ?text ?feature ?model ?polarityId ?typeId ?topicId\n");
         queryBuilder.append("WHERE {\n");
         queryBuilder.append("  ?app a schema:MobileApplication ;\n");
         queryBuilder.append("       schema:identifier \"" + appId + "\" ;\n");
@@ -287,6 +287,18 @@ public class ReviewQueryBuilder
         queryBuilder.append("            schema:disambiguatingDescription ?languageModel .\n");
         queryBuilder.append("  ?languageModel a schema:softwareApplication ;\n");
         queryBuilder.append("                 schema:identifier ?model .\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewSentence mapp:polarity ?polarity .\n");
+        queryBuilder.append("    ?polarity schema:identifier ?polarityId .\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewSentence mapp:type ?type .\n");
+        queryBuilder.append("    ?type schema:identifier ?typeId .\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewSentence mapp:topic ?topic .\n");
+        queryBuilder.append("    ?topic schema:identifier ?topicId .\n");
+        queryBuilder.append("  }\n");
         queryBuilder.append("  VALUES ?feature {\n");
 
         for (String feature : features) {

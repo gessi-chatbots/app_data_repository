@@ -409,6 +409,9 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
 
         FeatureDTO featureDTO = new FeatureDTO();
+        PolarityDTO polarityDTO = new PolarityDTO();
+        TypeDTO typeDTO = new TypeDTO();
+        TopicDTO topicDTO = new TopicDTO();
         if (bindings.getBinding("feature") != null && bindings.getBinding("feature").getValue() != null) {
             String feature = bindings.getBinding("feature").getValue().stringValue();
             featureDTO.setFeature(feature);
@@ -417,8 +420,23 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             String model = bindings.getBinding("model").getValue().stringValue();
             featureDTO.setLanguageModel(new LanguageModelDTO(model));
         }
-        reviewFeatureResponseDTO.setFeatureDTOs(Collections.singletonList(featureDTO));
+        if (bindings.getBinding("polarityId") != null && bindings.getBinding("polarityId").getValue() != null) {
+            String polarity = bindings.getBinding("polarityId").getValue().stringValue();
+            polarityDTO.setPolarity(polarity);
+        }
+        if (bindings.getBinding("typeId") != null && bindings.getBinding("typeId").getValue() != null) {
+            String type = bindings.getBinding("typeId").getValue().stringValue();
+            typeDTO.setType(type);
+        }
+        if (bindings.getBinding("topicId") != null && bindings.getBinding("topicId").getValue() != null) {
+            String topic = bindings.getBinding("topicId").getValue().stringValue();
+            topicDTO.setTopic(topic);
+        }
 
+        reviewFeatureResponseDTO.setFeatureDTOs(Collections.singletonList(featureDTO));
+        reviewFeatureResponseDTO.setPolarityDTOs(Collections.singleton(polarityDTO));
+        reviewFeatureResponseDTO.setTypeDTOs(Collections.singleton(typeDTO));
+        reviewFeatureResponseDTO.setTopicDTOs(Collections.singleton(topicDTO));
 
         return reviewFeatureResponseDTO;
     }

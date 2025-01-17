@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -23,4 +24,10 @@ public class ReviewFeatureResponseDTO implements Serializable {
     private String reviewText;
 
     private List<FeatureDTO> featureDTOs;
+
+    private Set<PolarityDTO> polarityDTOs;
+
+    private Set<TypeDTO> typeDTOs;
+
+    private Set<TopicDTO> topicDTOs;
 }
