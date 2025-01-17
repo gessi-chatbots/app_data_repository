@@ -299,13 +299,13 @@ public class ReviewQueryBuilder
         queryBuilder.append("    ?reviewSentence mapp:topic ?topic .\n");
         queryBuilder.append("    ?topic schema:identifier ?topicId .\n");
         queryBuilder.append("  }\n");
-        queryBuilder.append("  VALUES ?feature {\n");
-
-        for (String feature : features) {
-            queryBuilder.append("    \"" + feature + "\"\n");
+        if (features != null && !features.isEmpty()) {
+            queryBuilder.append("  VALUES ?feature {\n");
+            for (String feature : features) {
+                queryBuilder.append("    \"" + feature + "\"\n");
+            }
+            queryBuilder.append("  }\n");
         }
-
-        queryBuilder.append("  }\n");
         queryBuilder.append("}\n");
 
         return queryBuilder.toString();
