@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.util;
 
 import org.springframework.stereotype.Component;
+import upc.edu.gessi.repo.dto.Review.ReviewDescriptorRequestDTO;
 
 import java.util.List;
 
@@ -266,51 +267,99 @@ public class ReviewQueryBuilder
         return queryBuilder.toString();
     }
 
-    public String findReviewsByAppIdAndFeatures(String appId, final List<String> features) {
+    public String findReviewsByDescriptors(final ReviewDescriptorRequestDTO requestDTO,
+                                           final Integer page,
+                                           final Integer size) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
         queryBuilder.append("PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>\n");
-        queryBuilder.append("SELECT ?id ?text ?feature ?model ?polarityId ?typeId ?topicId\n");
+        queryBuilder.append("SELECT ?id ?text ?feature ?emotion ?model ?polarityId ?typeId ?topicId\n");
         queryBuilder.append("WHERE {\n");
-        queryBuilder.append("  ?app a schema:MobileApplication ;\n");
-        queryBuilder.append("       schema:identifier \"" + appId + "\" ;\n");
-        queryBuilder.append("       schema:review ?review .\n");
-        queryBuilder.append("  ?review a schema:Review ;\n");
-        queryBuilder.append("         schema:identifier ?id;\n");
-        queryBuilder.append("         schema:reviewBody ?text;\n");
-        queryBuilder.append("         schema:additionalProperty ?reviewSentence .\n");
-        queryBuilder.append("  ?reviewSentence a schema:Review; \n");
-        queryBuilder.append("                  schema:keywords ?keywords .\n");
-        queryBuilder.append("  ?keywords a schema:DefinedTerm ;\n");
-        queryBuilder.append("            schema:name ?feature ;\n");
-        queryBuilder.append("            schema:disambiguatingDescription ?languageModel .\n");
-        queryBuilder.append("  ?languageModel a schema:softwareApplication ;\n");
-        queryBuilder.append("                 schema:identifier ?model .\n");
-        queryBuilder.append("  OPTIONAL {\n");
-        queryBuilder.append("    ?reviewSentence mapp:polarity ?polarity .\n");
-        queryBuilder.append("    ?polarity schema:identifier ?polarityId .\n");
-        queryBuilder.append("  }\n");
-        queryBuilder.append("  OPTIONAL {\n");
-        queryBuilder.append("    ?reviewSentence mapp:type ?type .\n");
-        queryBuilder.append("    ?type schema:identifier ?typeId .\n");
-        queryBuilder.append("  }\n");
-        queryBuilder.append("  OPTIONAL {\n");
-        queryBuilder.append("    ?reviewSentence mapp:topic ?topic .\n");
-        queryBuilder.append("    ?topic schema:identifier ?topicId .\n");
-        queryBuilder.append("  }\n");
-        if (features != null && !features.isEmpty()) {
-            queryBuilder.append("  VALUES ?feature {\n");
-            for (String feature : features) {
-                queryBuilder.append("    \"" + feature + "\"\n");
-            }
-            queryBuilder.append("  }\n");
+        queryBuilder.append("  {\n");
+        queryBuilder.append("    SELECT ?id ?text ?feature ?emotion ?model ?polarityId ?typeId ?topicId\n");
+        queryBuilder.append("    WHERE {\n");
+        queryBuilder.append("      ?app a schema:MobileApplication ;\n");
+
+        // Include appId conditionally if it is not null
+        if (requestDTO.getAppId() != null) {
+            queryBuilder.append("           schema:identifier \"" + requestDTO.getAppId() + "\" ;\n");
         }
+
+        queryBuilder.append("           schema:review ?review .\n");
+        queryBuilder.append("      ?review a schema:Review ;\n");
+        queryBuilder.append("             schema:identifier ?id;\n");
+        queryBuilder.append("             schema:reviewBody ?text;\n");
+        queryBuilder.append("             schema:additionalProperty ?reviewSentence .\n");
+        queryBuilder.append("      ?reviewSentence a schema:Review;\n");
+        queryBuilder.append("                      schema:keywords ?keywords .\n");
+        queryBuilder.append("      ?keywords a schema:DefinedTerm ;\n");
+        queryBuilder.append("                schema:name ?feature ;\n");
+        queryBuilder.append("                schema:disambiguatingDescription ?languageModel .\n");
+        queryBuilder.append("      ?languageModel a schema:softwareApplication ;\n");
+        queryBuilder.append("                     schema:identifier ?model .\n");
+
+        queryBuilder.append("      OPTIONAL {\n");
+        queryBuilder.append("        ?reviewSentence mapp:polarity ?polarity .\n");
+        queryBuilder.append("        ?polarity schema:identifier ?polarityId .\n");
+        queryBuilder.append("      }\n");
+
+        queryBuilder.append("      OPTIONAL {\n");
+        queryBuilder.append("        ?reviewSentence mapp:type ?type .\n");
+        queryBuilder.append("        ?type schema:identifier ?typeId .\n");
+        queryBuilder.append("      }\n");
+
+        queryBuilder.append("      OPTIONAL {\n");
+        queryBuilder.append("        ?reviewSentence mapp:topic ?topic .\n");
+        queryBuilder.append("        ?topic schema:identifier ?topicId .\n");
+        queryBuilder.append("      }\n");
+
+        queryBuilder.append("      OPTIONAL {\n");
+        queryBuilder.append("        ?reviewSentence schema:keywords ?emotion .\n");
+        queryBuilder.append("      }\n");
+
+        // Add filters dynamically if the values are not null
+        if (requestDTO.getEmotion() != null) {
+            queryBuilder.append("      FILTER (?emotion = \"" + requestDTO.getEmotion()  + "\")\n");
+        }
+
+        if (requestDTO.getPolarity() != null) {
+            queryBuilder.append("      FILTER (?polarityId = \"" + requestDTO.getPolarity() + "\")\n");
+        }
+
+        if (requestDTO.getType() != null) {
+            queryBuilder.append("      FILTER (?typeId = \"" + requestDTO.getType() + "\")\n");
+        }
+
+        if (requestDTO.getTopic() != null) {
+            queryBuilder.append("      FILTER (?topicId = \"" + requestDTO.getTopic() + "\")\n");
+        }
+
+        // Add VALUES block for features
+        if (requestDTO.getFeatureList() != null && !requestDTO.getFeatureList().isEmpty()) {
+            queryBuilder.append("      VALUES ?feature {\n");
+            for (String feature : requestDTO.getFeatureList()) {
+                queryBuilder.append("        \"" + feature + "\"\n");
+            }
+            queryBuilder.append("      }\n");
+        }
+
+        queryBuilder.append("    }\n");
+
+        // Add LIMIT and OFFSET dynamically
+        if (size != null) {
+            queryBuilder.append("    LIMIT ").append(size).append("\n");
+        }
+        if (page != null && size != null) {
+            int offset = page * size;
+            queryBuilder.append("    OFFSET ").append(offset).append("\n");
+        }
+
+        queryBuilder.append("  }\n");
         queryBuilder.append("}\n");
 
         return queryBuilder.toString();
     }
-
 
 
 
