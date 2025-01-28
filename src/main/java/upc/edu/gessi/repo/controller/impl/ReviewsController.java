@@ -11,8 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.ReviewsAPI;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewFeatureRequestDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewFeatureResponseDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDescriptorRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDescriptorResponseDTO;
 import upc.edu.gessi.repo.exception.*;
 import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.service.MobileApplicationService;
@@ -85,16 +85,23 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<List<ReviewFeatureResponseDTO>> getReviewsByFeatures(ReviewFeatureRequestDTO request) {
+    public ResponseEntity<List<ReviewDescriptorResponseDTO>> getReviewsByDescriptors(
+            final ReviewDescriptorRequestDTO request,
+            final Integer page,
+            final Integer size) {
         try {
-            return new ResponseEntity<>(((ReviewService) useService(ReviewService.class))
-                    .getByAppIdAndFeatures(request.getAppName(),
-                            request.getFeatureList()),
-                    HttpStatus.OK);
+            List<ReviewDescriptorResponseDTO> reviews = ((ReviewService) useService(ReviewService.class))
+                    .getByDescriptors(request,
+                            page != null ? page : 1,
+                            size != null ? size : 10);
+
+            return new ResponseEntity<>(reviews, HttpStatus.OK);
         } catch (NoReviewsFoundException e) {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
 
     private Object useService(Class<?> clazz) {

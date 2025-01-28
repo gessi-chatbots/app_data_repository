@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewFeatureRequestDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewFeatureResponseDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDescriptorRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDescriptorResponseDTO;
 
 import java.util.List;
 
@@ -20,8 +20,10 @@ public interface ReviewsAPI extends CrudAPI<ReviewDTO> {
             @RequestParam(name = "size", defaultValue = "10000", required = false) Integer size,
             @RequestParam(name = "market-segment", defaultValue = "Communication", required = false) String marketSegment);
 
-    @ApiOperation("Fetch reviews based on features")
-    @PostMapping(value = "/by-features")
-    ResponseEntity<List<ReviewFeatureResponseDTO>> getReviewsByFeatures(
-            @RequestBody ReviewFeatureRequestDTO request);
+    @ApiOperation("Fetch reviews based on filters (descriptors)")
+    @PostMapping(value = "/by-descriptors")
+    ResponseEntity<List<ReviewDescriptorResponseDTO>> getReviewsByDescriptors(
+            @RequestBody ReviewDescriptorRequestDTO request,
+            @RequestParam(value = "page", defaultValue = "1", required = false) final Integer page,
+            @RequestParam(value = "size", defaultValue = "10", required = false) final Integer size);
 }
