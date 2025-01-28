@@ -117,9 +117,17 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewFeatureResponseDTO> getByAppIdAndFeatures(String appId,
-                                                                List<String> features) throws NoReviewsFoundException {
-        return ((ReviewRepository) useRepository(ReviewRepository.class))
-                .findAllByAppIdAndFeatures(appId, features);
+    public List<ReviewDescriptorResponseDTO> getByDescriptors(ReviewDescriptorRequestDTO requestDTO,
+                                                              int page,
+                                                              int size) throws NoReviewsFoundException {
+
+
+        return ((ReviewRepository) useRepository(ReviewRepository.class)).findByDescriptors(
+                        requestDTO,
+                        page,
+                        size
+                );
+
     }
+
 }
