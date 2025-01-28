@@ -131,39 +131,39 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return reviewDTOs;
     }
 
-
     @Override
-    public List<ReviewFeatureResponseDTO> findAllByAppIdAndFeatures(final String appId,
-                                                                    final List<String> features) throws NoReviewsFoundException {
+    public List<ReviewDescriptorResponseDTO> findByDescriptors(ReviewDescriptorRequestDTO requestDTO,
+                                                               final Integer page,
+                                                               final Integer size) throws NoReviewsFoundException {
         TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder
-                .findReviewsByAppIdAndFeatures(appId, features));
+                .findReviewsByDescriptors(requestDTO,
+                        page,
+                        size));
         if (!reviewsResult.hasNext()) {
             throw new NoReviewsFoundException("No review was found");
         }
-        
-        // Use a map to group results by review ID
-        Map<String, ReviewFeatureResponseDTO> reviewMap = new HashMap<>();
-        
+
+        Map<String, ReviewDescriptorResponseDTO> reviewMap = new HashMap<>();
+
         while (reviewsResult.hasNext()) {
             BindingSet bindings = reviewsResult.next();
             String reviewId = bindings.getBinding("id").getValue().stringValue();
             System.out.println(bindings.toString());
-            
-            // Get or create ReviewFeatureResponseDTO
-            ReviewFeatureResponseDTO dto = reviewMap.computeIfAbsent(reviewId, k -> {
-                ReviewFeatureResponseDTO newDto = new ReviewFeatureResponseDTO();
+
+            ReviewDescriptorResponseDTO dto = reviewMap.computeIfAbsent(reviewId, k -> {
+                ReviewDescriptorResponseDTO newDto = new ReviewDescriptorResponseDTO();
                 newDto.setId(reviewId);
                 if (bindings.getBinding("text") != null) {
                     newDto.setReviewText(bindings.getBinding("text").getValue().stringValue());
                 }
                 newDto.setFeatureDTOs(new ArrayList<>());
                 newDto.setPolarityDTOs(new ArrayList<>());
+                newDto.setSentimentDTOS(new ArrayList<>());
                 newDto.setTypeDTOs(new ArrayList<>());
                 newDto.setTopicDTOs(new ArrayList<>());
                 return newDto;
             });
-            
-            // Add feature if present and not empty
+
             if (bindings.getBinding("feature") != null) {
                 String featureValue = bindings.getBinding("feature").getValue().stringValue();
                 if (!featureValue.isEmpty()) {
@@ -178,7 +178,16 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                     dto.getFeatureDTOs().add(featureDTO);
                 }
             }
-            
+
+            // TODO Add emotions if present and not empty
+            if (bindings.getBinding("emotion") != null) {
+                String emotionValue = bindings.getBinding("emotion").getValue().stringValue();
+                if (!emotionValue.isEmpty()) {
+                    SentimentDTO sentimentDTO = new SentimentDTO();
+                    sentimentDTO.setSentiment(emotionValue);
+                    dto.getSentimentDTOS().add(sentimentDTO);
+                }
+            }
             // Add polarity if present and not empty
             if (bindings.getBinding("polarityId") != null) {
                 String polarityValue = bindings.getBinding("polarityId").getValue().stringValue();
@@ -188,7 +197,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                     dto.getPolarityDTOs().add(polarityDTO);
                 }
             }
-            
+
             // Add type if present and not empty
             if (bindings.getBinding("typeId") != null) {
                 String typeValue = bindings.getBinding("typeId").getValue().stringValue();
@@ -198,7 +207,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                     dto.getTypeDTOs().add(typeDTO);
                 }
             }
-            
+
             // Add topic if present and not empty
             if (bindings.getBinding("topicId") != null) {
                 String topicValue = bindings.getBinding("topicId").getValue().stringValue();
@@ -209,7 +218,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 }
             }
         }
-        
+
         return new ArrayList<>(reviewMap.values());
     }
 
@@ -458,17 +467,17 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         repoConnection.close();
     }
 
-    private ReviewFeatureResponseDTO getReviewFeatureDTO(final BindingSet bindings) {
-        ReviewFeatureResponseDTO reviewFeatureResponseDTO = new ReviewFeatureResponseDTO();
+    private ReviewDescriptorResponseDTO getReviewFeatureDTO(final BindingSet bindings) {
+        ReviewDescriptorResponseDTO reviewDescriptorResponseDTO = new ReviewDescriptorResponseDTO();
         if (existsShortReviewBinding(bindings)) {
             if (bindings.getBinding("id") != null && bindings.getBinding("id").getValue() != null) {
                 String idValue = bindings.getBinding("id").getValue().stringValue();
-                reviewFeatureResponseDTO.setId(idValue);
+                reviewDescriptorResponseDTO.setId(idValue);
             }
 
             if (bindings.getBinding("text") != null && bindings.getBinding("text").getValue() != null) {
                 String textValue = bindings.getBinding("text").getValue().stringValue();
-                reviewFeatureResponseDTO.setReviewText(textValue);
+                reviewDescriptorResponseDTO.setReviewText(textValue);
             }
 
         }
@@ -498,12 +507,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             topicDTO.setTopic(topic);
         }
 
-        reviewFeatureResponseDTO.setFeatureDTOs(Collections.singletonList(featureDTO));
-        reviewFeatureResponseDTO.setPolarityDTOs(Collections.singletonList(polarityDTO));
-        reviewFeatureResponseDTO.setTypeDTOs(Collections.singletonList(typeDTO));
-        reviewFeatureResponseDTO.setTopicDTOs(Collections.singletonList(topicDTO));
+        reviewDescriptorResponseDTO.setFeatureDTOs(Collections.singletonList(featureDTO));
+        reviewDescriptorResponseDTO.setPolarityDTOs(Collections.singletonList(polarityDTO));
+        reviewDescriptorResponseDTO.setTypeDTOs(Collections.singletonList(typeDTO));
+        reviewDescriptorResponseDTO.setTopicDTOs(Collections.singletonList(topicDTO));
 
-        return reviewFeatureResponseDTO;
+        return reviewDescriptorResponseDTO;
     }
 
 
