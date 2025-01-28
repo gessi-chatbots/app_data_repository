@@ -13,11 +13,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ReviewFeatureRequestDTO implements Serializable {
+public class ReviewDescriptorRequestDTO implements Serializable {
 
     @JsonProperty("app_id")
     private String appName;
 
     @JsonProperty("features")
     private List<String> featureList;
+
+    @JsonProperty("topic")
+    private String topic;
+
+    @JsonProperty("emotion")
+    private String emotion;
+
+    @JsonProperty("polarity")
+    private String polarity;
+
+    @JsonProperty("type")
+    private String type;
+
 }

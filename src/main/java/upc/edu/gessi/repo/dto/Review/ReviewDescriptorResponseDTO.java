@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ReviewWithDescriptorsResponseDTO implements Serializable {
+public class ReviewDescriptorResponseDTO implements Serializable {
 
     private String appId;
 
