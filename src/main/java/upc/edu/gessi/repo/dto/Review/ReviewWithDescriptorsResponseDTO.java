@@ -9,14 +9,16 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ReviewFeatureResponseDTO implements Serializable {
+public class ReviewWithDescriptorsResponseDTO implements Serializable {
 
+    private String appId;
+
+    private String appName;
     @JsonProperty("reviewId")
     private String id;
 
@@ -26,6 +28,8 @@ public class ReviewFeatureResponseDTO implements Serializable {
     private List<FeatureDTO> featureDTOs;
 
     private List<PolarityDTO> polarityDTOs;
+
+    private List<SentimentDTO> sentimentDTOS;
 
     private List<TypeDTO> typeDTOs;
 
