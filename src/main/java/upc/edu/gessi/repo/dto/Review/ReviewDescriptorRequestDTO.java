@@ -16,7 +16,7 @@ import java.util.List;
 public class ReviewDescriptorRequestDTO implements Serializable {
 
     @JsonProperty("app_id")
-    private String appName;
+    private String appId;
 
     @JsonProperty("features")
     private List<String> featureList;
