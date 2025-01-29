@@ -19,6 +19,7 @@ public class ReviewDescriptorResponseDTO implements Serializable {
     private String appId;
 
     private String appName;
+
     @JsonProperty("reviewId")
     private String id;
 

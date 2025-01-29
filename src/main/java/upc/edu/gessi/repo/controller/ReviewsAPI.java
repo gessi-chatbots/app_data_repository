@@ -24,6 +24,6 @@ public interface ReviewsAPI extends CrudAPI<ReviewDTO> {
     @PostMapping(value = "/by-descriptors")
     ResponseEntity<List<ReviewDescriptorResponseDTO>> getReviewsByDescriptors(
             @RequestBody ReviewDescriptorRequestDTO request,
-            @RequestParam(value = "page", defaultValue = "1", required = false) final Integer page,
+            @RequestParam(value = "page", defaultValue = "0", required = false) final Integer page,
             @RequestParam(value = "size", defaultValue = "10", required = false) final Integer size);
 }

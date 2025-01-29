@@ -92,7 +92,7 @@ public class ReviewsController implements ReviewsAPI {
         try {
             List<ReviewDescriptorResponseDTO> reviews = ((ReviewService) useService(ReviewService.class))
                     .getByDescriptors(request,
-                            page != null ? page : 1,
+                            page != null ? page : 0,
                             size != null ? size : 10);
 
             return new ResponseEntity<>(reviews, HttpStatus.OK);
