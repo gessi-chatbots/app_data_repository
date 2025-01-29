@@ -416,5 +416,76 @@ public class ReviewQueryBuilder
     }
 
 
+    public String countByDescriptors(final ReviewDescriptorRequestDTO requestDTO) {
+        StringBuilder queryBuilder = new StringBuilder();
+
+        queryBuilder.append("""
+        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        PREFIX schema: <https://schema.org/>
+        PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>
+
+        SELECT (COUNT(DISTINCT ?reviewId) AS ?totalCount)
+        WHERE {
+            ?app a schema:MobileApplication ;
+                 schema:identifier ?appId ;
+                 schema:review ?review .
+            ?review a schema:Review ;
+                    schema:identifier ?reviewId ;
+                    schema:additionalProperty ?reviewSentence .
+    """);
+
+        // Extract values from requestDTO
+        String appId = requestDTO.getAppId();
+        String type = requestDTO.getType();
+        String topic = requestDTO.getTopic();
+        String polarity = requestDTO.getPolarity();
+        String emotion = requestDTO.getEmotion();
+        List<String> featureList = requestDTO.getFeatureList();
+
+        if (appId != null && !appId.isEmpty()) {
+            queryBuilder.append("  FILTER (?appId = \"").append(appId).append("\")\n");
+        }
+
+        if (type != null && !type.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:type ?typeCheck .\n")
+                    .append("    ?typeCheck schema:identifier \"").append(type).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (topic != null && !topic.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:topic ?topicCheck .\n")
+                    .append("    ?topicCheck schema:identifier \"").append(topic).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (polarity != null && !polarity.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:polarity ?polarityCheck .\n")
+                    .append("    ?polarityCheck schema:identifier \"").append(polarity).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (emotion != null && !emotion.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence schema:potentialAction ?emotionCheck .\n")
+                    .append("    ?emotionCheck schema:identifier \"").append(emotion).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (featureList != null && !featureList.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n");
+            for (String feature : featureList) {
+                queryBuilder.append("    ?reviewSentence schema:keywords ?featureCheck .\n")
+                        .append("    ?featureCheck schema:name \"").append(feature).append("\" .\n");
+            }
+            queryBuilder.append("  }\n");
+        }
+
+        queryBuilder.append("}\n");
+
+        return queryBuilder.toString();
+    }
 
 }

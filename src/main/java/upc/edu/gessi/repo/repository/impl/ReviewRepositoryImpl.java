@@ -131,95 +131,165 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return reviewDTOs;
     }
 
+
+    @Override
+    public Long countByDescriptors(ReviewDescriptorRequestDTO requestDTO) throws NoReviewsFoundException {
+        TupleQueryResult countResult = runSparqlQuery(reviewQueryBuilder
+                .countByDescriptors(requestDTO));
+
+        if (!countResult.hasNext()) {
+            throw new NoReviewsFoundException("No review was found");
+        }
+        Long reviewCount = 0L;
+        while (countResult.hasNext()) {
+            BindingSet bindings = countResult.next();
+            if (bindings.getBinding("totalCount") != null) {
+                reviewCount = Long.valueOf(bindings
+                        .getBinding("totalCount")
+                        .getValue()
+                        .stringValue());
+                return reviewCount;
+            }
+        }
+        return reviewCount;
+    }
+
+
     @Override
     public List<ReviewDescriptorResponseDTO> findByDescriptors(ReviewDescriptorRequestDTO requestDTO,
                                                                final Integer page,
                                                                final Integer size) throws NoReviewsFoundException {
+
+
+        TupleQueryResult reviewsIdsResult = runSparqlQuery(reviewQueryBuilder
+                .findReviewsIDsByDescriptors(requestDTO, page, size));
+
+        if (!reviewsIdsResult.hasNext()) {
+            throw new NoReviewsFoundException("No review was found");
+        }
+        List <String> reviewIds = new ArrayList<>();
+        while (reviewsIdsResult.hasNext()) {
+            BindingSet bindings = reviewsIdsResult.next();
+            if (bindings.getBinding("reviewId") != null) {
+                String reviewId = bindings.getBinding("reviewId").getValue().stringValue();
+                if (!reviewId.isEmpty()) {
+                    reviewIds.add(reviewId);
+                }
+            }
+        }
+
         TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder
-                .findReviewsByDescriptors(requestDTO,
-                        page,
-                        size));
+                .findReviewsByIDsDescriptors(reviewIds));
+
         if (!reviewsResult.hasNext()) {
             throw new NoReviewsFoundException("No review was found");
         }
 
-        Map<String, ReviewDescriptorResponseDTO> reviewMap = new HashMap<>();
+        List<ReviewDescriptorResponseDTO> reviews = new ArrayList<>();
 
         while (reviewsResult.hasNext()) {
             BindingSet bindings = reviewsResult.next();
-            String reviewId = bindings.getBinding("id").getValue().stringValue();
-            System.out.println(bindings.toString());
+            ReviewDescriptorResponseDTO dto = new ReviewDescriptorResponseDTO();
 
-            ReviewDescriptorResponseDTO dto = reviewMap.computeIfAbsent(reviewId, k -> {
-                ReviewDescriptorResponseDTO newDto = new ReviewDescriptorResponseDTO();
-                newDto.setId(reviewId);
-                if (bindings.getBinding("text") != null) {
-                    newDto.setReviewText(bindings.getBinding("text").getValue().stringValue());
+            dto.setFeatureDTOs(new ArrayList<>());
+            dto.setPolarityDTOs(new ArrayList<>());
+            dto.setSentimentDTOS(new ArrayList<>());
+            dto.setTypeDTOs(new ArrayList<>());
+            dto.setTopicDTOs(new ArrayList<>());
+
+            if (bindings.getBinding("reviewId") != null) {
+                String reviewId = bindings.getBinding("reviewId").getValue().stringValue();
+                if (!reviewId.isEmpty()) {
+                    dto.setId(reviewId);
                 }
-                newDto.setFeatureDTOs(new ArrayList<>());
-                newDto.setPolarityDTOs(new ArrayList<>());
-                newDto.setSentimentDTOS(new ArrayList<>());
-                newDto.setTypeDTOs(new ArrayList<>());
-                newDto.setTopicDTOs(new ArrayList<>());
-                return newDto;
-            });
+            }
 
-            if (bindings.getBinding("feature") != null) {
-                String featureValue = bindings.getBinding("feature").getValue().stringValue();
-                if (!featureValue.isEmpty()) {
-                    FeatureDTO featureDTO = new FeatureDTO();
-                    featureDTO.setFeature(featureValue);
-                    if (bindings.getBinding("model") != null) {
-                        String modelValue = bindings.getBinding("model").getValue().stringValue();
-                        if (!modelValue.isEmpty()) {
-                            featureDTO.setLanguageModel(new LanguageModelDTO(modelValue));
+            if (bindings.getBinding("text") != null) {
+                String text = bindings.getBinding("text").getValue().stringValue();
+                if (!text.isEmpty()) {
+                    dto.setReviewText(text);
+                }
+            }
+
+            if (bindings.getBinding("appId") != null) {
+                String appId = bindings.getBinding("appId").getValue().stringValue();
+                if (!appId.isEmpty()) {
+                    dto.setAppId(appId);
+                }
+            }
+
+            // Split and add Features
+            if (bindings.getBinding("features") != null) {
+                String featuresValue = bindings.getBinding("features").getValue().stringValue();
+                if (!featuresValue.isEmpty()) {
+                    String[] featuresArray = featuresValue.split(", ");
+                    for (String feature : featuresArray) {
+                        FeatureDTO featureDTO = new FeatureDTO();
+                        featureDTO.setFeature(feature);
+                        if (bindings.getBinding("models") != null) {
+                            String modelsValue = bindings.getBinding("models").getValue().stringValue();
+                            String[] modelsArray = modelsValue.split(", ");
+                            if (modelsArray.length > 0) {
+                                featureDTO.setLanguageModel(new LanguageModelDTO(modelsArray[0])); // Taking the first model
+                            }
                         }
+                        dto.getFeatureDTOs().add(featureDTO);
                     }
-                    dto.getFeatureDTOs().add(featureDTO);
                 }
             }
 
-            // TODO Add emotions if present and not empty
-            if (bindings.getBinding("emotion") != null) {
-                String emotionValue = bindings.getBinding("emotion").getValue().stringValue();
-                if (!emotionValue.isEmpty()) {
-                    SentimentDTO sentimentDTO = new SentimentDTO();
-                    sentimentDTO.setSentiment(emotionValue);
-                    dto.getSentimentDTOS().add(sentimentDTO);
-                }
-            }
-            // Add polarity if present and not empty
-            if (bindings.getBinding("polarityId") != null) {
-                String polarityValue = bindings.getBinding("polarityId").getValue().stringValue();
-                if (!polarityValue.isEmpty()) {
-                    PolarityDTO polarityDTO = new PolarityDTO();
-                    polarityDTO.setPolarity(polarityValue);
-                    dto.getPolarityDTOs().add(polarityDTO);
+            if (bindings.getBinding("emotions") != null) {
+                String emotionsValue = bindings.getBinding("emotions").getValue().stringValue();
+                if (!emotionsValue.isEmpty()) {
+                    String[] emotionsArray = emotionsValue.split(", ");
+                    for (String emotion : emotionsArray) {
+                        SentimentDTO sentimentDTO = new SentimentDTO();
+                        sentimentDTO.setSentiment(emotion);
+                        dto.getSentimentDTOS().add(sentimentDTO);
+                    }
                 }
             }
 
-            // Add type if present and not empty
-            if (bindings.getBinding("typeId") != null) {
-                String typeValue = bindings.getBinding("typeId").getValue().stringValue();
-                if (!typeValue.isEmpty()) {
-                    TypeDTO typeDTO = new TypeDTO();
-                    typeDTO.setType(typeValue);
-                    dto.getTypeDTOs().add(typeDTO);
+            if (bindings.getBinding("polarities") != null) {
+                String polaritiesValue = bindings.getBinding("polarities").getValue().stringValue();
+                if (!polaritiesValue.isEmpty()) {
+                    String[] polaritiesArray = polaritiesValue.split(", ");
+                    for (String polarity : polaritiesArray) {
+                        PolarityDTO polarityDTO = new PolarityDTO();
+                        polarityDTO.setPolarity(polarity);
+                        dto.getPolarityDTOs().add(polarityDTO);
+                    }
                 }
             }
 
-            // Add topic if present and not empty
-            if (bindings.getBinding("topicId") != null) {
-                String topicValue = bindings.getBinding("topicId").getValue().stringValue();
-                if (!topicValue.isEmpty()) {
-                    TopicDTO topicDTO = new TopicDTO();
-                    topicDTO.setTopic(topicValue);
-                    dto.getTopicDTOs().add(topicDTO);
+            if (bindings.getBinding("types") != null) {
+                String typesValue = bindings.getBinding("types").getValue().stringValue();
+                if (!typesValue.isEmpty()) {
+                    String[] typesArray = typesValue.split(", ");
+                    for (String type : typesArray) {
+                        TypeDTO typeDTO = new TypeDTO();
+                        typeDTO.setType(type);
+                        dto.getTypeDTOs().add(typeDTO);
+                    }
                 }
             }
+
+            if (bindings.getBinding("topics") != null) {
+                String topicsValue = bindings.getBinding("topics").getValue().stringValue();
+                if (!topicsValue.isEmpty()) {
+                    String[] topicsArray = topicsValue.split(", ");
+                    for (String topic : topicsArray) {
+                        TopicDTO topicDTO = new TopicDTO();
+                        topicDTO.setTopic(topic);
+                        dto.getTopicDTOs().add(topicDTO);
+                    }
+                }
+            }
+
+            reviews.add(dto);
         }
 
-        return new ArrayList<>(reviewMap.values());
+        return reviews;
     }
 
 

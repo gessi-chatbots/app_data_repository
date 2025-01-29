@@ -130,4 +130,11 @@ public class ReviewServiceImpl implements ReviewService {
 
     }
 
+    @Override
+    public Long getReviewCountByDescriptors(ReviewDescriptorRequestDTO requestDTO) throws NoReviewsFoundException {
+        return ((ReviewRepository) useRepository(ReviewRepository.class)).countByDescriptors(
+                requestDTO
+        );
+    }
+
 }

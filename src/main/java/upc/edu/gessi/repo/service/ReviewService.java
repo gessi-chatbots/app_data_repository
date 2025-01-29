@@ -21,4 +21,6 @@ public interface ReviewService extends CrudService<ReviewDTO> {
             int page,
             int size
     ) throws NoReviewsFoundException;
+
+    Long getReviewCountByDescriptors(ReviewDescriptorRequestDTO requestDTO) throws NoReviewsFoundException;
 }

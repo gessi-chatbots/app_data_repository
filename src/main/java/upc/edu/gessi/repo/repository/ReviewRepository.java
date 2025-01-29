@@ -39,4 +39,6 @@ public interface ReviewRepository extends RDFCRUDRepository<ReviewDTO> {
                                                         Integer page,
                                                         Integer size) throws NoReviewsFoundException;
 
+    Long countByDescriptors(ReviewDescriptorRequestDTO requestDTO) throws NoReviewsFoundException;
+
 }
