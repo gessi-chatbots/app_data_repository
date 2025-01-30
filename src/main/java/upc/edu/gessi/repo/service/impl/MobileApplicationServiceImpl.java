@@ -19,6 +19,7 @@ import upc.edu.gessi.repo.dto.graph.GraphApp;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.repository.MobileApplicationRepository;
 import upc.edu.gessi.repo.repository.RepositoryFactory;
 import upc.edu.gessi.repo.repository.ReviewRepository;
@@ -83,7 +84,7 @@ public class MobileApplicationServiceImpl implements MobileApplicationService {
 
 
     @Override
-    public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException {
+    public MobileApplicationFullDataDTO get(String id) throws ObjectNotFoundException, NoReviewsFoundException {
         return ((MobileApplicationRepository) useRepository(MobileApplicationRepository.class)).findById(Utils.sanitizeString(id));
     }
 
