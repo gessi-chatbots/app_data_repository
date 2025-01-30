@@ -465,13 +465,15 @@ public class ReviewQueryBuilder
                     .append("  }\n");
         }
 
+        // Handle multiple features using the VALUES clause
         if (featureList != null && !featureList.isEmpty()) {
-            queryBuilder.append("  FILTER EXISTS {\n");
+            queryBuilder.append("  ?reviewSentence schema:keywords ?featureCheck .\n");
+            queryBuilder.append("  VALUES ?featureCheckName {\n");
             for (String feature : featureList) {
-                queryBuilder.append("    ?reviewSentence schema:keywords ?featureCheck .\n")
-                        .append("    ?featureCheck schema:name \"").append(feature).append("\" .\n");
+                queryBuilder.append("    \"").append(feature).append("\"\n");
             }
             queryBuilder.append("  }\n");
+            queryBuilder.append("  ?featureCheck schema:name ?featureCheckName .\n");
         }
 
         queryBuilder.append("}\n");
@@ -486,7 +488,6 @@ public class ReviewQueryBuilder
 
         return queryBuilder.toString();
     }
-
 
     public String countByDescriptors(final ReviewDescriptorRequestDTO requestDTO) {
         StringBuilder queryBuilder = new StringBuilder();
