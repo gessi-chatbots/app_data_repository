@@ -30,7 +30,7 @@ public class ReviewDescriptorResponseDTO implements Serializable {
 
     private List<PolarityDTO> polarityDTOs;
 
-    private List<SentimentDTO> sentimentDTOS;
+    private List<SentimentDTO> sentimentDTOs;
 
     private List<TypeDTO> typeDTOs;
 

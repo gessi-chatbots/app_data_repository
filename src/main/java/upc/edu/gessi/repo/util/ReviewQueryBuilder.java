@@ -73,7 +73,7 @@ public class ReviewQueryBuilder
         queryBuilder.append("  }\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
         queryBuilder.append("       schema:review ?review ;\n");
-        queryBuilder.append("       schema:name ?app_identifier.\n");
+        queryBuilder.append("       schema:identifier ?app_identifier.\n");
         queryBuilder.append("}\n");
         queryBuilder.append("GROUP BY ?app_identifier ?id ?text ?date");
 
@@ -168,7 +168,7 @@ public class ReviewQueryBuilder
         queryBuilder.append("  }\n");
 
         queryBuilder.append("  OPTIONAL {\n");
-        queryBuilder.append("    ?reviewPart schema:potentialAction ?sentiment .\n");
+        queryBuilder.append("    ?reviewPart schema:additionalProperty ?sentiment .\n");
         queryBuilder.append("    ?sentiment schema:identifier ?sentimentValue .\n");
         queryBuilder.append("  }\n");
 
@@ -384,8 +384,8 @@ public class ReviewQueryBuilder
                 ?topic schema:identifier ?topicId .
             }
             OPTIONAL {
-                ?reviewSentence schema:potentialAction ?potentialAction .
-                ?potentialAction schema:identifier ?emotion .
+                ?reviewSentence schema:additionalProperty ?reviewEmotion .
+                ?reviewEmotion schema:identifier ?emotion .
             }
     """);
 

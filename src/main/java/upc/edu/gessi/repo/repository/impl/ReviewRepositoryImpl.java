@@ -58,7 +58,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     @Override
     public ReviewDTO findById(String id) throws NoReviewsFoundException {
         TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findById(id));
-        ReviewDTO dto = null;
+        ReviewDTO dto;
 
         // Check if the review exists
         if (!reviewsResult.hasNext()) {
@@ -318,7 +318,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
             dto.setFeatureDTOs(new ArrayList<>());
             dto.setPolarityDTOs(new ArrayList<>());
-            dto.setSentimentDTOS(new ArrayList<>());
+            dto.setSentimentDTOs(new ArrayList<>());
             dto.setTypeDTOs(new ArrayList<>());
             dto.setTopicDTOs(new ArrayList<>());
 
@@ -370,7 +370,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                     for (String emotion : emotionsArray) {
                         SentimentDTO sentimentDTO = new SentimentDTO();
                         sentimentDTO.setSentiment(emotion);
-                        dto.getSentimentDTOS().add(sentimentDTO);
+                        dto.getSentimentDTOs().add(sentimentDTO);
                     }
                 }
             }
@@ -726,8 +726,9 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             }
 
             if (bindings.getBinding("app_identifier") != null && bindings.getBinding("app_identifier").getValue() != null) {
-                String appValue = bindings.getBinding("app_identifier").getValue().stringValue();
-                reviewDTO.setApplicationId(appValue);
+                String appPackage = bindings.getBinding("app_identifier").getValue().stringValue();
+                reviewDTO.setPackageName(appPackage);
+                reviewDTO.setApplicationId(appPackage);
             }
 
             if (bindings.getBinding("date") != null && bindings.getBinding("date").getValue() != null) {
