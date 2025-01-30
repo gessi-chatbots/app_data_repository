@@ -56,13 +56,138 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public ReviewDTO findById(String id) throws ReviewNotFoundException {
-        try {
-            return findListed(List.of(id)).get(0);
-        } catch (NoReviewsFoundException nre) {
-            throw new ReviewNotFoundException("Review was not found");
+    public ReviewDTO findById(String id) throws NoReviewsFoundException {
+        TupleQueryResult reviewsResult = runSparqlQuery(reviewQueryBuilder.findById(id));
+        ReviewDTO dto = null;
+
+        // Check if the review exists
+        if (!reviewsResult.hasNext()) {
+            throw new NoReviewsFoundException("No Mobile Applications Reviews were found");
         }
+
+        // Process review information
+        dto = new ReviewDTO();
+        dto.setId(id);
+
+        BindingSet bindings = reviewsResult.next();
+        if (bindings.getBinding("app_package") != null) {
+            String appPackage = bindings.getBinding("app_package").getValue().stringValue();
+            if (!appPackage.isEmpty()) {
+                dto.setPackageName(appPackage);
+            }
+        }
+
+        if (bindings.getBinding("text") != null) {
+            String text = bindings.getBinding("text").getValue().stringValue();
+            if (!text.isEmpty()) {
+                dto.setReviewText(text);
+            }
+        }
+
+        // Initialize sentences list in ReviewDTO
+        dto.setSentences(new ArrayList<>());
+
+        // Retrieve and process sentences details
+        TupleQueryResult sentencesResult = runSparqlQuery(
+                reviewQueryBuilder.findReviewSentencesWithDetails(dto.getId())
+        );
+
+        while (sentencesResult.hasNext()) {
+            bindings = sentencesResult.next();
+
+            // Create and initialize SentenceDTO
+            SentenceDTO sentenceDTO = new SentenceDTO();
+            if (bindings.getBinding("sentenceId") != null) {
+                sentenceDTO.setId(bindings.getBinding("sentenceId").getValue().stringValue());
+            }
+
+            sentenceDTO.setFeatureData(null);
+            sentenceDTO.setPolarityData(null);
+            sentenceDTO.setSentimentData(null);
+            sentenceDTO.setTypeData(null);
+            sentenceDTO.setTopicData(null);
+
+            // Process Features
+            if (bindings.getBinding("features") != null) {
+                String featuresValue = bindings.getBinding("features").getValue().stringValue();
+                if (!featuresValue.isEmpty()) {
+                    String[] featuresArray = featuresValue.split(", ");
+                    for (String feature : featuresArray) {
+                        FeatureDTO featureDTO = new FeatureDTO();
+                        featureDTO.setFeature(feature);
+
+                        if (bindings.getBinding("models") != null) {
+                            String modelsValue = bindings.getBinding("models").getValue().stringValue();
+                            String[] modelsArray = modelsValue.split(", ");
+                            if (modelsArray.length > 0) {
+                                featureDTO.setLanguageModel(new LanguageModelDTO(modelsArray[0])); // Use the first model
+                            }
+                        }
+
+                        sentenceDTO.setFeatureData(featureDTO);
+                    }
+                }
+            }
+
+            // Process Emotions
+            if (bindings.getBinding("emotions") != null) {
+                String emotionsValue = bindings.getBinding("emotions").getValue().stringValue();
+                if (!emotionsValue.isEmpty()) {
+                    String[] emotionsArray = emotionsValue.split(", ");
+                    for (String emotion : emotionsArray) {
+                        SentimentDTO sentimentDTO = new SentimentDTO();
+                        sentimentDTO.setSentiment(emotion);
+                        sentenceDTO.setSentimentData(sentimentDTO);
+                    }
+                }
+            }
+
+            // Process Polarities
+            if (bindings.getBinding("polarities") != null) {
+                String polaritiesValue = bindings.getBinding("polarities").getValue().stringValue();
+                if (!polaritiesValue.isEmpty()) {
+                    String[] polaritiesArray = polaritiesValue.split(", ");
+                    for (String polarity : polaritiesArray) {
+                        PolarityDTO polarityDTO = new PolarityDTO();
+                        polarityDTO.setPolarity(polarity);
+                        sentenceDTO.setPolarityData(polarityDTO);
+                    }
+                }
+            }
+
+            // Process Types
+            if (bindings.getBinding("types") != null) {
+                String typesValue = bindings.getBinding("types").getValue().stringValue();
+                if (!typesValue.isEmpty()) {
+                    String[] typesArray = typesValue.split(", ");
+                    for (String type : typesArray) {
+                        TypeDTO typeDTO = new TypeDTO();
+                        typeDTO.setType(type);
+                        sentenceDTO.setTypeData(typeDTO);
+                    }
+                }
+            }
+
+            // Process Topics
+            if (bindings.getBinding("topics") != null) {
+                String topicsValue = bindings.getBinding("topics").getValue().stringValue();
+                if (!topicsValue.isEmpty()) {
+                    String[] topicsArray = topicsValue.split(", ");
+                    for (String topic : topicsArray) {
+                        TopicDTO topicDTO = new TopicDTO();
+                        topicDTO.setTopic(topic);
+                        sentenceDTO.setTopicData(topicDTO);
+                    }
+                }
+            }
+
+            // Add the sentence to the ReviewDTO
+            dto.getSentences().add(sentenceDTO);
+        }
+
+        return dto;
     }
+
 
     @Override
     public List<ReviewDTO> findAll() throws NoReviewsFoundException {

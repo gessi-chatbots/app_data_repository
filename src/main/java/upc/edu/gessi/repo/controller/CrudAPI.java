@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.exception.NoObjectFoundException;
 import upc.edu.gessi.repo.exception.ObjectNotFoundException;
+import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface CrudAPI<T> extends BaseAPI {
     ResponseEntity<List<T>> create(@RequestBody List<T> entity);
 
     @GetMapping("/{id}")
-    ResponseEntity<T> get(@PathVariable String id) throws ObjectNotFoundException;
+    ResponseEntity<T> get(@PathVariable String id) throws ObjectNotFoundException, NoReviewsFoundException;
 
     @GetMapping("/list")
     ResponseEntity<List<T>> getListed(@RequestBody List<String> ids) throws NoObjectFoundException;

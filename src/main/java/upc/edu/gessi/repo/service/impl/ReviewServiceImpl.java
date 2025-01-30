@@ -63,7 +63,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDTO get(String id) throws ObjectNotFoundException {
+    public ReviewDTO get(String id) throws ObjectNotFoundException, NoReviewsFoundException {
         return ((ReviewRepository) useRepository(ReviewRepository.class)).findById(id);
     }
 

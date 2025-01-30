@@ -43,7 +43,7 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<ReviewDTO> get(String id) throws ObjectNotFoundException {
+    public ResponseEntity<ReviewDTO> get(String id) throws ObjectNotFoundException, NoReviewsFoundException {
         return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).get(id), HttpStatus.OK);
     }
 

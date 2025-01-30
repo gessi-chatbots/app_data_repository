@@ -23,7 +23,7 @@ public interface ReviewsAPI extends CrudAPI<ReviewDTO> {
 
     @ApiOperation("Fetch reviews based on filters (descriptors)")
     @PostMapping(value = "/by-descriptors")
-    public ResponseEntity<PageResponseDTO<ReviewDescriptorResponseDTO>> getReviewsByDescriptors(
+     ResponseEntity<PageResponseDTO<ReviewDescriptorResponseDTO>> getReviewsByDescriptors(
             @RequestBody ReviewDescriptorRequestDTO request,
             @RequestParam(value = "page", defaultValue = "0", required = false) final Integer page,
             @RequestParam(value = "size", defaultValue = "10", required = false) final Integer size);

@@ -142,6 +142,58 @@ public class ReviewQueryBuilder
         return queryBuilder.toString();
     }
 
+
+    public String findReviewSentencesWithDetails(final String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>\n");
+        queryBuilder.append("SELECT ?sentenceId\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?featureValue; SEPARATOR=\", \") AS ?features)\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?sentimentValue; SEPARATOR=\", \") AS ?emotions)\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?polarityId; SEPARATOR=\", \") AS ?polarities)\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?typeId; SEPARATOR=\", \") AS ?types)\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?topicId; SEPARATOR=\", \") AS ?topics)\n");
+        queryBuilder.append("WHERE {\n");
+
+        queryBuilder.append("  ?review a schema:Review ;\n");
+        queryBuilder.append("          schema:identifier \"").append(reviewId).append("\" ;\n");
+        queryBuilder.append("          schema:additionalProperty ?reviewPart .\n");
+        queryBuilder.append("  ?reviewPart schema:identifier ?sentenceId .\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart schema:keywords ?feature .\n");
+        queryBuilder.append("    ?feature schema:identifier ?featureValue .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart schema:potentialAction ?sentiment .\n");
+        queryBuilder.append("    ?sentiment schema:identifier ?sentimentValue .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart mapp:polarity ?polarity .\n");
+        queryBuilder.append("    ?polarity schema:identifier ?polarityId .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart mapp:type ?type .\n");
+        queryBuilder.append("    ?type schema:identifier ?typeId .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart mapp:topic ?topic .\n");
+        queryBuilder.append("    ?topic schema:identifier ?topicId .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?sentenceId\n");
+
+        return queryBuilder.toString();
+    }
+
+
     public String hasReviewSentiments(String reviewId) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
@@ -232,6 +284,26 @@ public class ReviewQueryBuilder
         queryBuilder.append("}");
         return queryBuilder.toString();
     }
+
+    public String findById(final String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT ?review ?app_package ?text\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:identifier \"").append(reviewId).append("\" ;\n");
+        queryBuilder.append("          schema:reviewBody ?text .\n\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:review ?review ;\n");
+        queryBuilder.append("       schema:identifier ?app_package .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?review ?app_package ?text\n");
+
+        return queryBuilder.toString();
+    }
+
+
 
     public String findReviewsByAppNameAndIdentifierWithLimitQuery(
             final String appName,
