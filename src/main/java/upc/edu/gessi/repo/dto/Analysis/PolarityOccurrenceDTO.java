@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeatureOccurrenceDTO {
-    private String feature;
+public class PolarityOccurrenceDTO {
+    private String polarity;
     private Integer occurrences;
 }
