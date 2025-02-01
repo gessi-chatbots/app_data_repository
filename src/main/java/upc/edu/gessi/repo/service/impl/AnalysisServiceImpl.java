@@ -72,33 +72,33 @@ public class AnalysisServiceImpl implements AnalysisService {
     private ApplicationDayStatisticsDTO createNewDayStatistics(Date date, HashMap<Date, ApplicationDayStatisticsDTO> statisticsMap) {
         ApplicationDayStatisticsDTO dayStatistics = new ApplicationDayStatisticsDTO();
         dayStatistics.setDate(date);
-        dayStatistics.setSentimentOccurrences(new ArrayList<>());
+        dayStatistics.setEmotionOcurrences(new ArrayList<>());
         dayStatistics.setFeatureOccurrences(new ArrayList<>());
         return dayStatistics;
     }
 
     private void updateSentimentOccurrences(ApplicationDayStatisticsDTO dayStatistics, String sentiment) {
-        for (SentimentOccurrenceDTO sentimentOccurrence : dayStatistics.getSentimentOccurrences()) {
-            if (sentimentOccurrence.getSentimentName().equals(sentiment)) {
-                sentimentOccurrence.setOccurrences(sentimentOccurrence.getOccurrences() + 1);
+        for (EmotionOccurrenceDTO emotionOccurrence : dayStatistics.getEmotionOcurrences()) {
+            if (emotionOccurrence.getEmotion().equals(sentiment)) {
+                emotionOccurrence.setOccurrences(emotionOccurrence.getOccurrences() + 1);
                 return;
             }
         }
-        SentimentOccurrenceDTO newSentimentOccurrence = new SentimentOccurrenceDTO();
-        newSentimentOccurrence.setSentimentName(sentiment);
-        newSentimentOccurrence.setOccurrences(1);
-        dayStatistics.getSentimentOccurrences().add(newSentimentOccurrence);
+        EmotionOccurrenceDTO newEmotionOccurrence = new EmotionOccurrenceDTO();
+        newEmotionOccurrence.setEmotion(sentiment);
+        newEmotionOccurrence.setOccurrences(1);
+        dayStatistics.getEmotionOcurrences().add(newEmotionOccurrence);
     }
 
     private void updateFeatureOccurrences(ApplicationDayStatisticsDTO dayStatistics, String feature) {
         for (FeatureOccurrenceDTO featureOccurrence : dayStatistics.getFeatureOccurrences()) {
-            if (featureOccurrence.getFeatureName().equals(feature)) {
+            if (featureOccurrence.getFeature().equals(feature)) {
                 featureOccurrence.setOccurrences(featureOccurrence.getOccurrences() + 1);
                 return;
             }
         }
         FeatureOccurrenceDTO newFeatureOccurrence = new FeatureOccurrenceDTO();
-        newFeatureOccurrence.setFeatureName(feature);
+        newFeatureOccurrence.setFeature(feature);
         newFeatureOccurrence.setOccurrences(1);
         dayStatistics.getFeatureOccurrences().add(newFeatureOccurrence);
     }
@@ -126,30 +126,51 @@ public class AnalysisServiceImpl implements AnalysisService {
         if (existsFeatureBinding(bindings)) {
             String featureValue = bindings.getBinding("feature").getValue().stringValue();
             Integer countValue = Integer.valueOf(bindings.getBinding("count").getValue().stringValue());
-            featureOccurrenceDTO.setFeatureName(featureValue);
+            featureOccurrenceDTO.setFeature(featureValue);
             featureOccurrenceDTO.setOccurrences(countValue);
         }
         return featureOccurrenceDTO;
     }
 
-    private boolean existsSentimentBinding(BindingSet bindings) {
-        return bindings.getBinding("sentiment") != null
-                && bindings.getBinding("sentiment").getValue() != null
-                && bindings.getBinding("count") != null
-                && bindings.getBinding("count").getValue() != null;
-    }
-    private SentimentOccurrenceDTO getSentimentOccurrence(final TupleQueryResult result) {
-        SentimentOccurrenceDTO sentimentOccurrenceDTO = new SentimentOccurrenceDTO();
+    private EmotionOccurrenceDTO getEmotionOccurrence(final TupleQueryResult result) {
+        EmotionOccurrenceDTO emotionOccurrenceDTO = new EmotionOccurrenceDTO();
         BindingSet bindings = result.next();
-        if (existsSentimentBinding(bindings)) {
-            String sentimentValue = bindings.getBinding("sentiment").getValue().stringValue();
-            Integer countValue = Integer.valueOf(bindings.getBinding("count").getValue().stringValue());
-            sentimentOccurrenceDTO.setSentimentName(sentimentValue);
-            sentimentOccurrenceDTO.setOccurrences(countValue);
-        }
-
-        return sentimentOccurrenceDTO;
+        String emotion = bindings.getBinding("emotion").getValue().stringValue();
+        Integer countValue = Integer.valueOf(bindings.getBinding("count").getValue().stringValue());
+        emotionOccurrenceDTO.setEmotion(emotion);
+        emotionOccurrenceDTO.setOccurrences(countValue);
+        return emotionOccurrenceDTO;
     }
+    private PolarityOccurrenceDTO getPolarityOccurrence(final TupleQueryResult result) {
+        PolarityOccurrenceDTO polarityOccurrenceDTO = new PolarityOccurrenceDTO();
+        BindingSet bindings = result.next();
+        String polarity = bindings.getBinding("polarityId").getValue().stringValue();
+        Integer countValue = Integer.valueOf(bindings.getBinding("count").getValue().stringValue());
+        polarityOccurrenceDTO.setPolarity(polarity);
+        polarityOccurrenceDTO.setOccurrences(countValue);
+        return polarityOccurrenceDTO;
+    }
+
+    private TypeOccurrenceDTO getTypeOccurrence(final TupleQueryResult result) {
+        TypeOccurrenceDTO typeOccurrenceDTO = new TypeOccurrenceDTO();
+        BindingSet bindings = result.next();
+        String type = bindings.getBinding("typeId").getValue().stringValue();
+        Integer countValue = Integer.valueOf(bindings.getBinding("count").getValue().stringValue());
+        typeOccurrenceDTO.setType(type);
+        typeOccurrenceDTO.setOccurrences(countValue);
+        return typeOccurrenceDTO;
+    }
+
+    private TopicOccurrenceDTO getTopicOccurence(final TupleQueryResult result) {
+        TopicOccurrenceDTO topicOccurrenceDTO = new TopicOccurrenceDTO();
+        BindingSet bindings = result.next();
+        String topic = bindings.getBinding("topicId").getValue().stringValue();
+        Integer countValue = Integer.valueOf(bindings.getBinding("count").getValue().stringValue());
+        topicOccurrenceDTO.setTopic(topic);
+        topicOccurrenceDTO.setOccurrences(countValue);
+        return topicOccurrenceDTO;
+    }
+
     private TupleQueryResult runSparqlQuery(final String query) {
         RepositoryConnection repoConnection = repository.getConnection();
         TupleQuery tupleQuery = repoConnection.prepareTupleQuery(query);
@@ -180,21 +201,26 @@ public class AnalysisServiceImpl implements AnalysisService {
     }
 
     @Override
-    public TopSentimentsDTO findTopSentimentsByApps(final List<String> appNames){
-        String query = analysisQueryBuilder.findTopSentimentsByAppNamesQuery(appNames);
-        TupleQueryResult result = runSparqlQuery(query);
-        TopSentimentsDTO topSentimentsDTO = new TopSentimentsDTO();
-        List<SentimentOccurrenceDTO> sentiments = new ArrayList<>();
-        while (result.hasNext()) {
-            SentimentOccurrenceDTO sentimentOccurrenceDTO = getSentimentOccurrence(result);
-            sentiments.add(sentimentOccurrenceDTO);
-        }
-        topSentimentsDTO.setTopSentiments(sentiments);
-        return topSentimentsDTO;
+    public TopEmotionsDTO findTopEmotionsByApp(final List<String> appNames){
+        String query = analysisQueryBuilder.findTopEmotionsByAppNamesQuery(appNames);
+        return getTopEmotionsDTO(query);
     }
     @Override
     public TopFeaturesDTO findTopFeaturesByApps(final List<String> appNames) {
         String query = analysisQueryBuilder.findTopFeaturesByAppNamesQuery(appNames);
+        TupleQueryResult result = runSparqlQuery(query);
+        TopFeaturesDTO topFeaturesDTO = new TopFeaturesDTO();
+        List<FeatureOccurrenceDTO> features = new ArrayList<>();
+        while (result.hasNext()) {
+            FeatureOccurrenceDTO featureOccurrenceDTO = getFeatureOccurrence(result);
+            features.add(featureOccurrenceDTO);
+        }
+        topFeaturesDTO.setTopFeatures(features);
+        return topFeaturesDTO;
+    }
+    @Override
+    public TopFeaturesDTO findTopFeatures() {
+        String query = analysisQueryBuilder.findTopFeatures();
         TupleQueryResult result = runSparqlQuery(query);
         TopFeaturesDTO topFeaturesDTO = new TopFeaturesDTO();
         List<FeatureOccurrenceDTO> features = new ArrayList<>();
@@ -215,6 +241,92 @@ public class AnalysisServiceImpl implements AnalysisService {
             features.add(feature);
         }
         return features;
+    }
+
+    private TopEmotionsDTO getTopEmotionsDTO(String query) {
+        try (TupleQueryResult result = runSparqlQuery(query)) {
+            TopEmotionsDTO topEmotionsDTO = new TopEmotionsDTO();
+            List<EmotionOccurrenceDTO> emotions = new ArrayList<>();
+            while (result.hasNext()) {
+                EmotionOccurrenceDTO emotionOccurrenceDTO = getEmotionOccurrence(result);
+                emotions.add(emotionOccurrenceDTO);
+            }
+            topEmotionsDTO.setTopEmotions(emotions);
+            return topEmotionsDTO;
+        }
+    }
+
+    public TopEmotionsDTO findTopEmotions() {
+        String query = analysisQueryBuilder.findTopEmotions();
+        return getTopEmotionsDTO(query);
+    }
+
+
+    private TopPolaritiesDTO getTopPolaritiesDTO(String query) {
+        try (TupleQueryResult result = runSparqlQuery(query)) {
+            TopPolaritiesDTO topPolaritiesDTO = new TopPolaritiesDTO();
+            List<PolarityOccurrenceDTO> polarities = new ArrayList<>();
+            while (result.hasNext()) {
+                PolarityOccurrenceDTO polarityOccurrenceDTO = getPolarityOccurrence(result);
+                polarities.add(polarityOccurrenceDTO);
+            }
+            topPolaritiesDTO.setTopPolarities(polarities);
+            return topPolaritiesDTO;
+        }
+    }
+
+    public TopPolaritiesDTO findTopPolarities() {
+        String query = analysisQueryBuilder.findTopPolarites();
+        return getTopPolaritiesDTO(query);
+    }
+
+
+    private TopTypesDTO getTopTypesDTO(String query) {
+        try (TupleQueryResult result = runSparqlQuery(query)) {
+            TopTypesDTO topTypesDTO = new TopTypesDTO();
+            List<TypeOccurrenceDTO> types = new ArrayList<>();
+            while (result.hasNext()) {
+                TypeOccurrenceDTO typeOccurrenceDTO = getTypeOccurrence(result);
+                types.add(typeOccurrenceDTO);
+            }
+            topTypesDTO.setTopTypes(types);
+            return topTypesDTO;
+        }
+    }
+
+    public TopTypesDTO findTopTypes() {
+        String query = analysisQueryBuilder.findTopTypes();
+        return getTopTypesDTO(query);
+    }
+
+    // --- TOP TOPICS ---
+
+    private TopTopicsDTO getTopTopicsDTO(String query) {
+        try (TupleQueryResult result = runSparqlQuery(query)) {
+            TopTopicsDTO topTopicsDTO = new TopTopicsDTO();
+            List<TopicOccurrenceDTO> topics = new ArrayList<>();
+            while (result.hasNext()) {
+                TopicOccurrenceDTO topicOccurrenceDTO = getTopicOccurence(result);
+                topics.add(topicOccurrenceDTO);
+            }
+            topTopicsDTO.setTopicOccurrences(topics);
+            return topTopicsDTO;
+        }
+    }
+
+    public TopTopicsDTO findTopTopics() {
+        String query = analysisQueryBuilder.findTopTopics();
+        return getTopTopicsDTO(query);
+    }
+
+    @Override
+    public TopDescriptorsDTO findTopDescriptors() {
+        TopDescriptorsDTO topDescriptors = new TopDescriptorsDTO();
+        topDescriptors.setTopEmotions(findTopEmotions());
+        topDescriptors.setTopTopics(findTopTopics());
+        topDescriptors.setTopTypes(findTopTypes());
+        topDescriptors.setTopPolarities(findTopPolarities());
+        return topDescriptors;
     }
 
 

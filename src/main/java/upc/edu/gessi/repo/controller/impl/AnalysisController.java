@@ -9,8 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.AnalysisAPI;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
+import upc.edu.gessi.repo.dto.Analysis.TopDescriptorsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
-import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
+import upc.edu.gessi.repo.dto.Analysis.TopEmotionsDTO;
 import upc.edu.gessi.repo.exception.MissingBodyException;
 import upc.edu.gessi.repo.service.AnalysisService;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
@@ -44,15 +45,25 @@ public class AnalysisController implements AnalysisAPI {
         }
     }
     @Override
-    public TopSentimentsDTO getTopSentimentsByAppNames(final List<String> appNames) throws MissingBodyException {
+    public TopEmotionsDTO getTopSentimentsByAppNames(final List<String> appNames) throws MissingBodyException {
         validateAppNames(appNames);
-        return useAnalysisService().findTopSentimentsByApps(appNames);
+        return useAnalysisService().findTopEmotionsByApp(appNames);
+    }
+
+    @Override
+    public TopDescriptorsDTO getTopDescriptors() {
+        return useAnalysisService().findTopDescriptors();
     }
 
     @Override
     public TopFeaturesDTO getTopFeaturesByAppNames(final List<String> appNames)  throws MissingBodyException {
         validateAppNames(appNames);
         return useAnalysisService().findTopFeaturesByApps(appNames);
+    }
+
+    @Override
+    public TopFeaturesDTO getTopFeatures(){
+        return useAnalysisService().findTopFeatures();
     }
 
     @Override
