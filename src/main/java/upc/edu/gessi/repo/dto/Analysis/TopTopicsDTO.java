@@ -13,5 +13,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TopTopicsDTO {
-    private List<FeatureOccurrenceDTO> topFeatures;
+    private List<TopicOccurrenceDTO> topicOccurrences;
 }
