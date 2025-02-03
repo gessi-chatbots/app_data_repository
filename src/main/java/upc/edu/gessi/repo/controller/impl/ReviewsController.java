@@ -10,9 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.ReviewsAPI;
+import upc.edu.gessi.repo.dto.PageResponseDTO;
 import upc.edu.gessi.repo.dto.Review.ReviewDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewFeatureRequestDTO;
-import upc.edu.gessi.repo.dto.Review.ReviewFeatureResponseDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDescriptorRequestDTO;
+import upc.edu.gessi.repo.dto.Review.ReviewDescriptorResponseDTO;
 import upc.edu.gessi.repo.exception.*;
 import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.service.MobileApplicationService;
@@ -42,7 +43,7 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<ReviewDTO> get(String id) throws ObjectNotFoundException {
+    public ResponseEntity<ReviewDTO> get(String id) throws ObjectNotFoundException, NoReviewsFoundException {
         return new ResponseEntity<>(((ReviewService) useService(ReviewService.class)).get(id), HttpStatus.OK);
     }
 
@@ -85,17 +86,37 @@ public class ReviewsController implements ReviewsAPI {
     }
 
     @Override
-    public ResponseEntity<List<ReviewFeatureResponseDTO>> getReviewsByFeatures(ReviewFeatureRequestDTO request) {
+    public ResponseEntity<PageResponseDTO<ReviewDescriptorResponseDTO>> getReviewsByDescriptors(
+            final ReviewDescriptorRequestDTO request,
+            final Integer page,
+            final Integer size) {
         try {
-            return new ResponseEntity<>(((ReviewService) useService(ReviewService.class))
-                    .getByAppIdAndFeatures(request.getAppName(),
-                            request.getFeatureList()),
-                    HttpStatus.OK);
-        } catch (NoReviewsFoundException e) {
-            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-        }
+            ReviewService reviewService = (ReviewService) useService(ReviewService.class);
 
+            long totalElements = reviewService.getReviewCountByDescriptors(request);
+
+            List<ReviewDescriptorResponseDTO> reviews = reviewService.getByDescriptors(
+                    request,
+                    page != null ? page : 0,
+                    size != null ? size : 10
+            );
+
+            PageResponseDTO<ReviewDescriptorResponseDTO> response = PageResponseDTO.of(
+                    reviews,
+                    page,
+                    size,
+                    totalElements
+            );
+
+            return ResponseEntity.ok(response);
+        } catch (NoReviewsFoundException e) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
+
 
     private Object useService(Class<?> clazz) {
         return serviceFactory.createService(clazz);

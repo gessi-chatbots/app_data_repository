@@ -63,7 +63,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDTO get(String id) throws ObjectNotFoundException {
+    public ReviewDTO get(String id) throws ObjectNotFoundException, NoReviewsFoundException {
         return ((ReviewRepository) useRepository(ReviewRepository.class)).findById(id);
     }
 
@@ -117,9 +117,24 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewFeatureResponseDTO> getByAppIdAndFeatures(String appId,
-                                                                List<String> features) throws NoReviewsFoundException {
-        return ((ReviewRepository) useRepository(ReviewRepository.class))
-                .findAllByAppIdAndFeatures(appId, features);
+    public List<ReviewDescriptorResponseDTO> getByDescriptors(ReviewDescriptorRequestDTO requestDTO,
+                                                              int page,
+                                                              int size) throws NoReviewsFoundException {
+
+
+        return ((ReviewRepository) useRepository(ReviewRepository.class)).findByDescriptors(
+                        requestDTO,
+                        page,
+                        size
+                );
+
     }
+
+    @Override
+    public Long getReviewCountByDescriptors(ReviewDescriptorRequestDTO requestDTO) throws NoReviewsFoundException {
+        return ((ReviewRepository) useRepository(ReviewRepository.class)).countByDescriptors(
+                requestDTO
+        );
+    }
+
 }

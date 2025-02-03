@@ -3,6 +3,7 @@ package upc.edu.gessi.repo.dto.Analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+import java.util.List;
 
 @Data
 @Builder
@@ -10,7 +11,6 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeatureOccurrenceDTO {
-    private String feature;
-    private Integer occurrences;
+public class TopEmotionsDTO {
+    private List<EmotionOccurrenceDTO> topEmotions;
 }

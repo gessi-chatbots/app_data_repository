@@ -15,6 +15,7 @@ import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationBasicDataDTO;
 import upc.edu.gessi.repo.dto.MobileApplication.MobileApplicationFullDataDTO;
 import upc.edu.gessi.repo.exception.*;
 import upc.edu.gessi.repo.exception.MobileApplications.NoMobileApplicationsFoundException;
+import upc.edu.gessi.repo.exception.Reviews.NoReviewsFoundException;
 import upc.edu.gessi.repo.service.AnalysisService;
 import upc.edu.gessi.repo.service.GraphDBService;
 import upc.edu.gessi.repo.service.MobileApplicationService;
@@ -100,7 +101,7 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
 
 
     @Override
-    public ResponseEntity<MobileApplicationFullDataDTO> get(final String id) throws ObjectNotFoundException {
+    public ResponseEntity<MobileApplicationFullDataDTO> get(final String id) throws ObjectNotFoundException, NoReviewsFoundException {
         return new ResponseEntity<>(((MobileApplicationService) useService(MobileApplicationService.class)).get(id), HttpStatus.OK);
     }
 
@@ -116,8 +117,8 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<String>> getMobileApplicationFeatures(@PathVariable final String appName) {
-        return new ResponseEntity<>(((AnalysisService) useService(AnalysisService.class)).findAppFeatures(appName), HttpStatus.OK);
+    public ResponseEntity<List<String>> getMobileApplicationFeatures(@PathVariable final String appPackage) {
+        return new ResponseEntity<>(((AnalysisService) useService(AnalysisService.class)).findAppFeatures(appPackage), HttpStatus.OK);
     }
 
     @Override

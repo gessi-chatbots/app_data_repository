@@ -1,6 +1,7 @@
 package upc.edu.gessi.repo.util;
 
 import org.springframework.stereotype.Component;
+import upc.edu.gessi.repo.dto.Review.ReviewDescriptorRequestDTO;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class ReviewQueryBuilder
         queryBuilder.append("}\n");
         return queryBuilder.toString();
     }
+
     public String findAllQueryWithLimitOffset(int limit, int offset) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX sc: <https://schema.org/>\n");
@@ -71,14 +73,12 @@ public class ReviewQueryBuilder
         queryBuilder.append("  }\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
         queryBuilder.append("       schema:review ?review ;\n");
-        queryBuilder.append("       schema:name ?app_identifier.\n");
+        queryBuilder.append("       schema:identifier ?app_identifier.\n");
         queryBuilder.append("}\n");
         queryBuilder.append("GROUP BY ?app_identifier ?id ?text ?date");
 
         return queryBuilder.toString();
     }
-
-
 
 
     public String findReviewSentencesEmotionsAux(final List<String> reviewIds) {
@@ -142,6 +142,58 @@ public class ReviewQueryBuilder
         return queryBuilder.toString();
     }
 
+
+    public String findReviewSentencesWithDetails(final String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>\n");
+        queryBuilder.append("SELECT ?sentenceId\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?featureValue; SEPARATOR=\", \") AS ?features)\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?sentimentValue; SEPARATOR=\", \") AS ?emotions)\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?polarityId; SEPARATOR=\", \") AS ?polarities)\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?typeId; SEPARATOR=\", \") AS ?types)\n");
+        queryBuilder.append("       (GROUP_CONCAT(DISTINCT ?topicId; SEPARATOR=\", \") AS ?topics)\n");
+        queryBuilder.append("WHERE {\n");
+
+        queryBuilder.append("  ?review a schema:Review ;\n");
+        queryBuilder.append("          schema:identifier \"").append(reviewId).append("\" ;\n");
+        queryBuilder.append("          schema:additionalProperty ?reviewPart .\n");
+        queryBuilder.append("  ?reviewPart schema:identifier ?sentenceId .\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart schema:keywords ?feature .\n");
+        queryBuilder.append("    ?feature schema:identifier ?featureValue .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart schema:additionalProperty ?sentiment .\n");
+        queryBuilder.append("    ?sentiment schema:identifier ?sentimentValue .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart mapp:polarity ?polarity .\n");
+        queryBuilder.append("    ?polarity schema:identifier ?polarityId .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart mapp:type ?type .\n");
+        queryBuilder.append("    ?type schema:identifier ?typeId .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("  OPTIONAL {\n");
+        queryBuilder.append("    ?reviewPart mapp:topic ?topic .\n");
+        queryBuilder.append("    ?topic schema:identifier ?topicId .\n");
+        queryBuilder.append("  }\n");
+
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?sentenceId\n");
+
+        return queryBuilder.toString();
+    }
+
+
     public String hasReviewSentiments(String reviewId) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
@@ -181,6 +233,7 @@ public class ReviewQueryBuilder
         queryBuilder.append("GROUP BY ?review\n");
         return queryBuilder.toString();
     }
+
     public String deleteSentimentsFromReview(String reviewId) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
@@ -231,6 +284,27 @@ public class ReviewQueryBuilder
         queryBuilder.append("}");
         return queryBuilder.toString();
     }
+
+    public String findById(final String reviewId) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("SELECT ?review ?app_package ?text\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:identifier \"").append(reviewId).append("\" ;\n");
+        queryBuilder.append("          schema:reviewBody ?text .\n\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:review ?review ;\n");
+        queryBuilder.append("       schema:identifier ?app_package .\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?review ?app_package ?text\n");
+
+        return queryBuilder.toString();
+    }
+
+
+
     public String findReviewsByAppNameAndIdentifierWithLimitQuery(
             final String appName,
             final String appIdentifier,
@@ -266,41 +340,254 @@ public class ReviewQueryBuilder
         return queryBuilder.toString();
     }
 
-    public String findReviewsByAppIdAndFeatures(String appId, final List<String> features) {
+    public String findReviewsByIDsDescriptors(final List<String> reviewIds) {
         StringBuilder queryBuilder = new StringBuilder();
 
-        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
-        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
-        queryBuilder.append("SELECT ?id ?text ?feature ?model\n");
-        queryBuilder.append("WHERE {\n");
-        queryBuilder.append("  ?app a schema:MobileApplication ;\n");
-        queryBuilder.append("       schema:identifier \"" + appId + "\" ;\n");
-        queryBuilder.append("       schema:review ?review .\n");
-        queryBuilder.append("  ?review a schema:Review ;\n");
-        queryBuilder.append("         schema:identifier ?id;\n");
-        queryBuilder.append("         schema:reviewBody ?text;\n");
-        queryBuilder.append("         schema:additionalProperty ?reviewSentence .\n");
-        queryBuilder.append("  ?reviewSentence a schema:Review; \n");
-        queryBuilder.append("                  schema:keywords ?keywords .\n");
-        queryBuilder.append("  ?keywords a schema:DefinedTerm ;\n");
-        queryBuilder.append("            schema:name ?feature ;\n");
-        queryBuilder.append("            schema:disambiguatingDescription ?languageModel .\n");
-        queryBuilder.append("  ?languageModel a schema:softwareApplication ;\n");
-        queryBuilder.append("                 schema:identifier ?model .\n");
-        queryBuilder.append("  VALUES ?feature {\n");
+        queryBuilder.append("""
+        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        PREFIX schema: <https://schema.org/>
+        PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>
 
-        for (String feature : features) {
-            queryBuilder.append("    \"" + feature + "\"\n");
+        SELECT ?appId ?reviewId ?text 
+               (GROUP_CONCAT(DISTINCT ?feature; SEPARATOR=", ") AS ?features) 
+               (GROUP_CONCAT(DISTINCT ?emotion; SEPARATOR=", ") AS ?emotions) 
+               (GROUP_CONCAT(DISTINCT ?model; SEPARATOR=", ") AS ?models) 
+               (GROUP_CONCAT(DISTINCT ?polarityId; SEPARATOR=", ") AS ?polarities) 
+               (GROUP_CONCAT(DISTINCT ?typeId; SEPARATOR=", ") AS ?types) 
+               (GROUP_CONCAT(DISTINCT ?topicId; SEPARATOR=", ") AS ?topics)
+        WHERE {
+            ?app a schema:MobileApplication ;
+                 schema:identifier ?appId ;
+                 schema:review ?review .
+            ?review a schema:Review ;
+                    schema:identifier ?reviewId ;
+                    schema:reviewBody ?text ;
+                    schema:additionalProperty ?reviewSentence .
+            ?reviewSentence a schema:Review ;
+                            schema:keywords ?keywords .
+            ?keywords a schema:DefinedTerm ;
+                      schema:name ?feature ;
+                      schema:disambiguatingDescription ?languageModel .
+            ?languageModel a schema:softwareApplication ;
+                           schema:identifier ?model .
+
+            OPTIONAL {
+                ?reviewSentence mapp:polarity ?polarity .
+                ?polarity schema:identifier ?polarityId .
+            }
+            OPTIONAL {
+                ?reviewSentence mapp:type ?type .
+                ?type schema:identifier ?typeId .
+            }
+            OPTIONAL {
+                ?reviewSentence mapp:topic ?topic .
+                ?topic schema:identifier ?topicId .
+            }
+            OPTIONAL {
+                ?reviewSentence schema:additionalProperty ?reviewEmotion .
+                ?reviewEmotion schema:identifier ?emotion .
+            }
+    """);
+
+        if (reviewIds != null && !reviewIds.isEmpty()) {
+            queryBuilder.append("  VALUES ?reviewId {\n");
+            for (String reviewId : reviewIds) {
+                queryBuilder.append("    \"").append(reviewId).append("\" \n");
+            }
+            queryBuilder.append("  }\n");
         }
 
-        queryBuilder.append("  }\n");
+        queryBuilder.append("""
+        }
+        GROUP BY ?appId ?reviewId ?text
+    """);
+
+        return queryBuilder.toString();
+    }
+
+    public String findReviewsIDsAndTextByDescriptors(final ReviewDescriptorRequestDTO requestDTO,
+                                              final Integer page,
+                                              final Integer size) {
+        StringBuilder queryBuilder = new StringBuilder();
+
+        queryBuilder.append("""
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX schema: <https://schema.org/>
+    PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>
+
+    SELECT DISTINCT ?appId ?reviewId ?text
+    WHERE {
+        ?app a schema:MobileApplication ;
+             schema:identifier ?appId ;
+             schema:review ?review .
+        ?review a schema:Review ;
+                schema:identifier ?reviewId ;
+                schema:reviewBody ?text .
+    """);
+
+        // Extract values from requestDTO
+        String appId = requestDTO.getAppId();
+        String type = requestDTO.getType();
+        String topic = requestDTO.getTopic();
+        String polarity = requestDTO.getPolarity();
+        String emotion = requestDTO.getEmotion();
+        List<String> featureList = requestDTO.getFeatureList();
+
+        boolean hasDescriptors = (type != null && !type.isEmpty()) ||
+                (topic != null && !topic.isEmpty()) ||
+                (polarity != null && !polarity.isEmpty()) ||
+                (emotion != null && !emotion.isEmpty()) ||
+                (featureList != null && !featureList.isEmpty());
+
+        // Add filter for appId if provided
+        if (appId != null && !appId.isEmpty()) {
+            queryBuilder.append("  FILTER (?appId = \"").append(appId).append("\")\n");
+        }
+
+        // If descriptors exist, add additionalProperty condition
+        if (hasDescriptors) {
+            queryBuilder.append("  ?review schema:additionalProperty ?reviewSentence .\n");
+        }
+
+        // Add conditions for each descriptor if present
+        if (type != null && !type.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:type ?typeCheck .\n")
+                    .append("    ?typeCheck schema:identifier \"").append(type).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (topic != null && !topic.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:topic ?topicCheck .\n")
+                    .append("    ?topicCheck schema:identifier \"").append(topic).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (polarity != null && !polarity.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:polarity ?polarityCheck .\n")
+                    .append("    ?polarityCheck schema:identifier \"").append(polarity).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (emotion != null && !emotion.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence schema:additionalProperty ?emotionCheck .\n")
+                    .append("    ?emotionCheck schema:identifier \"").append(emotion).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        // Handle multiple features using the VALUES clause
+        if (featureList != null && !featureList.isEmpty()) {
+            queryBuilder.append("  ?reviewSentence schema:keywords ?featureCheck .\n");
+            queryBuilder.append("  VALUES ?featureCheckName {\n");
+            for (String feature : featureList) {
+                queryBuilder.append("    \"").append(feature).append("\"\n");
+            }
+            queryBuilder.append("  }\n");
+            queryBuilder.append("  ?featureCheck schema:name ?featureCheckName .\n");
+        }
+
         queryBuilder.append("}\n");
+
+        // Add pagination options if provided
+        if (size != null) {
+            queryBuilder.append("LIMIT ").append(size).append("\n");
+        }
+        if (page != null && size != null) {
+            int offset = page * size;
+            queryBuilder.append("OFFSET ").append(offset).append("\n");
+        }
 
         return queryBuilder.toString();
     }
 
 
+    public String countByDescriptors(final ReviewDescriptorRequestDTO requestDTO) {
+        StringBuilder queryBuilder = new StringBuilder();
 
+        queryBuilder.append("""
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX schema: <https://schema.org/>
+    PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>
+
+    SELECT (COUNT(DISTINCT ?reviewId) AS ?totalCount)
+    WHERE {
+        ?app a schema:MobileApplication ;
+             schema:identifier ?appId ;
+             schema:review ?review .
+        ?review a schema:Review ;
+                schema:identifier ?reviewId .
+    """);
+
+        // Extract values from requestDTO
+        String appId = requestDTO.getAppId();
+        String type = requestDTO.getType();
+        String topic = requestDTO.getTopic();
+        String polarity = requestDTO.getPolarity();
+        String emotion = requestDTO.getEmotion();
+        List<String> featureList = requestDTO.getFeatureList();
+
+        // Check if any descriptors are present
+        boolean hasDescriptors = (type != null && !type.isEmpty()) ||
+                (topic != null && !topic.isEmpty()) ||
+                (polarity != null && !polarity.isEmpty()) ||
+                (emotion != null && !emotion.isEmpty()) ||
+                (featureList != null && !featureList.isEmpty());
+
+        // Add filter for appId if provided
+        if (appId != null && !appId.isEmpty()) {
+            queryBuilder.append("  FILTER (?appId = \"").append(appId).append("\")\n");
+        }
+
+        // Add additionalProperty only if descriptors are provided
+        if (hasDescriptors) {
+            queryBuilder.append("  ?review schema:additionalProperty ?reviewSentence .\n");
+        }
+
+        // Add conditions for each descriptor
+        if (type != null && !type.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:type ?typeCheck .\n")
+                    .append("    ?typeCheck schema:identifier \"").append(type).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (topic != null && !topic.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:topic ?topicCheck .\n")
+                    .append("    ?topicCheck schema:identifier \"").append(topic).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (polarity != null && !polarity.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence mapp:polarity ?polarityCheck .\n")
+                    .append("    ?polarityCheck schema:identifier \"").append(polarity).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (emotion != null && !emotion.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n")
+                    .append("    ?reviewSentence schema:additionalProperty ?emotionCheck .\n")
+                    .append("    ?emotionCheck schema:identifier \"").append(emotion).append("\" .\n")
+                    .append("  }\n");
+        }
+
+        if (featureList != null && !featureList.isEmpty()) {
+            queryBuilder.append("  FILTER EXISTS {\n");
+            for (String feature : featureList) {
+                queryBuilder.append("    ?reviewSentence schema:keywords ?featureCheck .\n")
+                        .append("    ?featureCheck schema:name \"").append(feature).append("\" .\n");
+            }
+            queryBuilder.append("  }\n");
+        }
+
+        queryBuilder.append("}\n");
+
+        return queryBuilder.toString();
+    }
 
 
 }

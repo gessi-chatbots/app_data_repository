@@ -9,8 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.edu.gessi.repo.controller.AnalysisAPI;
 import upc.edu.gessi.repo.dto.Analysis.ApplicationDayStatisticsDTO;
+import upc.edu.gessi.repo.dto.Analysis.TopDescriptorsDTO;
 import upc.edu.gessi.repo.dto.Analysis.TopFeaturesDTO;
-import upc.edu.gessi.repo.dto.Analysis.TopSentimentsDTO;
+import upc.edu.gessi.repo.dto.Analysis.TopEmotionsDTO;
 import upc.edu.gessi.repo.exception.MissingBodyException;
 import upc.edu.gessi.repo.service.AnalysisService;
 import upc.edu.gessi.repo.service.InductiveKnowledgeService;
@@ -44,15 +45,25 @@ public class AnalysisController implements AnalysisAPI {
         }
     }
     @Override
-    public TopSentimentsDTO getTopSentimentsByAppNames(final List<String> appNames) throws MissingBodyException {
-        validateAppNames(appNames);
-        return useAnalysisService().findTopSentimentsByApps(appNames);
+    public TopEmotionsDTO getTopEmotionsByAppPackages(final List<String> appPackages) throws MissingBodyException {
+        validateAppNames(appPackages);
+        return useAnalysisService().findTopEmotionsByApp(appPackages);
     }
 
     @Override
-    public TopFeaturesDTO getTopFeaturesByAppNames(final List<String> appNames)  throws MissingBodyException {
-        validateAppNames(appNames);
-        return useAnalysisService().findTopFeaturesByApps(appNames);
+    public TopDescriptorsDTO getTopDescriptors() {
+        return useAnalysisService().findTopDescriptors();
+    }
+
+    @Override
+    public TopFeaturesDTO getTopFeaturesByAppPackages(final List<String> appPackages)  throws MissingBodyException {
+        validateAppNames(appPackages);
+        return useAnalysisService().findTopFeaturesByApps(appPackages);
+    }
+
+    @Override
+    public TopFeaturesDTO getTopFeatures(){
+        return useAnalysisService().findTopFeatures();
     }
 
     @Override
@@ -67,16 +78,21 @@ public class AnalysisController implements AnalysisAPI {
     }
 
     @Override
-    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName,
+    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appPackage,
                                                                       final Date startDate,
-                                                                      final Date endDate) {
+                                                                      final Date endDate,
+                                                                      final String descriptor) {
         Date endDateAux = endDate;
         if (endDateAux == null) {
             logger.warn("No end date given, using today as end ate");
             endDateAux = Calendar.getInstance().getTime();
         }
 
-        return useAnalysisService().getApplicationStatistics(appName, startDate, endDateAux);
+        if (descriptor == null || descriptor.isEmpty()) {
+            return null;
+        }
+
+        return useAnalysisService().getApplicationStatistics(appPackage, descriptor, startDate, endDateAux);
     }
 
     private AnalysisService useAnalysisService() {

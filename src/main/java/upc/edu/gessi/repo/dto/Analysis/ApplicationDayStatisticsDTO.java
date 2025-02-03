@@ -16,6 +16,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ApplicationDayStatisticsDTO {
     private Date date;
-    private List<SentimentOccurrenceDTO> sentimentOccurrences;
+    private List<EmotionOccurrenceDTO> emotionOccurrences;
     private List<FeatureOccurrenceDTO> featureOccurrences;
+    private List<PolarityOccurrenceDTO> polarityOccurrences;
+    private List<TypeOccurrenceDTO> typeOccurrences;
+    private List<TopicOccurrenceDTO> topicOccurrences;
+
 }

@@ -376,7 +376,7 @@ public class MobileApplicationRepositoryImpl implements MobileApplicationReposit
         List<Statement> statements = new ArrayList<>();
         IRI applicationIRI = factory.createIRI(schemaIRI.getAppIRI() + "/" + packageName);
         IRI reviewIRI = factory.createIRI(schemaIRI.getReviewIRI() + "/" + reviewId);
-        statements.add(factory.createStatement(applicationIRI, schemaIRI.getHasPartIRI(), reviewIRI));
+        statements.add(factory.createStatement(applicationIRI, schemaIRI.getReviewsIRI(), reviewIRI));
         commitChanges(statements);
     }
 
