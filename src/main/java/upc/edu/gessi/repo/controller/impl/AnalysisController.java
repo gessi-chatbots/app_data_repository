@@ -45,9 +45,9 @@ public class AnalysisController implements AnalysisAPI {
         }
     }
     @Override
-    public TopEmotionsDTO getTopSentimentsByAppNames(final List<String> appNames) throws MissingBodyException {
-        validateAppNames(appNames);
-        return useAnalysisService().findTopEmotionsByApp(appNames);
+    public TopEmotionsDTO getTopEmotionsByAppPackages(final List<String> appPackages) throws MissingBodyException {
+        validateAppNames(appPackages);
+        return useAnalysisService().findTopEmotionsByApp(appPackages);
     }
 
     @Override
@@ -56,9 +56,9 @@ public class AnalysisController implements AnalysisAPI {
     }
 
     @Override
-    public TopFeaturesDTO getTopFeaturesByAppNames(final List<String> appNames)  throws MissingBodyException {
-        validateAppNames(appNames);
-        return useAnalysisService().findTopFeaturesByApps(appNames);
+    public TopFeaturesDTO getTopFeaturesByAppPackages(final List<String> appPackages)  throws MissingBodyException {
+        validateAppNames(appPackages);
+        return useAnalysisService().findTopFeaturesByApps(appPackages);
     }
 
     @Override

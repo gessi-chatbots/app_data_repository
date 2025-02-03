@@ -22,17 +22,17 @@ import io.swagger.annotations.ApiParam;
 public interface AnalysisAPI extends BaseAPI {
 
     @ApiOperation(value = "Get application statistics")
-    @GetMapping(value = "/{appName}/statistics", produces = "application/json")
+    @GetMapping(value = "/{appPackage}/statistics", produces = "application/json")
     @ResponseBody
     List<ApplicationDayStatisticsDTO> getApplicationStatistics(
-            @ApiParam(value = "Name of the application") @PathVariable String appName,
+            @ApiParam(value = "Package of the application") @PathVariable String appPackage,
             @ApiParam(value = "Start date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "startDate", defaultValue = "2020-01-01") Date startDate,
             @ApiParam(value = "End date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "endDate", required = false) Date endDate);
 
-    @ApiOperation(value = "Get top sentiments by application names")
-    @PostMapping(value = "/top-sentiments", produces = "application/json")
+    @ApiOperation(value = "Get top sentiments by application packages")
+    @PostMapping(value = "/top-emotions", produces = "application/json")
     @ResponseBody
-    TopEmotionsDTO getTopSentimentsByAppNames(@RequestBody List<String> appNames) throws MissingBodyException;
+    TopEmotionsDTO getTopEmotionsByAppPackages(@RequestBody List<String> appPackages) throws MissingBodyException;
 
     @ApiOperation(value = "Get top descriptors")
     @GetMapping(value = "/top-descriptors", produces = "application/json")
@@ -45,10 +45,10 @@ public interface AnalysisAPI extends BaseAPI {
     TopFeaturesDTO getTopFeatures();
 
 
-    @ApiOperation(value = "Get top features by application names")
-    @PostMapping(value = "/top-features-by-names", produces = "application/json")
+    @ApiOperation(value = "Get top features by application packages")
+    @PostMapping(value = "/top-features-by-packages", produces = "application/json")
     @ResponseBody
-    TopFeaturesDTO getTopFeaturesByAppNames(@RequestBody List<String> appNames) throws MissingBodyException;
+    TopFeaturesDTO getTopFeaturesByAppPackages(@RequestBody List<String> appPackages) throws MissingBodyException;
 
     @GetMapping("/excel")
     ResponseEntity<byte[]> generateAnalyticalExcel() throws IOException;
