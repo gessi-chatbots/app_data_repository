@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface AnalysisService {
-    List<ApplicationDayStatisticsDTO> getApplicationStatistics(String appName, Date startDate, Date endDate);
+    List<ApplicationDayStatisticsDTO> getApplicationStatistics(String appName, String descriptor, Date startDate, Date endDate);
 
     TopEmotionsDTO findTopEmotionsByApp(List<String> appNames);
 

@@ -179,8 +179,23 @@ public class AnalysisServiceImpl implements AnalysisService {
 
     @Override
 
-    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName, final Date startDate, final Date endDate) {
-        String query = analysisQueryBuilder.findStatisticBetweenDates(appName, startDate, endDate);
+    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName,
+                                                                      final String descriptor,
+                                                                      final Date startDate,
+                                                                      final Date endDate) {
+        String query = "";
+        if ("emotion".equalsIgnoreCase(descriptor)) {
+            query = analysisQueryBuilder.findEmotionStatisticBetweenDates(appName, startDate, endDate);
+        } else if ("type".equalsIgnoreCase(descriptor)) {
+            query = analysisQueryBuilder.findTypeStatisticBetweenDates(appName, startDate, endDate);
+        } else if ("topic".equalsIgnoreCase(descriptor)) {
+            query = analysisQueryBuilder.findTopicStatisticBetweenDates(appName, startDate, endDate);
+        } else if ("polarity".equalsIgnoreCase(descriptor)) {
+            query = analysisQueryBuilder.findPolarityStatisticBetweenDates(appName, startDate, endDate);
+        } else {
+            throw new IllegalArgumentException("Invalid descriptor: " + descriptor);
+        }
+
         HashMap<Date, ApplicationDayStatisticsDTO> statisticsMap = new HashMap<>();
         TupleQueryResult result = runSparqlQuery(query);
         while (result.hasNext()) {
