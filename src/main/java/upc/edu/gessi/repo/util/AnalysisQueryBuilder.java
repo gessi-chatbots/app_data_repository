@@ -30,7 +30,45 @@ public class AnalysisQueryBuilder
 
         return queryBuilder.toString();
     }
-    public static String findStatisticBetweenDates(String appName, Date startDate, Date endDate) {
+    public String findEmotionStatisticBetweenDates(final String appPackage,
+                                                          final Date startDate,
+                                                          final Date endDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\n");
+        queryBuilder.append("SELECT ?emotion ?feature ?date\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?appPackage {\n");
+        queryBuilder.append("    \"" + appPackage + "\"\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:identifier ?appPackage;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:additionalProperty ?part ;\n");
+        queryBuilder.append("          schema:datePublished ?date .\n");
+        queryBuilder.append("  ?part rdf:type schema:Review;\n");
+        queryBuilder.append("        schema:keywords ?keyword;\n");
+        queryBuilder.append("        schema:additionalProperty ?potentialAction.\n");
+        queryBuilder.append("  ?potentialAction rdf:type schema:ReactAction; \n");
+        queryBuilder.append("                   schema:identifier ?emotion.\n");
+        queryBuilder.append("  FILTER (?emotion IN (\"happiness\", \"sadness\", \"anger\", \"surprise\", \"fear\", \"disgust\"))\n");
+        queryBuilder.append("  ?keyword rdf:type schema:DefinedTerm; \n");
+        queryBuilder.append("           schema:identifier ?feature.\n\n");
+        queryBuilder.append("  FILTER(?date >= \"" + dateFormat.format(startDate) + "\"^^xsd:dateTime &&\n");
+        queryBuilder.append("         ?date <= \"" + dateFormat.format(endDate) + "\"^^xsd:dateTime)\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?emotion ?feature ?date\n");
+        queryBuilder.append("ORDER BY ASC(?date)\n");
+
+        return queryBuilder.toString();
+    }
+    public String findTopicStatisticBetweenDates(final String appName,
+                                                          final Date startDate,
+                                                          final Date endDate) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
         StringBuilder queryBuilder = new StringBuilder();
@@ -64,8 +102,78 @@ public class AnalysisQueryBuilder
 
         return queryBuilder.toString();
     }
+    public String findTypeStatisticBetweenDates(final String appName,
+                                                        final Date startDate,
+                                                        final Date endDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\n");
+        queryBuilder.append("SELECT ?emotion ?feature ?date\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?appName {\n");
+        queryBuilder.append("    \"" + appName + "\"\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:hasPart ?part ;\n");
+        queryBuilder.append("          schema:datePublished ?date .\n");
+        queryBuilder.append("  ?part rdf:type schema:CreativeWork;\n");
+        queryBuilder.append("        schema:keywords ?keyword;\n");
+        queryBuilder.append("        schema:potentialAction ?potentialAction.\n");
+        queryBuilder.append("  ?potentialAction rdf:type schema:ReactAction; \n");
+        queryBuilder.append("                   schema:identifier ?emotion.\n");
+        queryBuilder.append("  FILTER (?emotion IN (\"happiness\", \"sadness\", \"anger\", \"surprise\", \"fear\", \"disgust\"))\n");
+        queryBuilder.append("  ?keyword rdf:type schema:DefinedTerm; \n");
+        queryBuilder.append("           schema:identifier ?feature.\n\n");
+        queryBuilder.append("  FILTER(?date >= \"" + dateFormat.format(startDate) + "\"^^xsd:dateTime &&\n");
+        queryBuilder.append("         ?date <= \"" + dateFormat.format(endDate) + "\"^^xsd:dateTime)\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?emotion ?feature ?date\n");
+        queryBuilder.append("ORDER BY ASC(?date)\n");
 
+        return queryBuilder.toString();
+    }
+    public String findPolarityStatisticBetweenDates(final String appName,
+                                                        final Date startDate,
+                                                        final Date endDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
+        queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
+        queryBuilder.append("PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\n");
+        queryBuilder.append("SELECT ?emotion ?feature ?date\n");
+        queryBuilder.append("WHERE {\n");
+        queryBuilder.append("  VALUES ?appName {\n");
+        queryBuilder.append("    \"" + appName + "\"\n");
+        queryBuilder.append("  }\n");
+        queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
+        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:review ?review .\n");
+        queryBuilder.append("  ?review rdf:type schema:Review;\n");
+        queryBuilder.append("          schema:hasPart ?part ;\n");
+        queryBuilder.append("          schema:datePublished ?date .\n");
+        queryBuilder.append("  ?part rdf:type schema:CreativeWork;\n");
+        queryBuilder.append("        schema:keywords ?keyword;\n");
+        queryBuilder.append("        schema:potentialAction ?potentialAction.\n");
+        queryBuilder.append("  ?potentialAction rdf:type schema:ReactAction; \n");
+        queryBuilder.append("                   schema:identifier ?emotion.\n");
+        queryBuilder.append("  FILTER (?emotion IN (\"happiness\", \"sadness\", \"anger\", \"surprise\", \"fear\", \"disgust\"))\n");
+        queryBuilder.append("  ?keyword rdf:type schema:DefinedTerm; \n");
+        queryBuilder.append("           schema:identifier ?feature.\n\n");
+        queryBuilder.append("  FILTER(?date >= \"" + dateFormat.format(startDate) + "\"^^xsd:dateTime &&\n");
+        queryBuilder.append("         ?date <= \"" + dateFormat.format(endDate) + "\"^^xsd:dateTime)\n");
+        queryBuilder.append("}\n");
+        queryBuilder.append("GROUP BY ?emotion ?feature ?date\n");
+        queryBuilder.append("ORDER BY ASC(?date)\n");
+
+        return queryBuilder.toString();
+    }
     public String findTopEmotionsByAppNamesQuery(List<String> appNames) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");

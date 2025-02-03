@@ -53,9 +53,9 @@ public class AnalysisServiceImpl implements AnalysisService {
         }
     }
 
-    private String extractSentiment(BindingSet bindingSet) {
-        if (bindingSet.getBinding("sentiment") != null && bindingSet.getBinding("sentiment").getValue() != null ) {
-            return bindingSet.getBinding("sentiment").getValue().stringValue();
+    private String extractEmotion(BindingSet bindingSet) {
+        if (bindingSet.getBinding("emotion") != null && bindingSet.getBinding("emotion").getValue() != null ) {
+            return bindingSet.getBinding("emotion").getValue().stringValue();
         } else {
             return null;
         }
@@ -72,13 +72,13 @@ public class AnalysisServiceImpl implements AnalysisService {
     private ApplicationDayStatisticsDTO createNewDayStatistics(Date date, HashMap<Date, ApplicationDayStatisticsDTO> statisticsMap) {
         ApplicationDayStatisticsDTO dayStatistics = new ApplicationDayStatisticsDTO();
         dayStatistics.setDate(date);
-        dayStatistics.setEmotionOcurrences(new ArrayList<>());
+        dayStatistics.setEmotionOccurrences(new ArrayList<>());
         dayStatistics.setFeatureOccurrences(new ArrayList<>());
         return dayStatistics;
     }
 
     private void updateSentimentOccurrences(ApplicationDayStatisticsDTO dayStatistics, String sentiment) {
-        for (EmotionOccurrenceDTO emotionOccurrence : dayStatistics.getEmotionOcurrences()) {
+        for (EmotionOccurrenceDTO emotionOccurrence : dayStatistics.getEmotionOccurrences()) {
             if (emotionOccurrence.getEmotion().equals(sentiment)) {
                 emotionOccurrence.setOccurrences(emotionOccurrence.getOccurrences() + 1);
                 return;
@@ -87,7 +87,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         EmotionOccurrenceDTO newEmotionOccurrence = new EmotionOccurrenceDTO();
         newEmotionOccurrence.setEmotion(sentiment);
         newEmotionOccurrence.setOccurrences(1);
-        dayStatistics.getEmotionOcurrences().add(newEmotionOccurrence);
+        dayStatistics.getEmotionOccurrences().add(newEmotionOccurrence);
     }
 
     private void updateFeatureOccurrences(ApplicationDayStatisticsDTO dayStatistics, String feature) {
@@ -184,7 +184,7 @@ public class AnalysisServiceImpl implements AnalysisService {
                                                                       final Date startDate,
                                                                       final Date endDate) {
         String query = "";
-        if ("emotion".equalsIgnoreCase(descriptor)) {
+        if ("emotions".equalsIgnoreCase(descriptor)) {
             query = analysisQueryBuilder.findEmotionStatisticBetweenDates(appName, startDate, endDate);
         } else if ("type".equalsIgnoreCase(descriptor)) {
             query = analysisQueryBuilder.findTypeStatisticBetweenDates(appName, startDate, endDate);
@@ -201,7 +201,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         while (result.hasNext()) {
             BindingSet bindingSet = result.next();
             Date date = extractDate(bindingSet);
-            String sentiment = extractSentiment(bindingSet);
+            String sentiment = extractEmotion(bindingSet);
             String feature = extractFeature(bindingSet);
             ApplicationDayStatisticsDTO dayStatistics = statisticsMap.getOrDefault(date, createNewDayStatistics(date, statisticsMap));
             if (sentiment != null) {

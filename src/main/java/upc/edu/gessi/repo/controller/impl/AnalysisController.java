@@ -78,7 +78,7 @@ public class AnalysisController implements AnalysisAPI {
     }
 
     @Override
-    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName,
+    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appPackage,
                                                                       final Date startDate,
                                                                       final Date endDate,
                                                                       final String descriptor) {
@@ -92,7 +92,7 @@ public class AnalysisController implements AnalysisAPI {
             return null;
         }
 
-        return useAnalysisService().getApplicationStatistics(appName, descriptor, startDate, endDateAux);
+        return useAnalysisService().getApplicationStatistics(appPackage, descriptor, startDate, endDateAux);
     }
 
     private AnalysisService useAnalysisService() {
