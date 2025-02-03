@@ -39,9 +39,9 @@ public interface MobileApplicationsAPI extends CrudAPI<MobileApplicationFullData
             throws NoMobileApplicationsFoundException;
 
 
-    @GetMapping(value = "/{appName}/features", produces = "application/json")
+    @GetMapping(value = "/{appPackage}/features", produces = "application/json")
     @ResponseBody
-    ResponseEntity<List<String>> getMobileApplicationFeatures(@PathVariable String appName);
+    ResponseEntity<List<String>> getMobileApplicationFeatures(@PathVariable String appPackage);
 
     @PostMapping("/update-repository")
     void updateRepository(@RequestParam(value = "url") String url);

@@ -61,6 +61,30 @@ public class AnalysisServiceImpl implements AnalysisService {
         }
     }
 
+    private String extractType(BindingSet bindingSet) {
+        if (bindingSet.getBinding("typeId") != null && bindingSet.getBinding("typeId").getValue() != null ) {
+            return bindingSet.getBinding("typeId").getValue().stringValue();
+        } else {
+            return null;
+        }
+    }
+
+    private String extractTopic(BindingSet bindingSet) {
+        if (bindingSet.getBinding("topicId") != null && bindingSet.getBinding("topicId").getValue() != null ) {
+            return bindingSet.getBinding("topicId").getValue().stringValue();
+        } else {
+            return null;
+        }
+    }
+
+    private String extractPolarity(BindingSet bindingSet) {
+        if (bindingSet.getBinding("polarityId") != null && bindingSet.getBinding("polarityId").getValue() != null ) {
+            return bindingSet.getBinding("polarityId").getValue().stringValue();
+        } else {
+            return null;
+        }
+    }
+
     private String extractFeature(BindingSet bindingSet) {
         if (bindingSet.getBinding("feature") != null && bindingSet.getBinding("feature").getValue() != null ) {
             return bindingSet.getBinding("feature").getValue().stringValue();
@@ -74,18 +98,62 @@ public class AnalysisServiceImpl implements AnalysisService {
         dayStatistics.setDate(date);
         dayStatistics.setEmotionOccurrences(new ArrayList<>());
         dayStatistics.setFeatureOccurrences(new ArrayList<>());
+        dayStatistics.setTopicOccurrences(new ArrayList<>());
+        dayStatistics.setTypeOccurrences(new ArrayList<>());
+        dayStatistics.setPolarityOccurrences(new ArrayList<>());
         return dayStatistics;
     }
 
-    private void updateSentimentOccurrences(ApplicationDayStatisticsDTO dayStatistics, String sentiment) {
+    private void updateTopicOccurrences(ApplicationDayStatisticsDTO dayStatistics, String topic) {
+        for (TopicOccurrenceDTO topicOccurrenceDTO : dayStatistics.getTopicOccurrences()) {
+            if (topicOccurrenceDTO.getTopic().equals(topic)) {
+                topicOccurrenceDTO.setOccurrences(topicOccurrenceDTO.getOccurrences() + 1);
+                return;
+            }
+        }
+        TopicOccurrenceDTO newTopicOccurrence = new TopicOccurrenceDTO();
+        newTopicOccurrence.setTopic(topic);
+        newTopicOccurrence.setOccurrences(1);
+        dayStatistics.getTopicOccurrences().add(newTopicOccurrence);
+    }
+
+    private void updateTypeOccurrences(ApplicationDayStatisticsDTO dayStatistics, String type) {
+        for (TypeOccurrenceDTO typeOccurrenceDTO : dayStatistics.getTypeOccurrences()) {
+            if (typeOccurrenceDTO.getType().equals(type)) {
+                typeOccurrenceDTO.setOccurrences(typeOccurrenceDTO.getOccurrences() + 1);
+                return;
+            }
+        }
+        TypeOccurrenceDTO newTypeOccurrence = new TypeOccurrenceDTO();
+        newTypeOccurrence.setType(type);
+        newTypeOccurrence.setOccurrences(1);
+        dayStatistics.getTypeOccurrences().add(newTypeOccurrence);
+    }
+
+    private void updatePolarityOccurrence(ApplicationDayStatisticsDTO dayStatistics, String polarity) {
+        for (PolarityOccurrenceDTO polarityOccurrenceDTO : dayStatistics.getPolarityOccurrences()) {
+            if (polarityOccurrenceDTO.getPolarity().equals(polarity)) {
+                polarityOccurrenceDTO.setOccurrences(polarityOccurrenceDTO.getOccurrences() + 1);
+                return;
+            }
+        }
+        PolarityOccurrenceDTO newPolarityOccurrence = new PolarityOccurrenceDTO();
+        newPolarityOccurrence.setPolarity(polarity);
+        newPolarityOccurrence.setOccurrences(1);
+        dayStatistics.getPolarityOccurrences().add(newPolarityOccurrence);
+    }
+
+
+
+    private void updateEmotionOccurrences(ApplicationDayStatisticsDTO dayStatistics, String emotion) {
         for (EmotionOccurrenceDTO emotionOccurrence : dayStatistics.getEmotionOccurrences()) {
-            if (emotionOccurrence.getEmotion().equals(sentiment)) {
+            if (emotionOccurrence.getEmotion().equals(emotion)) {
                 emotionOccurrence.setOccurrences(emotionOccurrence.getOccurrences() + 1);
                 return;
             }
         }
         EmotionOccurrenceDTO newEmotionOccurrence = new EmotionOccurrenceDTO();
-        newEmotionOccurrence.setEmotion(sentiment);
+        newEmotionOccurrence.setEmotion(emotion);
         newEmotionOccurrence.setOccurrences(1);
         dayStatistics.getEmotionOccurrences().add(newEmotionOccurrence);
     }
@@ -183,35 +251,89 @@ public class AnalysisServiceImpl implements AnalysisService {
                                                                       final String descriptor,
                                                                       final Date startDate,
                                                                       final Date endDate) {
-        String query = "";
-        if ("emotionsAndFeatures".equalsIgnoreCase(descriptor)) {
-            query = analysisQueryBuilder.findEmotionsAndFeaturesStatisticBetweenDates(appPackage, startDate, endDate);
-        } else if ("type".equalsIgnoreCase(descriptor)) {
-            query = analysisQueryBuilder.findTypeStatisticBetweenDates(appPackage, startDate, endDate);
-        } else if ("topic".equalsIgnoreCase(descriptor)) {
-            query = analysisQueryBuilder.findTopicStatisticBetweenDates(appPackage, startDate, endDate);
-        } else if ("polarity".equalsIgnoreCase(descriptor)) {
-            query = analysisQueryBuilder.findPolarityStatisticBetweenDates(appPackage, startDate, endDate);
-        } else {
-            throw new IllegalArgumentException("Invalid descriptor: " + descriptor);
+        String query = null;
+        HashMap<Date, ApplicationDayStatisticsDTO> statisticsMap = new HashMap<>();
+
+        try {
+            TupleQueryResult result;
+
+            switch (descriptor.toLowerCase()) {
+                case "emotionsandfeatures":
+                    query = analysisQueryBuilder.findEmotionsAndFeaturesStatisticBetweenDates(appPackage, startDate, endDate);
+                    result = runSparqlQuery(query);
+                    while (result.hasNext()) {
+                        BindingSet bindingSet = result.next();
+                        Date date = extractDate(bindingSet);
+                        String emotion = extractEmotion(bindingSet);
+                        String feature = extractFeature(bindingSet);
+                        ApplicationDayStatisticsDTO dayStatistics = statisticsMap.getOrDefault(date, createNewDayStatistics(date, statisticsMap));
+
+                        if (emotion != null) {
+                            updateEmotionOccurrences(dayStatistics, emotion);
+                        }
+                        if (feature != null) {
+                            updateFeatureOccurrences(dayStatistics, feature);
+                        }
+                        statisticsMap.put(date, dayStatistics);
+                    }
+                    break;
+
+                case "types":
+                    query = analysisQueryBuilder.findTypeStatisticBetweenDates(appPackage, startDate, endDate);
+                    result = runSparqlQuery(query);
+                    while (result.hasNext()) {
+                        BindingSet bindingSet = result.next();
+                        Date date = extractDate(bindingSet);
+                        String type = extractType(bindingSet);
+                        ApplicationDayStatisticsDTO dayStatistics = statisticsMap.getOrDefault(date, createNewDayStatistics(date, statisticsMap));
+
+                        if (type != null) {
+                            updateTypeOccurrences(dayStatistics, type);
+                        }
+                        statisticsMap.put(date, dayStatistics);
+                    }
+                    break;
+
+                case "topics":
+                    query = analysisQueryBuilder.findTopicStatisticBetweenDates(appPackage, startDate, endDate);
+                    result = runSparqlQuery(query);
+                    while (result.hasNext()) {
+                        BindingSet bindingSet = result.next();
+                        Date date = extractDate(bindingSet);
+                        String topic = extractTopic(bindingSet);
+                        ApplicationDayStatisticsDTO dayStatistics = statisticsMap.getOrDefault(date, createNewDayStatistics(date, statisticsMap));
+
+                        if (topic != null) {
+                            updateTopicOccurrences(dayStatistics, topic);
+                        }
+                        statisticsMap.put(date, dayStatistics);
+                    }
+                    break;
+
+                case "polarities":
+                    query = analysisQueryBuilder.findPolarityStatisticBetweenDates(appPackage, startDate, endDate);
+                    result = runSparqlQuery(query);
+                    while (result.hasNext()) {
+                        BindingSet bindingSet = result.next();
+                        Date date = extractDate(bindingSet);
+                        String polarity = extractPolarity(bindingSet);
+                        ApplicationDayStatisticsDTO dayStatistics = statisticsMap.getOrDefault(date, createNewDayStatistics(date, statisticsMap));
+
+                        if (polarity != null) {
+                            updatePolarityOccurrence(dayStatistics, polarity);
+                        }
+                        statisticsMap.put(date, dayStatistics);
+                    }
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Invalid descriptor: " + descriptor);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error processing statistics query.", e);
         }
 
-        HashMap<Date, ApplicationDayStatisticsDTO> statisticsMap = new HashMap<>();
-        TupleQueryResult result = runSparqlQuery(query);
-        while (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            Date date = extractDate(bindingSet);
-            String sentiment = extractEmotion(bindingSet);
-            String feature = extractFeature(bindingSet);
-            ApplicationDayStatisticsDTO dayStatistics = statisticsMap.getOrDefault(date, createNewDayStatistics(date, statisticsMap));
-            if (sentiment != null) {
-                updateSentimentOccurrences(dayStatistics, sentiment);
-            }
-            if (feature != null) {
-                updateFeatureOccurrences(dayStatistics, feature);
-            }
-            statisticsMap.put(date, dayStatistics);
-        }
         return new ArrayList<>(statisticsMap.values());
     }
 

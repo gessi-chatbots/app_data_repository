@@ -422,7 +422,7 @@ public class ReviewQueryBuilder
              schema:review ?review .
         ?review a schema:Review ;
                 schema:identifier ?reviewId ;
-                schema:reviewBody ?text ;
+                schema:reviewBody ?text .
     """);
 
         // Extract values from requestDTO
@@ -473,7 +473,7 @@ public class ReviewQueryBuilder
 
         if (emotion != null && !emotion.isEmpty()) {
             queryBuilder.append("  FILTER EXISTS {\n")
-                    .append("    ?reviewSentence schema:potentialAction ?emotionCheck .\n")
+                    .append("    ?reviewSentence schema:additionalProperty ?emotionCheck .\n")
                     .append("    ?emotionCheck schema:identifier \"").append(emotion).append("\" .\n")
                     .append("  }\n");
         }
@@ -570,7 +570,7 @@ public class ReviewQueryBuilder
 
         if (emotion != null && !emotion.isEmpty()) {
             queryBuilder.append("  FILTER EXISTS {\n")
-                    .append("    ?reviewSentence schema:potentialAction ?emotionCheck .\n")
+                    .append("    ?reviewSentence schema:additionalProperty ?emotionCheck .\n")
                     .append("    ?emotionCheck schema:identifier \"").append(emotion).append("\" .\n")
                     .append("  }\n");
         }
