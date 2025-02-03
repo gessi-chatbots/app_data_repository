@@ -411,18 +411,17 @@ public class ReviewQueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
 
         queryBuilder.append("""
-        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX schema: <https://schema.org/>
-        PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX schema: <https://schema.org/>
+    PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>
 
-        SELECT DISTINCT ?reviewId
-        WHERE {
-            ?app a schema:MobileApplication ;
-                 schema:identifier ?appId ;
-                 schema:review ?review .
-            ?review a schema:Review ;
-                    schema:identifier ?reviewId ;
-                    schema:additionalProperty ?reviewSentence .
+    SELECT DISTINCT ?reviewId
+    WHERE {
+        ?app a schema:MobileApplication ;
+             schema:identifier ?appId ;
+             schema:review ?review .
+        ?review a schema:Review ;
+                schema:identifier ?reviewId .
     """);
 
         // Extract values from requestDTO
@@ -433,10 +432,23 @@ public class ReviewQueryBuilder
         String emotion = requestDTO.getEmotion();
         List<String> featureList = requestDTO.getFeatureList();
 
+        boolean hasDescriptors = (type != null && !type.isEmpty()) ||
+                (topic != null && !topic.isEmpty()) ||
+                (polarity != null && !polarity.isEmpty()) ||
+                (emotion != null && !emotion.isEmpty()) ||
+                (featureList != null && !featureList.isEmpty());
+
+        // Add filter for appId if provided
         if (appId != null && !appId.isEmpty()) {
             queryBuilder.append("  FILTER (?appId = \"").append(appId).append("\")\n");
         }
 
+        // If descriptors exist, add additionalProperty condition
+        if (hasDescriptors) {
+            queryBuilder.append("  ?review schema:additionalProperty ?reviewSentence .\n");
+        }
+
+        // Add conditions for each descriptor if present
         if (type != null && !type.isEmpty()) {
             queryBuilder.append("  FILTER EXISTS {\n")
                     .append("    ?reviewSentence mapp:type ?typeCheck .\n")
@@ -478,6 +490,7 @@ public class ReviewQueryBuilder
 
         queryBuilder.append("}\n");
 
+        // Add pagination options if provided
         if (size != null) {
             queryBuilder.append("LIMIT ").append(size).append("\n");
         }
@@ -488,6 +501,7 @@ public class ReviewQueryBuilder
 
         return queryBuilder.toString();
     }
+
 
     public String countByDescriptors(final ReviewDescriptorRequestDTO requestDTO) {
         StringBuilder queryBuilder = new StringBuilder();
