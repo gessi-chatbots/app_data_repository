@@ -80,14 +80,19 @@ public class AnalysisController implements AnalysisAPI {
     @Override
     public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName,
                                                                       final Date startDate,
-                                                                      final Date endDate) {
+                                                                      final Date endDate,
+                                                                      final String descriptor) {
         Date endDateAux = endDate;
         if (endDateAux == null) {
             logger.warn("No end date given, using today as end ate");
             endDateAux = Calendar.getInstance().getTime();
         }
 
-        return useAnalysisService().getApplicationStatistics(appName, startDate, endDateAux);
+        if (descriptor == null || descriptor.isEmpty()) {
+            return null;
+        }
+
+        return useAnalysisService().getApplicationStatistics(appName, descriptor, startDate, endDateAux);
     }
 
     private AnalysisService useAnalysisService() {

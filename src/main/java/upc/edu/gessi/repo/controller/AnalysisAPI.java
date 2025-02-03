@@ -25,9 +25,19 @@ public interface AnalysisAPI extends BaseAPI {
     @GetMapping(value = "/{appPackage}/statistics", produces = "application/json")
     @ResponseBody
     List<ApplicationDayStatisticsDTO> getApplicationStatistics(
-            @ApiParam(value = "Package of the application") @PathVariable String appPackage,
-            @ApiParam(value = "Start date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "startDate", defaultValue = "2020-01-01") Date startDate,
-            @ApiParam(value = "End date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "endDate", required = false) Date endDate);
+            @ApiParam(value = "Package of the application")
+            @PathVariable String appPackage,
+
+            @ApiParam(value = "Start date")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @RequestParam(name = "startDate", defaultValue = "2020-01-01") Date startDate,
+
+            @ApiParam(value = "End date")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @RequestParam(name = "endDate", required = false) Date endDate,
+
+            @ApiParam(value = "Descriptor")
+            @RequestParam(name = "descriptor", required = false) String descriptor);
 
     @ApiOperation(value = "Get top sentiments by application packages")
     @PostMapping(value = "/top-emotions", produces = "application/json")
