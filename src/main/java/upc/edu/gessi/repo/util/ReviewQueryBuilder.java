@@ -405,7 +405,7 @@ public class ReviewQueryBuilder
         return queryBuilder.toString();
     }
 
-    public String findReviewsIDsByDescriptors(final ReviewDescriptorRequestDTO requestDTO,
+    public String findReviewsIDsAndTextByDescriptors(final ReviewDescriptorRequestDTO requestDTO,
                                               final Integer page,
                                               final Integer size) {
         StringBuilder queryBuilder = new StringBuilder();
@@ -415,13 +415,14 @@ public class ReviewQueryBuilder
     PREFIX schema: <https://schema.org/>
     PREFIX mapp: <https://gessi.upc.edu/en/tools/mapp-kg/>
 
-    SELECT DISTINCT ?reviewId
+    SELECT DISTINCT ?appId ?reviewId ?text
     WHERE {
         ?app a schema:MobileApplication ;
              schema:identifier ?appId ;
              schema:review ?review .
         ?review a schema:Review ;
-                schema:identifier ?reviewId .
+                schema:identifier ?reviewId ;
+                schema:reviewBody ?text ;
     """);
 
         // Extract values from requestDTO
