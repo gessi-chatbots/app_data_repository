@@ -117,8 +117,8 @@ public class MobileApplicationsController implements MobileApplicationsAPI {
     }
 
     @Override
-    public ResponseEntity<List<String>> getMobileApplicationFeatures(@PathVariable final String appName) {
-        return new ResponseEntity<>(((AnalysisService) useService(AnalysisService.class)).findAppFeatures(appName), HttpStatus.OK);
+    public ResponseEntity<List<String>> getMobileApplicationFeatures(@PathVariable final String appPackage) {
+        return new ResponseEntity<>(((AnalysisService) useService(AnalysisService.class)).findAppFeatures(appPackage), HttpStatus.OK);
     }
 
     @Override

@@ -179,19 +179,19 @@ public class AnalysisServiceImpl implements AnalysisService {
 
     @Override
 
-    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appName,
+    public List<ApplicationDayStatisticsDTO> getApplicationStatistics(final String appPackage,
                                                                       final String descriptor,
                                                                       final Date startDate,
                                                                       final Date endDate) {
         String query = "";
-        if ("emotions".equalsIgnoreCase(descriptor)) {
-            query = analysisQueryBuilder.findEmotionStatisticBetweenDates(appName, startDate, endDate);
+        if ("emotionsAndFeatures".equalsIgnoreCase(descriptor)) {
+            query = analysisQueryBuilder.findEmotionsAndFeaturesStatisticBetweenDates(appPackage, startDate, endDate);
         } else if ("type".equalsIgnoreCase(descriptor)) {
-            query = analysisQueryBuilder.findTypeStatisticBetweenDates(appName, startDate, endDate);
+            query = analysisQueryBuilder.findTypeStatisticBetweenDates(appPackage, startDate, endDate);
         } else if ("topic".equalsIgnoreCase(descriptor)) {
-            query = analysisQueryBuilder.findTopicStatisticBetweenDates(appName, startDate, endDate);
+            query = analysisQueryBuilder.findTopicStatisticBetweenDates(appPackage, startDate, endDate);
         } else if ("polarity".equalsIgnoreCase(descriptor)) {
-            query = analysisQueryBuilder.findPolarityStatisticBetweenDates(appName, startDate, endDate);
+            query = analysisQueryBuilder.findPolarityStatisticBetweenDates(appPackage, startDate, endDate);
         } else {
             throw new IllegalArgumentException("Invalid descriptor: " + descriptor);
         }
@@ -248,7 +248,7 @@ public class AnalysisServiceImpl implements AnalysisService {
     }
     @Override
     public List<String> findAppFeatures(final String appName) {
-        String query = analysisQueryBuilder.findFeaturesByAppName(appName);
+        String query = analysisQueryBuilder.findFeaturesByAppPackage(appName);
         TupleQueryResult result = runSparqlQuery(query);
         List<String> features = new ArrayList<>();
         while (result.hasNext()) {

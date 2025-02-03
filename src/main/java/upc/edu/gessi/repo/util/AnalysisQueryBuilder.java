@@ -10,15 +10,15 @@ import java.util.List;
 public class AnalysisQueryBuilder
 {
 
-    public String findFeaturesByAppName(final String appName) {
+    public String findFeaturesByAppPackage(final String appPackage) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n");
         queryBuilder.append("PREFIX schema: <https://schema.org/>\n");
         queryBuilder.append("SELECT DISTINCT ?feature\n");
         queryBuilder.append("WHERE {\n");
-        queryBuilder.append("  VALUES ?appName { \"" + appName + "\" }\n");
+        queryBuilder.append("  VALUES ?appPackage { \"" + appPackage + "\" }\n");
         queryBuilder.append("  ?app rdf:type schema:MobileApplication;\n");
-        queryBuilder.append("       schema:name ?appName;\n");
+        queryBuilder.append("       schema:identifier ?appPackage;\n");
         queryBuilder.append("       schema:review ?review .\n");
         queryBuilder.append("  ?review rdf:type schema:Review;\n");
         queryBuilder.append("          schema:additionalProperty ?part .\n");
@@ -30,9 +30,9 @@ public class AnalysisQueryBuilder
 
         return queryBuilder.toString();
     }
-    public String findEmotionStatisticBetweenDates(final String appPackage,
-                                                          final Date startDate,
-                                                          final Date endDate) {
+    public String findEmotionsAndFeaturesStatisticBetweenDates(final String appPackage,
+                                                               final Date startDate,
+                                                               final Date endDate) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
         StringBuilder queryBuilder = new StringBuilder();
