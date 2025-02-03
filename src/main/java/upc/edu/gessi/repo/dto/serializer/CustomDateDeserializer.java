@@ -12,15 +12,15 @@ import java.util.Locale;
 
 public class CustomDateDeserializer extends JsonDeserializer<Date> {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
+    private static final SimpleDateFormat ddMMyyyyFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     @Override
     public Date deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         String dateAsString = jsonParser.getText();
         try {
-            return dateFormat.parse(dateAsString);
+            return ddMMyyyyFormat.parse(dateAsString);
         } catch (ParseException e) {
-            return null;
+            throw new IOException("Failed to parse date: " + dateAsString, e);
         }
     }
 }

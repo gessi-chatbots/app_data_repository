@@ -1,6 +1,5 @@
 package upc.edu.gessi.repo.dto.Review;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,7 +41,7 @@ public class ReviewDTO implements Serializable {
 
     private String source;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     @JsonProperty("date")
