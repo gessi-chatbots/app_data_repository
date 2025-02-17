@@ -19,7 +19,7 @@ EXPOSE 3003
 # DB_USERNAME: GraphDB Database username (set via environment variable for security)
 # DB_PASSWORD: GraphDB Database password (set via environment variable for security)
 # REPO_NAME: Name of the GraphDB repository
-ENV SPRING_PROFILES_ACTIVE=gessi
+ENV SPRING_PROFILES_ACTIVE=docker
 ENV DB_USERNAME=${DB_USERNAME}
 ENV DB_PASSWORD=${DB_PASSWORD}
 ENV REPO_NAME=${REPO_NAME}
