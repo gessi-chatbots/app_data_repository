@@ -1,117 +1,97 @@
 # MApp-KG (Old Knowledge Graph Repository)
 
-The *MApp-KG* is developed as a Java-based Spring Boot service using the RDF4J framework to build the hook with a GraphDB repository instance.
+MApp-KG is a Java-based Spring Boot service that utilizes the RDF4J framework to interact with a **GraphDB repository instance**.
 
-## Description
+## 📌 Description
 
-This software component provides an API for querying, updating, and extracting knowledge from a graph database.
+This component provides a **REST API** for querying, updating, and extracting knowledge from a graph database.
 
-## Used Technologies
+## 🛠️ Used Technologies
 
 | Component   | Description                                                                           | Version |
 |-------------|---------------------------------------------------------------------------------------|---------|
-| Spring Boot | Collection of Java libraries for creating REST APIs                                   | 2.7.1   |
-| RDF4J       | Java library for manipulating RDF graphs                                              | 3.0.0   | 
-| GraphDB     | GraphDB is an enterprise-ready Semantic Graph Database, compliant with W3C Standards. | 10.1.0  |
+| **Spring Boot** | Java framework for creating REST APIs                                  | 2.7.1   |
+| **RDF4J**       | Java library for manipulating RDF graphs                              | 3.0.0   | 
+| **GraphDB**     | Enterprise-ready **Semantic Graph Database**, compliant with W3C standards | 10.1.0  |
 
-## How to Configure
+## ⚙️ Configuration
 
-Configure the GraphDB connection by setting the proper values for `db.url`, `db.username`, and `db.password` in `src/main/resources/application.properties` and `src/main/resources/application-gessi.properties` (if you use docker) or  and `src/main/resources/application-localhost.properties` (if you use localhost).
+To configure the **GraphDB connection**, set the appropriate values for:
 
-Configure the RML file path by setting the proper value for `rml.path` to use a custom RML file for schema integration.
+- `db.url`
+- `db.username`
+- `db.password`
 
-## How to Build
+These values should be updated in the respective properties files:
 
-To build the project, run the following command:
+- **Docker deployment**: `src/main/resources/application-gessi.properties`
+- **Localhost deployment**: `src/main/resources/application-localhost.properties`
+
+To set a custom **RML file path**, configure `rml.path` accordingly.
+
+---
+
+## 🚀 How to Build
+
+To build the project, run:
 
 ```sh
 mvn clean install package
 ```
 
-## How to Use
+## ▶️ How to Run
 
-To run the service using Java from the generated package (`.jar`), run the following command:
+### **Run using Java**
 
 ```sh
 java -jar target/repo-0.0.1-SNAPSHOT.jar
 ```
 
-To deploy the service in a Docker container, follow these steps:
+### **Deploy using Docker**
 
-### Build Docker Image
+#### **Step 1: Build Docker Image**
 ```sh
-docker build -t kg_repository .
+docker build -t mapp-kg .
 ```
 
-### Run Docker Container
+#### **Step 2: Run Docker Container**
 ```sh
-docker run -d -p 3003:3003 --name KG_Repository kg_repository
+docker run -d -p 3003:3003 --name MApp-KG \
+  -e DB_USERNAME=my_db_user \
+  -e DB_PASSWORD=my_db_password \
+  -e REPO_NAME=my_repo_name \
+  mapp-kg
 ```
 
-## How to Deploy (New Method)
+---
 
-### Step 1: Pull Image
+## 🌍 How to Deploy (New Method)
+
+### **Step 1: Pull Image from Repository**
 ```sh
 docker pull mtiessler/kg_repository:latest
 ```
 
-### Step 2: Build Image (if needed)
+### **Step 2: Build Image (if needed)**
 ```sh
 docker build -t mtiessler/kg_repository:latest .
 ```
 
-### Step 3: Create `kg_repository.env` File
-This file contains the credentials required to access the SPARQL database.
-The `.env` file must be in the same directory where the commands are executed.
+### **Step 3: Create `.env` File**
+
+Create a file named `kg_repository.env` in the same directory where you execute the Docker commands. This file should contain:
 
 ```
 DB_USERNAME=username
 DB_PASSWORD=password
 ```
 
-## Features
+---
 
-The API of the MAPP-KG is available in the [Postman Collection](https://www.postman.com/gessi-fib-upc/gessi-nlp4se/collection/ak3s503/mapp-kg-old-app-repo?action=share&source=copy-link&creator=32448387)
+## 🔗 API Documentation
 
-### Main Data Import Methods:
-- **Add Mobile Apps (JSON format)**: Store a list of mobile apps using a JSON Array of mobile apps as the body of the HTTP request. See the Swagger documentation for the schema.
-- **Add Mobile Apps (RDF format)**: Store all triples within a given RDF file.
-- **Add Mobile Apps (RML-based)**: Store all mobile apps extracted from a JSON file using a given RML mapping instance.
+The API of MApp-KG is available in the **Postman Collection**:  
+[Postman Collection - MApp-KG](https://www.postman.com/gessi-fib-upc/gessi-nlp4se/collection/ak3s503/mapp-kg-old-app-repo?action=share&source=copy-link&creator=32448387)
 
-### Inductive Knowledge Generation:
-- **Extract Features**: Send a `POST` request to `/derivedNLFeatures` with textual data (descriptions, summaries, changelogs, and/or reviews) to extract potential app features.
-  - **Query parameters:**
-    - `documentType`: Type of document to be processed (DESCRIPTION, SUMMARY, CHANGELOG, REVIEWS, USER_ANNOTATED, ALL).
-    - `batch-size`: Number of documents processed at once.
-    - `from`: Offset to start processing from the nth document.
-    - (Optional) `maxSubj`: Subjectivity threshold (reviews above this won't be processed).
-- **Feature Similarity Matching**: Send a `POST` request to `/computeFeatureSimilarity` to find and match synonyms between app features.
-  - Accepts a `threshold` parameter (between 0 and 1, default is 0.5).
-- **Undo Feature Synonymy**: Send a `DELETE` request to `/deleteFeatureSimilarities` to undo feature synonymy computed with `/computeFeatureSimilarity`.
+---
 
-## File Structure
-
-- `src/main/java/upc/edu/gessi/repo`
-  - **AppGraphRepoApplication.java**: Main class.
-  - **Controller Package**: Handles HTTP requests.
-    - `GraphDBController.java`: Logic for storing and retrieving data from the GraphDB repository.
-    - `InductiveKnowledgeController.java`: Auxiliary repository handling extended knowledge generation.
-  - **Domain Package**: Contains domain-specific entities.
-  - **Service Package**: Business logic and database interaction.
-    - `GraphDBService.java`: Main service containing methods for querying and updating the database.
-    - `NLFeatureService.java`: Auxiliary service that communicates with a remote NL service for feature extraction.
-  - **Utils Package**: Auxiliary functions.
-
-## RDF Graph Example
-
-You can find an RDF graph instance already populated with app info in [statements.zip](https://github.com/gessi-chatbots/app_data_repository/tree/master/data).
-
-The data was originally obtained using the [App Data Scanner Service](https://github.com/gessi-chatbots/app_data_scanner_service).
-
-App info includes:
-- Package name
-- Description
-- Summary
-- Changelog
-- Reviews
-- Annotated features
